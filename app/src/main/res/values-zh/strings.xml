@@ -65,6 +65,6 @@
     <string name="toast_not_authorized">无权使用该网络</string>
     <string name="menu_peers">Peers</string>
     <string name="menu_orbit">入轨</string>
-    <string name="enabled">Enabled</string>
-    <string name="disabled">Disabled</string>
+    <string name="enabled">启用</string>
+    <string name="disabled">禁用</string>
 </resources>

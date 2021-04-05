@@ -1,5 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto">
     <item android:icon="@android:drawable/ic_menu_add" android:id="@+id/menu_item_join_network" android:title="@string/menu_join_network" app:showAsAction="never|ifRoom|withText"/>
-    <item android:icon="@android:drawable/ic_menu_preferences" android:id="@+id/menu_item_prefs" android:title="@string/settings" app:showAsAction="never|ifRoom|withText"/>
+    <item
+        android:id="@+id/menu_item_peers"
+        android:title="@string/menu_peers" />
+    <item
+        android:id="@+id/menu_item_orbit"
+        android:title="@string/menu_orbit" />
+    <item
+        android:id="@+id/menu_item_settings"
+        android:title="@string/settings" />
 </menu>

@@ -19,7 +19,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.CompoundButton;
-import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.PopupMenu;
 import android.widget.Switch;
@@ -70,8 +69,8 @@ public class NetworkListFragment extends Fragment {
     public static final String NETWORK_ID_MESSAGE = "com.zerotier.one.network-id";
     public static final int START_VPN = 2;
     public static final String TAG = "NetworkListFragment";
-    boolean mIsBound = false;
     private final EventBus eventBus;
+    boolean mIsBound = false;
     private JoinAfterAuth joinAfterAuth;
     private MenuItem joinNetworkMenu;
     private NetworkAdapter listAdapter;
@@ -112,7 +111,7 @@ public class NetworkListFragment extends Fragment {
     /* access modifiers changed from: package-private */
     public void doBindService() {
         if (!isBound()) {
-            if (getActivity().bindService(new Intent(getActivity(), ZeroTierOneService.class), this.mConnection, 6)) {
+            if (getActivity().bindService(new Intent(getActivity(), ZeroTierOneService.class), this.mConnection, Context.BIND_NOT_FOREGROUND | Context.BIND_DEBUG_UNBIND)) {
                 setIsBound(true);
             }
         }
@@ -221,18 +220,25 @@ public class NetworkListFragment extends Fragment {
 
     @Override // androidx.fragment.app.Fragment
     public boolean onOptionsItemSelected(MenuItem menuItem) {
-        switch (menuItem.getItemId()) {
-            case R.id.menu_item_join_network:
-                Log.d(TAG, "Selected Join Network");
-                startActivity(new Intent(getActivity(), JoinNetworkActivity.class));
-                return true;
-            case R.id.menu_item_prefs:
-                Log.d(TAG, "Selected Preferences");
-                startActivity(new Intent(getActivity(), PrefsActivity.class));
-                return true;
-            default:
-                return super.onOptionsItemSelected(menuItem);
+        int menuId = menuItem.getItemId();
+        if (menuId == R.id.menu_item_join_network) {
+            Log.d(TAG, "Selected Join Network");
+            startActivity(new Intent(getActivity(), JoinNetworkActivity.class));
+            return true;
+        } else if (menuId == R.id.menu_item_settings) {
+            Log.d(TAG, "Selected Settings");
+            startActivity(new Intent(getActivity(), PrefsActivity.class));
+            return true;
+        } else if (menuId == R.id.menu_item_peers) {
+            Log.d(TAG, "Selected peers");
+            // TODO
+            return true;
+        } else if (menuId == R.id.menu_item_orbit) {
+            Log.d(TAG, "Selected orbit");
+            // TODO
+            return true;
         }
+        return super.onOptionsItemSelected(menuItem);
     }
 
     @Override // androidx.fragment.app.Fragment
@@ -295,7 +301,7 @@ public class NetworkListFragment extends Fragment {
         Log.d(TAG, "Got Network Info");
         VirtualNetworkConfig networkInfo = networkInfoReplyEvent.getNetworkInfo();
         for (Network network : getNetworkList()) {
-            if (network.getNetworkId().longValue() == networkInfo.networkId()) {
+            if (network.getNetworkId() == networkInfo.networkId()) {
                 network.setConnected(true);
                 if (!networkInfo.name().isEmpty()) {
                     network.setNetworkName(networkInfo.name());
@@ -309,7 +315,7 @@ public class NetworkListFragment extends Fragment {
                     networkConfigDao.insert(networkConfig);
                 }
                 network.setNetworkConfig(networkConfig);
-                network.setNetworkConfigId(network.getNetworkId().longValue());
+                network.setNetworkConfigId(network.getNetworkId());
                 networkDao.save(network);
                 networkConfig.setBridging(networkInfo.isBridgeEnabled());
                 if (networkInfo.networkType() == VirtualNetworkType.NETWORK_TYPE_PRIVATE) {
@@ -323,7 +329,7 @@ public class NetworkListFragment extends Fragment {
                         break;
                     case 2:
                         networkStatus = NetworkConfig.NetworkStatus.ACCESS_DENIED;
-                        Toast.makeText(getActivity(), "Not Authorized for network", 0).show();
+                        Toast.makeText(getActivity(), R.string.toast_not_authorized, Toast.LENGTH_SHORT).show();
                         break;
                     case 3:
                         networkStatus = NetworkConfig.NetworkStatus.CLIENT_TOO_OLD;
@@ -342,29 +348,28 @@ public class NetworkListFragment extends Fragment {
                         break;
                 }
                 networkConfig.setStatus(networkStatus);
-                String hexString = Long.toHexString(networkInfo.macAddress());
-                while (hexString.length() < 12) {
-                    hexString = "0" + hexString;
+                String macAddress = Long.toHexString(networkInfo.macAddress());
+                while (macAddress.length() < 12) {
+                    macAddress = "0" + macAddress;
                 }
-                StringBuilder sb = new StringBuilder();
-                sb.append(hexString.charAt(0));
-                sb.append(hexString.charAt(1));
-                sb.append(':');
-                sb.append(hexString.charAt(2));
-                sb.append(hexString.charAt(3));
-                sb.append(':');
-                sb.append(hexString.charAt(4));
-                sb.append(hexString.charAt(5));
-                sb.append(':');
-                sb.append(hexString.charAt(6));
-                sb.append(hexString.charAt(7));
-                sb.append(':');
-                sb.append(hexString.charAt(8));
-                sb.append(hexString.charAt(9));
-                sb.append(':');
-                sb.append(hexString.charAt(10));
-                sb.append(hexString.charAt(11));
-                networkConfig.setMac(sb.toString());
+                String sb = String.valueOf(macAddress.charAt(0)) +
+                        macAddress.charAt(1) +
+                        ':' +
+                        macAddress.charAt(2) +
+                        macAddress.charAt(3) +
+                        ':' +
+                        macAddress.charAt(4) +
+                        macAddress.charAt(5) +
+                        ':' +
+                        macAddress.charAt(6) +
+                        macAddress.charAt(7) +
+                        ':' +
+                        macAddress.charAt(8) +
+                        macAddress.charAt(9) +
+                        ':' +
+                        macAddress.charAt(10) +
+                        macAddress.charAt(11);
+                networkConfig.setMac(sb);
                 networkConfig.setMtu(Integer.toString(networkInfo.mtu()));
                 networkConfig.setBroadcast(networkInfo.broadcastEnabled());
                 network.setNetworkConfigId(networkInfo.networkId());
@@ -391,7 +396,7 @@ public class NetworkListFragment extends Fragment {
                     assignedAddress.setAddressBytes(address.getAddress());
                     assignedAddress.setAddressString(inetAddress);
                     assignedAddress.setPrefix(port);
-                    assignedAddress.setNetworkId(networkConfig.getId().longValue());
+                    assignedAddress.setNetworkId(networkConfig.getId());
                     assignedAddressDao.save(assignedAddress);
                 }
             } else {
@@ -561,7 +566,7 @@ public class NetworkListFragment extends Fragment {
     }
 
     /* access modifiers changed from: private */
-    public class JoinAfterAuth {
+    public static class JoinAfterAuth {
         long networkId;
         boolean useDefaultRoute;
 
@@ -664,7 +669,7 @@ public class NetworkListFragment extends Fragment {
                         boolean z2 = PreferenceManager.getDefaultSharedPreferences(NetworkAdapter.this.getContext()).getBoolean("network_use_cellular_data", false);
                         NetworkInfo activeNetworkInfo = ((ConnectivityManager) NetworkAdapter.this.getContext().getSystemService(Context.CONNECTIVITY_SERVICE)).getActiveNetworkInfo();
                         if (activeNetworkInfo == null || !activeNetworkInfo.isConnectedOrConnecting()) {
-                            Toast.makeText(NetworkAdapter.this.getContext(), "No Network Connectivity.  ZeroTier cannot start.", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(NetworkAdapter.this.getContext(), R.string.toast_no_network, Toast.LENGTH_SHORT).show();
                             r0.setChecked(false);
                         } else if (z2 || !(activeNetworkInfo == null || activeNetworkInfo.getType() == 0)) {
                             for (Network network : NetworkListFragment.this.mNetworks) {
@@ -676,22 +681,22 @@ public class NetworkListFragment extends Fragment {
                             }
                             NetworkListFragment.this.stopService();
                             if (!NetworkListFragment.this.isBound()) {
-                                NetworkListFragment.this.sendStartServiceIntent(network.getNetworkId().longValue(), network.getUseDefaultRoute());
+                                NetworkListFragment.this.sendStartServiceIntent(network.getNetworkId(), network.getUseDefaultRoute());
                             } else {
-                                NetworkListFragment.this.mBoundService.joinNetwork(network.getNetworkId().longValue(), network.getUseDefaultRoute());
+                                NetworkListFragment.this.mBoundService.joinNetwork(network.getNetworkId(), network.getUseDefaultRoute());
                             }
                             Log.d(NetworkListFragment.TAG, "Joining Network: " + network.getNetworkIdStr());
                             network.setConnected(true);
                             network.setLastActivated(true);
                             networkDao.save(network);
                         } else {
-                            Toast.makeText(NetworkAdapter.this.getContext(), "Currently using mobile data.  Enable \"Use Cellular Data\" in order to start ZeroTier.", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(NetworkAdapter.this.getContext(), R.string.toast_mobile_data, Toast.LENGTH_SHORT).show();
                             r0.setChecked(false);
                         }
                     } else {
                         Log.d(NetworkListFragment.TAG, "Leaving Leaving Network: " + network.getNetworkIdStr());
                         if (!(!NetworkListFragment.this.isBound() || NetworkListFragment.this.mBoundService == null || network == null)) {
-                            NetworkListFragment.this.mBoundService.leaveNetwork(network.getNetworkId().longValue());
+                            NetworkListFragment.this.mBoundService.leaveNetwork(network.getNetworkId());
                             NetworkListFragment.this.doUnbindService();
                         }
                         NetworkListFragment.this.stopService();
