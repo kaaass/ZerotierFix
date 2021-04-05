@@ -18,7 +18,7 @@ public class IPPacketUtils {
             try {
                 return InetAddress.getByAddress(bArr2);
             } catch (UnknownHostException e) {
-                Log.e(TAG, "Error creating InetAddress: " + e.getMessage());
+                Log.e(TAG, "Error creating InetAddress", e);
                 return null;
             }
         } else if (iPVersion == 6) {
@@ -26,8 +26,8 @@ public class IPPacketUtils {
             System.arraycopy(bArr, 8, bArr3, 0, 16);
             try {
                 return InetAddress.getByAddress(bArr3);
-            } catch (UnknownHostException e2) {
-                Log.e(TAG, "Error creating InetAddress: " + e2.getMessage());
+            } catch (UnknownHostException e) {
+                Log.e(TAG, "Error creating InetAddress", e);
                 return null;
             }
         } else {
@@ -44,7 +44,7 @@ public class IPPacketUtils {
             try {
                 return InetAddress.getByAddress(bArr2);
             } catch (UnknownHostException e) {
-                Log.e(TAG, "Error creating InetAddress: " + e.getMessage());
+                Log.e(TAG, "Error creating InetAddress", e);
                 return null;
             }
         } else if (iPVersion == 6) {
@@ -52,8 +52,8 @@ public class IPPacketUtils {
             System.arraycopy(bArr, 24, bArr3, 0, 16);
             try {
                 return InetAddress.getByAddress(bArr3);
-            } catch (UnknownHostException e2) {
-                Log.e(TAG, "Error creating InetAddress: " + e2.getMessage());
+            } catch (UnknownHostException e) {
+                Log.e(TAG, "Error creating InetAddress", e);
                 return null;
             }
         } else {

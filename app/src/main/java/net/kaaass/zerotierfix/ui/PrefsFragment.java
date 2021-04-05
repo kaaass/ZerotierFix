@@ -64,7 +64,7 @@ public class PrefsFragment extends PreferenceFragmentCompat implements SharedPre
                     }
                 }
             } catch (Exception e) {
-                Log.e(TAG, e.toString());
+                Log.e(TAG, "", e);
             }
         }
     }

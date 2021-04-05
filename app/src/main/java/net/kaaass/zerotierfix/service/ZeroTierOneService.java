@@ -254,18 +254,19 @@ public class ZeroTierOneService extends VpnService implements Runnable, EventLis
         super.onCreate();
     }
 
-    public int onStartCommand(Intent intent, int i, int i2) {
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
         long longValue;
         long j;
         Log.d(TAG, "onStartCommand");
-        if (i2 == 3) {
+        if (startId == 3) {
             Log.i(TAG, "Authorizing VPN");
             return START_NOT_STICKY;
         } else if (intent == null) {
             Log.e(TAG, "NULL intent.  Cannot start");
             return START_NOT_STICKY;
         } else {
-            this.mStartID = i2;
+            this.mStartID = startId;
             if (!this.eventBus.isRegistered(this)) {
                 this.eventBus.register(this);
             }
@@ -293,12 +294,12 @@ public class ZeroTierOneService extends VpnService implements Runnable, EventLis
             }
             if (longValue == 0) {
                 Log.e(TAG, "Network ID not provided to service");
-                stopSelf(i2);
+                stopSelf(startId);
                 return START_NOT_STICKY;
             }
             this.networkId = longValue;
             SharedPreferences defaultSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-            boolean z = defaultSharedPreferences.getBoolean("network_use_cellular_data", false);
+            boolean useCellularData = defaultSharedPreferences.getBoolean("network_use_cellular_data", false);
             this.disableIPv6 = defaultSharedPreferences.getBoolean("network_disable_ipv6", false);
             ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
             NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
@@ -315,7 +316,7 @@ public class ZeroTierOneService extends VpnService implements Runnable, EventLis
             if (activeNetworkInfo == null || !activeNetworkInfo.isConnectedOrConnecting()) {
                 Toast.makeText(this, R.string.toast_no_network, Toast.LENGTH_SHORT).show();
                 return START_NOT_STICKY;
-            } else if (z || !(activeNetworkInfo == null || activeNetworkInfo.getType() == 0)) {
+            } else if (useCellularData || !(activeNetworkInfo == null || activeNetworkInfo.getType() == 0)) {
                 synchronized (this) {
                     try {
                         if (this.svrSocket == null) {
@@ -359,8 +360,7 @@ public class ZeroTierOneService extends VpnService implements Runnable, EventLis
                                 this.udpThread = thread;
                                 thread.start();
                             } catch (NodeException e) {
-                                Log.e(TAG, "Error starting ZT1 Node: " + e.getMessage());
-                                e.printStackTrace();
+                                Log.e(TAG, "Error starting ZT1 Node", e);
                                 return START_NOT_STICKY;
                             }
                         } else {
@@ -394,42 +394,42 @@ public class ZeroTierOneService extends VpnService implements Runnable, EventLis
     }
 
     public void stopZeroTier() {
-        Thread thread = this.udpThread;
-        if (thread != null && thread.isAlive()) {
+        Thread udpThread = this.udpThread;
+        if (udpThread != null && udpThread.isAlive()) {
             this.udpThread.interrupt();
             this.udpThread = null;
         }
-        TunTapAdapter tunTapAdapter2 = this.tunTapAdapter;
-        if (tunTapAdapter2 != null && tunTapAdapter2.isRunning()) {
+        TunTapAdapter tunTapAdapter = this.tunTapAdapter;
+        if (tunTapAdapter != null && tunTapAdapter.isRunning()) {
             this.tunTapAdapter.interrupt();
             this.tunTapAdapter = null;
         }
-        Thread thread2 = this.vpnThread;
-        if (thread2 != null && thread2.isAlive()) {
+        Thread vpnThread = this.vpnThread;
+        if (vpnThread != null && vpnThread.isAlive()) {
             this.vpnThread.interrupt();
             this.vpnThread = null;
         }
-        DatagramSocket datagramSocket = this.svrSocket;
-        if (datagramSocket != null) {
-            datagramSocket.close();
+        DatagramSocket svrSocket = this.svrSocket;
+        if (svrSocket != null) {
+            svrSocket.close();
             this.svrSocket = null;
         }
-        Thread thread3 = this.v4multicastScanner;
-        if (thread3 != null) {
-            thread3.interrupt();
+        Thread v4multicastScanner = this.v4multicastScanner;
+        if (v4multicastScanner != null) {
+            v4multicastScanner.interrupt();
             this.v4multicastScanner = null;
         }
-        Thread thread4 = this.v6MulticastScanner;
-        if (thread4 != null) {
-            thread4.interrupt();
+        Thread v6MulticastScanner = this.v6MulticastScanner;
+        if (v6MulticastScanner != null) {
+            v6MulticastScanner.interrupt();
             this.v6MulticastScanner = null;
         }
-        ParcelFileDescriptor parcelFileDescriptor = this.vpnSocket;
-        if (parcelFileDescriptor != null) {
+        ParcelFileDescriptor vpnSocket = this.vpnSocket;
+        if (vpnSocket != null) {
             try {
-                parcelFileDescriptor.close();
+                vpnSocket.close();
             } catch (Exception e) {
-                Log.e(TAG, "Error closing VPN socket: " + e.toString());
+                Log.e(TAG, "Error closing VPN socket", e);
             }
             this.vpnSocket = null;
         }
@@ -441,9 +441,9 @@ public class ZeroTierOneService extends VpnService implements Runnable, EventLis
         if (this.eventBus.isRegistered(this)) {
             this.eventBus.unregister(this);
         }
-        NotificationManager notificationManager2 = this.notificationManager;
-        if (notificationManager2 != null) {
-            notificationManager2.cancel(ZT_NOTIFICATION_TAG);
+        NotificationManager notificationManager = this.notificationManager;
+        if (notificationManager != null) {
+            notificationManager.cancel(ZT_NOTIFICATION_TAG);
         }
         if (!stopSelfResult(this.mStartID)) {
             Log.e(TAG, "stopSelfResult() failed!");
@@ -458,7 +458,7 @@ public class ZeroTierOneService extends VpnService implements Runnable, EventLis
                 try {
                     parcelFileDescriptor.close();
                 } catch (Exception e) {
-                    Log.e(TAG, "Error closing VPN socket: " + e.toString());
+                    Log.e(TAG, "Error closing VPN socket", e);
                 }
                 this.vpnSocket = null;
             }
@@ -466,8 +466,8 @@ public class ZeroTierOneService extends VpnService implements Runnable, EventLis
             if (this.eventBus.isRegistered(this)) {
                 this.eventBus.unregister(this);
             }
-        } catch (Exception e2) {
-            Log.e(TAG, e2.toString());
+        } catch (Exception e) {
+            Log.e(TAG, "", e);
         } catch (Throwable th) {
             super.onDestroy();
             throw th;
@@ -482,7 +482,7 @@ public class ZeroTierOneService extends VpnService implements Runnable, EventLis
             try {
                 parcelFileDescriptor.close();
             } catch (Exception e) {
-                Log.e(TAG, "Error closing VPN socket: " + e.toString());
+                Log.e(TAG, "Error closing VPN socket", e);
             }
             this.vpnSocket = null;
         }
@@ -500,7 +500,7 @@ public class ZeroTierOneService extends VpnService implements Runnable, EventLis
             try {
                 long j = this.nextBackgroundTaskDeadline;
                 long currentTimeMillis = System.currentTimeMillis();
-                int i = (j > currentTimeMillis ? 1 : (j == currentTimeMillis ? 0 : -1));
+                int i = (Long.compare(j, currentTimeMillis));
                 if (i <= 0) {
                     long[] jArr = {0};
                     ResultCode processBackgroundTasks = this.node.processBackgroundTasks(currentTimeMillis, jArr);
@@ -513,9 +513,11 @@ public class ZeroTierOneService extends VpnService implements Runnable, EventLis
                     }
                 }
                 Thread.sleep(i > 0 ? j - currentTimeMillis : 100);
-            } catch (InterruptedException unused) {
+            } catch (InterruptedException e) {
+                Log.e(TAG, "ZeroTierOne Thread Interrupted", e);
+                break;
             } catch (Exception e) {
-                Log.e(TAG, e.toString());
+                Log.e(TAG, "", e);
             }
         }
         Log.d(TAG, "ZeroTierOne Service Ended");
@@ -538,20 +540,27 @@ public class ZeroTierOneService extends VpnService implements Runnable, EventLis
         }
     }
 
-    public void joinNetwork(long j, boolean z) {
+    /**
+     * 加入网络
+     * @param networkId
+     * @param useDefaultRoute
+     */
+    public void joinNetwork(long networkId, boolean useDefaultRoute) {
         if (this.node == null) {
             Log.e(TAG, "Can't join network if ZeroTier isn't running");
             return;
         }
+        // 如果已经加入网络，则退出
         VirtualNetworkConfig virtualNetworkConfig = this.networkConfigs;
         if (virtualNetworkConfig != null) {
             leaveNetwork(virtualNetworkConfig.networkId());
         }
+        // 连接到新网络
         this.networkConfigs = null;
-        this.useDefaultRoute = z;
-        ResultCode join = this.node.join(j);
-        if (join != ResultCode.RESULT_OK) {
-            this.eventBus.post(new ErrorEvent(join));
+        this.useDefaultRoute = useDefaultRoute;
+        ResultCode result = this.node.join(networkId);
+        if (result != ResultCode.RESULT_OK) {
+            this.eventBus.post(new ErrorEvent(result));
         }
     }
 
@@ -574,7 +583,7 @@ public class ZeroTierOneService extends VpnService implements Runnable, EventLis
                 try {
                     parcelFileDescriptor.close();
                 } catch (Exception e) {
-                    Log.e(TAG, "Error closing VPN socket: " + e.toString());
+                    Log.e(TAG, "Error closing VPN socket", e);
                 }
                 this.vpnSocket = null;
             }
@@ -703,7 +712,7 @@ public class ZeroTierOneService extends VpnService implements Runnable, EventLis
             try {
                 parcelFileDescriptor.close();
             } catch (Exception e) {
-                Log.e(TAG, "Error closing VPN socket: " + e.toString());
+                Log.e(TAG, "Error closing VPN socket", e);
             }
             this.vpnSocket = null;
         }
@@ -729,8 +738,8 @@ public class ZeroTierOneService extends VpnService implements Runnable, EventLis
                         parcelFileDescriptor2.close();
                         this.in.close();
                         this.out.close();
-                    } catch (Exception exception) {
-                        Log.e("ZT1_Service", "Error closing VPN socket: " + exception.toString());
+                    } catch (Exception e) {
+                        Log.e("ZT1_Service", "Error closing VPN socket", e);
                     }
                     this.vpnSocket = null;
                     this.in = null;
@@ -782,8 +791,8 @@ public class ZeroTierOneService extends VpnService implements Runnable, EventLis
                             }
                         }
                         l2 = numAddress;
-                    } catch (Exception exception) {
-                        Log.e("ZT1_Service", "Exception calculating multicast ADI: " + exception.getMessage());
+                    } catch (Exception e) {
+                        Log.e("ZT1_Service", "Exception calculating multicast ADI", e);
                     }
                 }
                 InetAddress inetAddress1 = InetAddress.getByName("0.0.0.0");
@@ -828,9 +837,8 @@ public class ZeroTierOneService extends VpnService implements Runnable, EventLis
                                     }
                                     if (inetAddress instanceof java.net.Inet6Address && !this.disableIPv6)
                                         builder1.addDnsServer(inetAddress);
-                                } catch (Exception exception) {
-                                    StringBuilder stringBuilder1 = new StringBuilder();
-                                    Log.e("ZT1_Service", stringBuilder1.append("Exception parsing DNS server: ").append(exception.toString()).toString());
+                                } catch (Exception e) {
+                                    Log.e("ZT1_Service", "Exception parsing DNS server", e);
                                 }
                             }
                         }
@@ -898,7 +906,7 @@ public class ZeroTierOneService extends VpnService implements Runnable, EventLis
                 }
             }
         } catch (Exception exception) {
-            Log.e("ZT1_Service", "Exception setting up VPN port: " + exception.getMessage());
+            Log.e("ZT1_Service", "Exception setting up VPN port", exception);
         }
     }
 
@@ -913,52 +921,15 @@ public class ZeroTierOneService extends VpnService implements Runnable, EventLis
     }
 
     /* renamed from: com.zerotier.one.service.ZeroTierOneService$3  reason: invalid class name */
-    // FIXME: might broke
     static /* synthetic */ class AnonymousClass3 {
         static final /* synthetic */ int[] $SwitchMap$com$zerotier$sdk$VirtualNetworkConfigOperation;
 
-        /* JADX WARNING: Can't wrap try/catch for region: R(8:0|1|2|3|4|5|6|(3:7|8|10)) */
-        /* JADX WARNING: Failed to process nested try/catch */
-        /* JADX WARNING: Missing exception handler attribute for start block: B:3:0x0012 */
-        /* JADX WARNING: Missing exception handler attribute for start block: B:5:0x001d */
-        /* JADX WARNING: Missing exception handler attribute for start block: B:7:0x0028 */
         static {
             $SwitchMap$com$zerotier$sdk$VirtualNetworkConfigOperation = new int[VirtualNetworkConfigOperation.values().length];
             $SwitchMap$com$zerotier$sdk$VirtualNetworkConfigOperation[VirtualNetworkConfigOperation.VIRTUAL_NETWORK_CONFIG_OPERATION_UP.ordinal()] = 1;
             $SwitchMap$com$zerotier$sdk$VirtualNetworkConfigOperation[VirtualNetworkConfigOperation.VIRTUAL_NETWORK_CONFIG_OPERATION_CONFIG_UPDATE.ordinal()] = 2;
             $SwitchMap$com$zerotier$sdk$VirtualNetworkConfigOperation[VirtualNetworkConfigOperation.VIRTUAL_NETWORK_CONFIG_OPERATION_DOWN.ordinal()] = 3;
             $SwitchMap$com$zerotier$sdk$VirtualNetworkConfigOperation[VirtualNetworkConfigOperation.VIRTUAL_NETWORK_CONFIG_OPERATION_DESTROY.ordinal()] = 4;
-            /*
-                com.zerotier.sdk.VirtualNetworkConfigOperation[] r0 = com.zerotier.sdk.VirtualNetworkConfigOperation.values()
-                int r0 = r0.length
-                int[] r0 = new int[r0]
-                com.zerotier.one.service.ZeroTierOneService.AnonymousClass3.$SwitchMap$com$zerotier$sdk$VirtualNetworkConfigOperation = r0
-                com.zerotier.sdk.VirtualNetworkConfigOperation r1 = com.zerotier.sdk.VirtualNetworkConfigOperation.VIRTUAL_NETWORK_CONFIG_OPERATION_UP     // Catch:{ NoSuchFieldError -> 0x0012 }
-                int r1 = r1.ordinal()     // Catch:{ NoSuchFieldError -> 0x0012 }
-                r2 = 1
-                r0[r1] = r2     // Catch:{ NoSuchFieldError -> 0x0012 }
-            L_0x0012:
-                int[] r0 = com.zerotier.one.service.ZeroTierOneService.AnonymousClass3.$SwitchMap$com$zerotier$sdk$VirtualNetworkConfigOperation     // Catch:{ NoSuchFieldError -> 0x001d }
-                com.zerotier.sdk.VirtualNetworkConfigOperation r1 = com.zerotier.sdk.VirtualNetworkConfigOperation.VIRTUAL_NETWORK_CONFIG_OPERATION_CONFIG_UPDATE     // Catch:{ NoSuchFieldError -> 0x001d }
-                int r1 = r1.ordinal()     // Catch:{ NoSuchFieldError -> 0x001d }
-                r2 = 2
-                r0[r1] = r2     // Catch:{ NoSuchFieldError -> 0x001d }
-            L_0x001d:
-                int[] r0 = com.zerotier.one.service.ZeroTierOneService.AnonymousClass3.$SwitchMap$com$zerotier$sdk$VirtualNetworkConfigOperation     // Catch:{ NoSuchFieldError -> 0x0028 }
-                com.zerotier.sdk.VirtualNetworkConfigOperation r1 = com.zerotier.sdk.VirtualNetworkConfigOperation.VIRTUAL_NETWORK_CONFIG_OPERATION_DOWN     // Catch:{ NoSuchFieldError -> 0x0028 }
-                int r1 = r1.ordinal()     // Catch:{ NoSuchFieldError -> 0x0028 }
-                r2 = 3
-                r0[r1] = r2     // Catch:{ NoSuchFieldError -> 0x0028 }
-            L_0x0028:
-                int[] r0 = com.zerotier.one.service.ZeroTierOneService.AnonymousClass3.$SwitchMap$com$zerotier$sdk$VirtualNetworkConfigOperation     // Catch:{ NoSuchFieldError -> 0x0033 }
-                com.zerotier.sdk.VirtualNetworkConfigOperation r1 = com.zerotier.sdk.VirtualNetworkConfigOperation.VIRTUAL_NETWORK_CONFIG_OPERATION_DESTROY     // Catch:{ NoSuchFieldError -> 0x0033 }
-                int r1 = r1.ordinal()     // Catch:{ NoSuchFieldError -> 0x0033 }
-                r2 = 4
-                r0[r1] = r2     // Catch:{ NoSuchFieldError -> 0x0033 }
-            L_0x0033:
-                return
-            */
-            // throw new UnsupportedOperationException("Method not decompiled: com.zerotier.one.service.ZeroTierOneService.AnonymousClass3.<clinit>():void");
         }
     }
 

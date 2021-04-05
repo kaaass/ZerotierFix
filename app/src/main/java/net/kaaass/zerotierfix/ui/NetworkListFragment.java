@@ -123,7 +123,7 @@ public class NetworkListFragment extends Fragment {
             try {
                 getActivity().unbindService(this.mConnection);
             } catch (Exception e) {
-                Log.e(TAG, e.toString());
+                Log.e(TAG, "", e);
             } catch (Throwable th) {
                 setIsBound(false);
                 throw th;
@@ -500,17 +500,9 @@ public class NetworkListFragment extends Fragment {
     }
 
     /* renamed from: com.zerotier.one.ui.NetworkListFragment$2  reason: invalid class name */
-    // FIXME: might broke
     static /* synthetic */ class AnonymousClass2 {
         static final /* synthetic */ int[] $SwitchMap$com$zerotier$sdk$VirtualNetworkStatus;
 
-        /* JADX WARNING: Can't wrap try/catch for region: R(14:0|1|2|3|4|5|6|7|8|9|10|11|12|14) */
-        /* JADX WARNING: Failed to process nested try/catch */
-        /* JADX WARNING: Missing exception handler attribute for start block: B:11:0x003e */
-        /* JADX WARNING: Missing exception handler attribute for start block: B:3:0x0012 */
-        /* JADX WARNING: Missing exception handler attribute for start block: B:5:0x001d */
-        /* JADX WARNING: Missing exception handler attribute for start block: B:7:0x0028 */
-        /* JADX WARNING: Missing exception handler attribute for start block: B:9:0x0033 */
         static {
             $SwitchMap$com$zerotier$sdk$VirtualNetworkStatus = new int[VirtualNetworkStatus.values().length];
             $SwitchMap$com$zerotier$sdk$VirtualNetworkStatus[com.zerotier.sdk.VirtualNetworkStatus.NETWORK_STATUS_OK.ordinal()] = 1;
@@ -519,49 +511,6 @@ public class NetworkListFragment extends Fragment {
             $SwitchMap$com$zerotier$sdk$VirtualNetworkStatus[com.zerotier.sdk.VirtualNetworkStatus.NETWORK_STATUS_NOT_FOUND.ordinal()] = 4;
             $SwitchMap$com$zerotier$sdk$VirtualNetworkStatus[com.zerotier.sdk.VirtualNetworkStatus.NETWORK_STATUS_PORT_ERROR.ordinal()] = 5;
             $SwitchMap$com$zerotier$sdk$VirtualNetworkStatus[com.zerotier.sdk.VirtualNetworkStatus.NETWORK_STATUS_REQUESTING_CONFIGURATION.ordinal()] = 6;
-            /*
-                com.zerotier.sdk.VirtualNetworkStatus[] r0 = com.zerotier.sdk.VirtualNetworkStatus.values()
-                int r0 = r0.length
-                int[] r0 = new int[r0]
-                com.zerotier.one.ui.NetworkListFragment.AnonymousClass2.$SwitchMap$com$zerotier$sdk$VirtualNetworkStatus = r0
-                com.zerotier.sdk.VirtualNetworkStatus r1 = com.zerotier.sdk.VirtualNetworkStatus.NETWORK_STATUS_OK     // Catch:{ NoSuchFieldError -> 0x0012 }
-                int r1 = r1.ordinal()     // Catch:{ NoSuchFieldError -> 0x0012 }
-                r2 = 1
-                r0[r1] = r2     // Catch:{ NoSuchFieldError -> 0x0012 }
-            L_0x0012:
-                int[] r0 = com.zerotier.one.ui.NetworkListFragment.AnonymousClass2.$SwitchMap$com$zerotier$sdk$VirtualNetworkStatus     // Catch:{ NoSuchFieldError -> 0x001d }
-                com.zerotier.sdk.VirtualNetworkStatus r1 = com.zerotier.sdk.VirtualNetworkStatus.NETWORK_STATUS_ACCESS_DENIED     // Catch:{ NoSuchFieldError -> 0x001d }
-                int r1 = r1.ordinal()     // Catch:{ NoSuchFieldError -> 0x001d }
-                r2 = 2
-                r0[r1] = r2     // Catch:{ NoSuchFieldError -> 0x001d }
-            L_0x001d:
-                int[] r0 = com.zerotier.one.ui.NetworkListFragment.AnonymousClass2.$SwitchMap$com$zerotier$sdk$VirtualNetworkStatus     // Catch:{ NoSuchFieldError -> 0x0028 }
-                com.zerotier.sdk.VirtualNetworkStatus r1 = com.zerotier.sdk.VirtualNetworkStatus.NETWORK_STATUS_CLIENT_TOO_OLD     // Catch:{ NoSuchFieldError -> 0x0028 }
-                int r1 = r1.ordinal()     // Catch:{ NoSuchFieldError -> 0x0028 }
-                r2 = 3
-                r0[r1] = r2     // Catch:{ NoSuchFieldError -> 0x0028 }
-            L_0x0028:
-                int[] r0 = com.zerotier.one.ui.NetworkListFragment.AnonymousClass2.$SwitchMap$com$zerotier$sdk$VirtualNetworkStatus     // Catch:{ NoSuchFieldError -> 0x0033 }
-                com.zerotier.sdk.VirtualNetworkStatus r1 = com.zerotier.sdk.VirtualNetworkStatus.NETWORK_STATUS_NOT_FOUND     // Catch:{ NoSuchFieldError -> 0x0033 }
-                int r1 = r1.ordinal()     // Catch:{ NoSuchFieldError -> 0x0033 }
-                r2 = 4
-                r0[r1] = r2     // Catch:{ NoSuchFieldError -> 0x0033 }
-            L_0x0033:
-                int[] r0 = com.zerotier.one.ui.NetworkListFragment.AnonymousClass2.$SwitchMap$com$zerotier$sdk$VirtualNetworkStatus     // Catch:{ NoSuchFieldError -> 0x003e }
-                com.zerotier.sdk.VirtualNetworkStatus r1 = com.zerotier.sdk.VirtualNetworkStatus.NETWORK_STATUS_PORT_ERROR     // Catch:{ NoSuchFieldError -> 0x003e }
-                int r1 = r1.ordinal()     // Catch:{ NoSuchFieldError -> 0x003e }
-                r2 = 5
-                r0[r1] = r2     // Catch:{ NoSuchFieldError -> 0x003e }
-            L_0x003e:
-                int[] r0 = com.zerotier.one.ui.NetworkListFragment.AnonymousClass2.$SwitchMap$com$zerotier$sdk$VirtualNetworkStatus     // Catch:{ NoSuchFieldError -> 0x0049 }
-                com.zerotier.sdk.VirtualNetworkStatus r1 = com.zerotier.sdk.VirtualNetworkStatus.NETWORK_STATUS_REQUESTING_CONFIGURATION     // Catch:{ NoSuchFieldError -> 0x0049 }
-                int r1 = r1.ordinal()     // Catch:{ NoSuchFieldError -> 0x0049 }
-                r2 = 6
-                r0[r1] = r2     // Catch:{ NoSuchFieldError -> 0x0049 }
-            L_0x0049:
-                return
-            */
-            // throw new UnsupportedOperationException("Method not decompiled: com.zerotier.one.ui.NetworkListFragment.AnonymousClass2.<clinit>():void");
         }
     }
 
@@ -657,53 +606,50 @@ public class NetworkListFragment extends Fragment {
             } else {
                 textView.setText(EnvironmentCompat.MEDIA_UNKNOWN);
             }
-            final Switch r0 = view.findViewById(R.id.network_start_network_switch);
-            r0.setOnCheckedChangeListener(null);
-            r0.setChecked(network.getConnected());
-            r0.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                /* class com.zerotier.one.ui.NetworkListFragment.NetworkAdapter.AnonymousClass3 */
-
-                public void onCheckedChanged(CompoundButton compoundButton, boolean z) {
-                    NetworkDao networkDao = ((AnalyticsApplication) NetworkListFragment.this.getActivity().getApplication()).getDaoSession().getNetworkDao();
-                    if (z) {
-                        boolean z2 = PreferenceManager.getDefaultSharedPreferences(NetworkAdapter.this.getContext()).getBoolean("network_use_cellular_data", false);
-                        NetworkInfo activeNetworkInfo = ((ConnectivityManager) NetworkAdapter.this.getContext().getSystemService(Context.CONNECTIVITY_SERVICE)).getActiveNetworkInfo();
-                        if (activeNetworkInfo == null || !activeNetworkInfo.isConnectedOrConnecting()) {
-                            Toast.makeText(NetworkAdapter.this.getContext(), R.string.toast_no_network, Toast.LENGTH_SHORT).show();
-                            r0.setChecked(false);
-                        } else if (z2 || !(activeNetworkInfo == null || activeNetworkInfo.getType() == 0)) {
-                            for (Network network : NetworkListFragment.this.mNetworks) {
-                                if (network.getConnected()) {
-                                    network.setConnected(false);
-                                }
-                                network.setLastActivated(false);
-                                network.update();
+            final Switch networkSwitch = view.findViewById(R.id.network_start_network_switch);
+            networkSwitch.setOnCheckedChangeListener(null);
+            networkSwitch.setChecked(network.getConnected());
+            /* class com.zerotier.one.ui.NetworkListFragment.NetworkAdapter.AnonymousClass3 */
+            networkSwitch.setOnCheckedChangeListener((compoundButton, checked) -> {
+                NetworkDao networkDao = ((AnalyticsApplication) NetworkListFragment.this.getActivity().getApplication()).getDaoSession().getNetworkDao();
+                if (checked) {
+                    boolean useCellularData = PreferenceManager.getDefaultSharedPreferences(NetworkAdapter.this.getContext()).getBoolean("network_use_cellular_data", false);
+                    NetworkInfo activeNetworkInfo = ((ConnectivityManager) NetworkAdapter.this.getContext().getSystemService(Context.CONNECTIVITY_SERVICE)).getActiveNetworkInfo();
+                    if (activeNetworkInfo == null || !activeNetworkInfo.isConnectedOrConnecting()) {
+                        Toast.makeText(NetworkAdapter.this.getContext(), R.string.toast_no_network, Toast.LENGTH_SHORT).show();
+                        networkSwitch.setChecked(false);
+                    } else if (useCellularData || !(activeNetworkInfo == null || activeNetworkInfo.getType() == 0)) {
+                        for (Network network1 : NetworkListFragment.this.mNetworks) {
+                            if (network1.getConnected()) {
+                                network1.setConnected(false);
                             }
-                            NetworkListFragment.this.stopService();
-                            if (!NetworkListFragment.this.isBound()) {
-                                NetworkListFragment.this.sendStartServiceIntent(network.getNetworkId(), network.getUseDefaultRoute());
-                            } else {
-                                NetworkListFragment.this.mBoundService.joinNetwork(network.getNetworkId(), network.getUseDefaultRoute());
-                            }
-                            Log.d(NetworkListFragment.TAG, "Joining Network: " + network.getNetworkIdStr());
-                            network.setConnected(true);
-                            network.setLastActivated(true);
-                            networkDao.save(network);
-                        } else {
-                            Toast.makeText(NetworkAdapter.this.getContext(), R.string.toast_mobile_data, Toast.LENGTH_SHORT).show();
-                            r0.setChecked(false);
-                        }
-                    } else {
-                        Log.d(NetworkListFragment.TAG, "Leaving Leaving Network: " + network.getNetworkIdStr());
-                        if (!(!NetworkListFragment.this.isBound() || NetworkListFragment.this.mBoundService == null || network == null)) {
-                            NetworkListFragment.this.mBoundService.leaveNetwork(network.getNetworkId());
-                            NetworkListFragment.this.doUnbindService();
+                            network1.setLastActivated(false);
+                            network1.update();
                         }
                         NetworkListFragment.this.stopService();
-                        network.setConnected(false);
+                        if (!NetworkListFragment.this.isBound()) {
+                            NetworkListFragment.this.sendStartServiceIntent(network.getNetworkId(), network.getUseDefaultRoute());
+                        } else {
+                            NetworkListFragment.this.mBoundService.joinNetwork(network.getNetworkId(), network.getUseDefaultRoute());
+                        }
+                        Log.d(NetworkListFragment.TAG, "Joining Network: " + network.getNetworkIdStr());
+                        network.setConnected(true);
+                        network.setLastActivated(true);
                         networkDao.save(network);
-                        NetworkListFragment.this.mVNC = null;
+                    } else {
+                        Toast.makeText(NetworkAdapter.this.getContext(), R.string.toast_mobile_data, Toast.LENGTH_SHORT).show();
+                        networkSwitch.setChecked(false);
                     }
+                } else {
+                    Log.d(NetworkListFragment.TAG, "Leaving Leaving Network: " + network.getNetworkIdStr());
+                    if (!(!NetworkListFragment.this.isBound() || NetworkListFragment.this.mBoundService == null || network == null)) {
+                        NetworkListFragment.this.mBoundService.leaveNetwork(network.getNetworkId());
+                        NetworkListFragment.this.doUnbindService();
+                    }
+                    NetworkListFragment.this.stopService();
+                    network.setConnected(false);
+                    networkDao.save(network);
+                    NetworkListFragment.this.mVNC = null;
                 }
             });
             return view;

@@ -71,7 +71,7 @@ public class TunTapAdapter implements VirtualNetworkFrameListener {
         try {
             node2.multicastSubscribe(this.networkId, multicastAddressToMAC(InetAddress.getByName("224.224.224.224")));
         } catch (UnknownHostException e) {
-            Log.e(TAG, e.toString());
+            Log.e(TAG, "", e);
         }
     }
 
@@ -108,7 +108,7 @@ public class TunTapAdapter implements VirtualNetworkFrameListener {
     }
 
     public void startThreads() {
-        Thread r0 = new Thread("Tunnel Receive Thread") {
+        this.receiveThread = new Thread("Tunnel Receive Thread") {
             /* class com.zerotier.one.service.TunTapAdapter.AnonymousClass1 */
 
             public void run() {
@@ -133,10 +133,10 @@ public class TunTapAdapter implements VirtualNetworkFrameListener {
                                 byte iPVersion = IPPacketUtils.getIPVersion(bArr);
                                 if (iPVersion == 4) {
                                     TunTapAdapter.this.handleIPv4Packet(bArr);
-                                } else if (iPVersion != 6) {
-                                    Log.e(TunTapAdapter.TAG, "Unknown IP version");
-                                } else {
+                                } else if (iPVersion == 6) {
                                     TunTapAdapter.this.handleIPv6Packet(bArr);
+                                } else {
+                                    Log.e(TunTapAdapter.TAG, "Unknown IP version");
                                 }
                                 allocate.clear();
                                 z = false;
@@ -145,14 +145,14 @@ public class TunTapAdapter implements VirtualNetworkFrameListener {
                                 Thread.sleep(10);
                             }
                         } catch (InterruptedException e) {
-                            Log.e(TunTapAdapter.TAG, "Tun/Tap Interrupted: " + e.getMessage());
+                            Log.e(TunTapAdapter.TAG, "Tun/Tap Interrupted", e);
                             throw e;
                         } catch (Exception e2) {
-                            Log.e(TunTapAdapter.TAG, "Error in TUN Receive: " + e2.getMessage());
+                            Log.e(TunTapAdapter.TAG, "Error in TUN Receive", e2);
                         }
                     }
                 } catch (Exception e3) {
-                    Log.e(TunTapAdapter.TAG, "Exception ending Tun/Tap: " + e3.getMessage());
+                    Log.e(TunTapAdapter.TAG, "Exception ending Tun/Tap", e3);
                 }
                 Log.d(TunTapAdapter.TAG, "TUN Receive Thread ended");
                 TunTapAdapter.this.ndpTable.stop();
@@ -375,7 +375,7 @@ public class TunTapAdapter implements VirtualNetworkFrameListener {
                 this.in.close();
                 this.out.close();
             } catch (IOException e) {
-                Log.e(TAG, "Error stopping in/out: " + e.getMessage());
+                Log.e(TAG, "Error stopping in/out", e);
             }
             this.receiveThread.interrupt();
             try {
@@ -452,7 +452,7 @@ public class TunTapAdapter implements VirtualNetworkFrameListener {
                 }
                 this.out.write(bArr);
             } catch (Exception e) {
-                Log.e(TAG, "Error writing data to vpn socket: " + e.getMessage());
+                Log.e(TAG, "Error writing data to vpn socket", e);
             }
         } else if (j4 == 34525) {
             Log.d(TAG, "Got IPv6 packet. Length: " + bArr.length + " Bytes");
@@ -466,8 +466,8 @@ public class TunTapAdapter implements VirtualNetworkFrameListener {
                     }
                 }
                 this.out.write(bArr);
-            } catch (Exception e2) {
-                Log.e(TAG, "Error writing data to vpn socket: " + e2.getMessage());
+            } catch (Exception e) {
+                Log.e(TAG, "Error writing data to vpn socket", e);
             }
         } else if (bArr.length >= 14) {
             Log.d(TAG, "Unknown Packet Type Received: 0x" + String.format("%02X%02X", bArr[12], bArr[13]));

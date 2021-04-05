@@ -61,7 +61,7 @@ public class NDPTable {
         try {
             this.timeoutThread.interrupt();
             this.timeoutThread.join();
-        } catch (InterruptedException unused) {
+        } catch (InterruptedException ignored) {
         }
     }
 

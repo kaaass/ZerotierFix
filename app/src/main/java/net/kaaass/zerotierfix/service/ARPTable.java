@@ -39,6 +39,9 @@ public class ARPTable {
                         }
                     }
                     Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    Log.e(ARPTable.TAG, "Tun/Tap Interrupted", e);
+                    break;
                 } catch (Exception e) {
                     Log.d(ARPTable.TAG, e.toString());
                 }

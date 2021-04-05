@@ -100,12 +100,10 @@ public class DataStore implements DataStoreGetListener, DataStorePutListener {
         } catch (FileNotFoundException unused) {
             return -1;
         } catch (IOException e) {
-            Log.e(TAG, e.toString());
-            e.printStackTrace();
+            Log.e(TAG, "", e);
             return -2;
-        } catch (Exception e2) {
-            Log.e(TAG, e2.toString());
-            e2.printStackTrace();
+        } catch (Exception e) {
+            Log.e(TAG, "", e);
             return -3;
         }
     }

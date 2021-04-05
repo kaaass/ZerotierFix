@@ -49,4 +49,6 @@ dependencies {
     implementation 'org.greenrobot:greendao:3.3.0'
     implementation 'org.greenrobot:eventbus:3.2.0'
     implementation 'commons-validator:commons-validator:1.7'
+    compileOnly 'org.projectlombok:lombok:1.18.20'
+    annotationProcessor 'org.projectlombok:lombok:1.18.20'
 }
