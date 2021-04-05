@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:orientation="vertical" android:id="@+id/join_network_dns_layout" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_margin="10dp">
+    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/dnsv4"/>
+    <EditText android:id="@+id/join_network_dns4_1" android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="text"/>
+    <EditText android:id="@+id/join_network_dns4_2" android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="text"/>
+    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/dnsv6"/>
+    <EditText android:id="@+id/join_network_dns6_1" android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="text"/>
+    <EditText android:id="@+id/join_network_dns6_2" android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="text"/>
+</LinearLayout>

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory android:title="@string/preferences_network">
+        <CheckBoxPreference android:title="@string/preferences_network_use_cell_data" android:key="network_use_cellular_data" android:defaultValue="false"/>
+        <CheckBoxPreference android:title="@string/preferences_network_disable_ipv6" android:key="network_disable_ipv6" android:summary="@string/preferences_network_disable_ipv6_summary" android:defaultValue="false"/>
+    </PreferenceCategory>
+</PreferenceScreen>
