@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:orientation="vertical" android:layout_width="match_parent" android:layout_height="match_parent">
     <LinearLayout android:orientation="horizontal" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_margin="8dp">
-        <TextView android:textStyle="bold" android:textColor="#555555" android:id="@+id/network_detail_network_id" android:paddingLeft="4dp" android:paddingRight="4dp" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Network ID" android:fontFamily="monospace"/>
+        <TextView android:textStyle="bold" android:textColor="#555555" android:id="@+id/network_detail_network_id" android:paddingLeft="4dp" android:paddingRight="4dp" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/network_id" android:fontFamily="monospace"/>
         <View android:layout_width="0dp" android:layout_height="0dp" android:layout_weight="1"/>
-        <TextView android:textColor="#000000" android:id="@+id/network_detail_network_name" android:paddingLeft="4dp" android:paddingTop="4dp" android:paddingRight="4dp" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Network Name"/>
+        <TextView android:textColor="#000000" android:id="@+id/network_detail_network_name" android:paddingLeft="4dp" android:paddingTop="4dp" android:paddingRight="4dp" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/network_name"/>
     </LinearLayout>
     <View android:background="@android:color/darker_gray" android:layout_width="match_parent" android:layout_height="1dp"/>
     <TableLayout android:gravity="end" android:orientation="horizontal" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_margin="8dp" android:stretchColumns="1" android:columnCount="2">

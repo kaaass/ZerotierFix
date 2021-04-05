@@ -202,7 +202,7 @@ public class NetworkListFragment extends Fragment {
     @Override // androidx.fragment.app.Fragment
     public void onResume() {
         super.onResume();
-        this.nodeStatusView.setText("OFFLINE");
+        this.nodeStatusView.setText(R.string.status_offline);
         this.eventBus.post(IsServiceRunningEvent.NewRequest());
         updateNetworkList();
         sortNetworkListAndNotify();
@@ -413,7 +413,7 @@ public class NetworkListFragment extends Fragment {
     public void onNodeStatus(NodeStatusEvent nodeStatusEvent) {
         NodeStatus status = nodeStatusEvent.getStatus();
         if (status.isOnline()) {
-            this.nodeStatusView.setText("ONLINE");
+            this.nodeStatusView.setText(R.string.status_online);
             TextView textView = this.nodeIdView;
             if (textView != null) {
                 textView.setText(Long.toHexString(status.getAddres()));
@@ -432,7 +432,7 @@ public class NetworkListFragment extends Fragment {
     private void setOfflineState() {
         TextView textView = this.nodeStatusView;
         if (textView != null) {
-            textView.setText("OFFLINE");
+            textView.setText(R.string.status_offline);
         }
     }
 
