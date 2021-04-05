@@ -13,9 +13,10 @@ import net.kaaass.zerotierfix.model.NetworkDao;
 import net.kaaass.zerotierfix.model.ZTOpenHelper;
 import net.kaaass.zerotierfix.util.NetworkIdUtils;
 
-import java.util.ArrayList;
 import org.greenrobot.greendao.query.WhereCondition;
 import org.json.JSONArray;
+
+import java.util.ArrayList;
 
 public class AnalyticsApplication extends Application {
     private DaoSession mDaoSession;

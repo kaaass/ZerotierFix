@@ -61,38 +61,38 @@ public class NetworkDetailFragment extends Fragment {
                 Log.e(TAG, "Network not found!");
                 return inflate;
             } else {
-                Network network = (Network) list.get(0);
+                Network network = list.get(0);
                 if (network != null) {
                     ((TextView) inflate.findViewById(R.id.network_detail_network_id)).setText(network.getNetworkIdStr());
-                    TextView textView = (TextView) inflate.findViewById(R.id.network_detail_network_name);
+                    TextView textView = inflate.findViewById(R.id.network_detail_network_name);
                     if (network.getNetworkName() != null) {
                         textView.setText(network.getNetworkName());
                     } else {
                         textView.setText(EnvironmentCompat.MEDIA_UNKNOWN);
                     }
                     NetworkConfig networkConfig = network.getNetworkConfig();
-                    CheckBox checkBox = (CheckBox) inflate.findViewById(R.id.network_default_route);
+                    CheckBox checkBox = inflate.findViewById(R.id.network_default_route);
                     checkBox.setChecked(network.getUseDefaultRoute());
                     if (networkConfig != null) {
-                        TextView textView2 = (TextView) inflate.findViewById(R.id.network_type_textview);
+                        TextView textView2 = inflate.findViewById(R.id.network_type_textview);
                         if (networkConfig.getType() != null) {
                             textView2.setText(networkConfig.getType().toString());
                         }
-                        TextView textView3 = (TextView) inflate.findViewById(R.id.network_status_textview);
+                        TextView textView3 = inflate.findViewById(R.id.network_status_textview);
                         if (networkConfig.getStatus() != null) {
                             textView3.setText(networkConfig.getStatus().toString());
                         }
-                        TextView textView4 = (TextView) inflate.findViewById(R.id.network_mac_textview);
+                        TextView textView4 = inflate.findViewById(R.id.network_mac_textview);
                         if (networkConfig.getMac() != null) {
                             textView4.setText(networkConfig.getMac());
                         }
-                        TextView textView5 = (TextView) inflate.findViewById(R.id.network_mtu_textview);
+                        TextView textView5 = inflate.findViewById(R.id.network_mtu_textview);
                         if (networkConfig.getMtu() != null) {
                             textView5.setText(networkConfig.getMtu());
                         }
                         String str = "Enabled";
                         ((TextView) inflate.findViewById(R.id.network_broadcast_textview)).setText(networkConfig.getBroadcast() ? str : "Disabled");
-                        TextView textView6 = (TextView) inflate.findViewById(R.id.network_bridging_textview);
+                        TextView textView6 = inflate.findViewById(R.id.network_bridging_textview);
                         if (!networkConfig.getBridging()) {
                             str = "Disabled";
                         }
@@ -110,7 +110,7 @@ public class NetworkDetailFragment extends Fragment {
                                     }
                                     sb.append(inetAddress);
                                     sb.append('/');
-                                    sb.append(Short.toString(assignedAddresses.get(i).getPrefix()));
+                                    sb.append(assignedAddresses.get(i).getPrefix());
                                     if (i < assignedAddresses.size() - 1) {
                                         sb.append('\n');
                                     }
@@ -120,7 +120,7 @@ public class NetworkDetailFragment extends Fragment {
                         }
                         ((TextView) inflate.findViewById(R.id.network_ipaddresses_textview)).setText(sb.toString());
                         StringBuilder sb2 = new StringBuilder();
-                        TableRow tableRow = (TableRow) inflate.findViewById(R.id.custom_dns_row);
+                        TableRow tableRow = inflate.findViewById(R.id.custom_dns_row);
                         if (networkConfig.getDnsMode() == 2) {
                             tableRow.setVisibility(View.VISIBLE);
                             List<DnsServer> dnsServers = networkConfig.getDnsServers();
@@ -155,10 +155,10 @@ public class NetworkDetailFragment extends Fragment {
     }
 
     private static class DefaultRouteChangeListener implements CompoundButton.OnCheckedChangeListener {
-        private NetworkConfig nc;
+        private final NetworkConfig nc;
 
         /* renamed from: net  reason: collision with root package name */
-        private Network f0net;
+        private final Network f0net;
 
         DefaultRouteChangeListener(Network network, NetworkConfig networkConfig) {
             this.f0net = network;

@@ -13,28 +13,9 @@ import org.greenrobot.greendao.internal.DaoConfig;
 
 public class NetworkConfigDao extends AbstractDao<NetworkConfig, Long> {
     public static final String TABLENAME = "NETWORK_CONFIG";
-    private DaoSession daoSession;
     private final NetworkConfig.NetworkStatusConverter statusConverter = new NetworkConfig.NetworkStatusConverter();
     private final NetworkConfig.NetworkTypeConverter typeConverter = new NetworkConfig.NetworkTypeConverter();
-
-    public static class Properties {
-        public static final Property Bridging = new Property(6, Boolean.TYPE, "bridging", false, "BRIDGING");
-        public static final Property Broadcast = new Property(5, Boolean.TYPE, "broadcast", false, "BROADCAST");
-        public static final Property DnsMode = new Property(9, Integer.TYPE, "dnsMode", false, "DNS_MODE");
-        public static final Property Id = new Property(0, Long.class, "id", true, "_id");
-        public static final Property Mac = new Property(3, String.class, "mac", false, "MAC");
-        public static final Property Mtu = new Property(4, String.class, "mtu", false, "MTU");
-        public static final Property RouteViaZeroTier = new Property(7, Boolean.TYPE, "routeViaZeroTier", false, "ROUTE_VIA_ZERO_TIER");
-        public static final Property Status = new Property(2, Integer.class, NotificationCompat.CATEGORY_STATUS, false, "STATUS");
-        public static final Property Type = new Property(1, Integer.class, "type", false, "TYPE");
-        public static final Property UseCustomDNS = new Property(8, Boolean.TYPE, "useCustomDNS", false, "USE_CUSTOM_DNS");
-    }
-
-    /* access modifiers changed from: protected */
-    @Override // org.greenrobot.greendao.AbstractDao
-    public final boolean isEntityUpdateable() {
-        return true;
-    }
+    private DaoSession daoSession;
 
     public NetworkConfigDao(DaoConfig daoConfig) {
         super(daoConfig);
@@ -54,6 +35,12 @@ public class NetworkConfigDao extends AbstractDao<NetworkConfig, Long> {
     }
 
     /* access modifiers changed from: protected */
+    @Override // org.greenrobot.greendao.AbstractDao
+    public final boolean isEntityUpdateable() {
+        return true;
+    }
+
+    /* access modifiers changed from: protected */
     public final void bindValues(DatabaseStatement databaseStatement, NetworkConfig networkConfig) {
         databaseStatement.clearBindings();
         Long id = networkConfig.getId();
@@ -62,11 +49,11 @@ public class NetworkConfigDao extends AbstractDao<NetworkConfig, Long> {
         }
         NetworkConfig.NetworkType type = networkConfig.getType();
         if (type != null) {
-            databaseStatement.bindLong(2, (long) this.typeConverter.convertToDatabaseValue(type).intValue());
+            databaseStatement.bindLong(2, this.typeConverter.convertToDatabaseValue(type).intValue());
         }
         NetworkConfig.NetworkStatus status = networkConfig.getStatus();
         if (status != null) {
-            databaseStatement.bindLong(3, (long) this.statusConverter.convertToDatabaseValue(status).intValue());
+            databaseStatement.bindLong(3, this.statusConverter.convertToDatabaseValue(status).intValue());
         }
         String mac = networkConfig.getMac();
         if (mac != null) {
@@ -84,7 +71,7 @@ public class NetworkConfigDao extends AbstractDao<NetworkConfig, Long> {
             j = 0;
         }
         databaseStatement.bindLong(9, j);
-        databaseStatement.bindLong(10, (long) networkConfig.getDnsMode());
+        databaseStatement.bindLong(10, networkConfig.getDnsMode());
     }
 
     /* access modifiers changed from: protected */
@@ -96,11 +83,11 @@ public class NetworkConfigDao extends AbstractDao<NetworkConfig, Long> {
         }
         NetworkConfig.NetworkType type = networkConfig.getType();
         if (type != null) {
-            sQLiteStatement.bindLong(2, (long) this.typeConverter.convertToDatabaseValue(type).intValue());
+            sQLiteStatement.bindLong(2, this.typeConverter.convertToDatabaseValue(type).intValue());
         }
         NetworkConfig.NetworkStatus status = networkConfig.getStatus();
         if (status != null) {
-            sQLiteStatement.bindLong(3, (long) this.statusConverter.convertToDatabaseValue(status).intValue());
+            sQLiteStatement.bindLong(3, this.statusConverter.convertToDatabaseValue(status).intValue());
         }
         String mac = networkConfig.getMac();
         if (mac != null) {
@@ -118,7 +105,7 @@ public class NetworkConfigDao extends AbstractDao<NetworkConfig, Long> {
             j = 0;
         }
         sQLiteStatement.bindLong(9, j);
-        sQLiteStatement.bindLong(10, (long) networkConfig.getDnsMode());
+        sQLiteStatement.bindLong(10, networkConfig.getDnsMode());
     }
 
     /* access modifiers changed from: protected */
@@ -191,5 +178,18 @@ public class NetworkConfigDao extends AbstractDao<NetworkConfig, Long> {
 
     public boolean hasKey(NetworkConfig networkConfig) {
         return networkConfig.getId() != null;
+    }
+
+    public static class Properties {
+        public static final Property Bridging = new Property(6, Boolean.TYPE, "bridging", false, "BRIDGING");
+        public static final Property Broadcast = new Property(5, Boolean.TYPE, "broadcast", false, "BROADCAST");
+        public static final Property DnsMode = new Property(9, Integer.TYPE, "dnsMode", false, "DNS_MODE");
+        public static final Property Id = new Property(0, Long.class, "id", true, "_id");
+        public static final Property Mac = new Property(3, String.class, "mac", false, "MAC");
+        public static final Property Mtu = new Property(4, String.class, "mtu", false, "MTU");
+        public static final Property RouteViaZeroTier = new Property(7, Boolean.TYPE, "routeViaZeroTier", false, "ROUTE_VIA_ZERO_TIER");
+        public static final Property Status = new Property(2, Integer.class, NotificationCompat.CATEGORY_STATUS, false, "STATUS");
+        public static final Property Type = new Property(1, Integer.class, "type", false, "TYPE");
+        public static final Property UseCustomDNS = new Property(8, Boolean.TYPE, "useCustomDNS", false, "USE_CUSTOM_DNS");
     }
 }

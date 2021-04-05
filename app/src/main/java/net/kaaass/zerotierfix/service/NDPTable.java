@@ -9,13 +9,13 @@ import java.nio.ByteBuffer;
 import java.util.HashMap;
 
 public class NDPTable {
-    private static final long ENTRY_TIMEOUT = 120000;
     public static final String TAG = "NDPTable";
+    private static final long ENTRY_TIMEOUT = 120000;
     private final HashMap<Long, NDPEntry> entriesMap = new HashMap<>();
     private final HashMap<InetAddress, Long> inetAddressToMacAddress = new HashMap<>();
     private final HashMap<InetAddress, NDPEntry> ipEntriesMap = new HashMap<>();
     private final HashMap<Long, InetAddress> macAddressToInetAddress = new HashMap<>();
-    private Thread timeoutThread = new Thread("NDP Timeout Thread") {
+    private final Thread timeoutThread = new Thread("NDP Timeout Thread") {
         /* class com.zerotier.one.service.NDPTable.AnonymousClass1 */
 
         public void run() {
@@ -142,36 +142,6 @@ public class NDPTable {
         }
     }
 
-    /* access modifiers changed from: private */
-    public class NDPEntry {
-        private InetAddress address;
-        private long mac;
-        private long time;
-
-        NDPEntry(long j, InetAddress inetAddress) {
-            this.mac = j;
-            this.address = inetAddress;
-            updateTime();
-        }
-
-        public long getMac() {
-            return this.mac;
-        }
-
-        public InetAddress getAddress() {
-            return this.address;
-        }
-
-        /* access modifiers changed from: package-private */
-        public void updateTime() {
-            this.time = System.currentTimeMillis();
-        }
-
-        public boolean equals(NDPEntry nDPEntry) {
-            return this.mac == nDPEntry.mac && this.address.equals(nDPEntry.address);
-        }
-    }
-
     /* access modifiers changed from: package-private */
     public byte[] getNeighborSolicitationPacket(InetAddress inetAddress, InetAddress inetAddress2, long j) {
         byte[] bArr = new byte[72];
@@ -196,5 +166,35 @@ public class NDPTable {
         System.arraycopy(inetAddress.getAddress(), 0, bArr, 8, 16);
         System.arraycopy(inetAddress2.getAddress(), 0, bArr, 24, 16);
         return bArr;
+    }
+
+    /* access modifiers changed from: private */
+    public class NDPEntry {
+        private final InetAddress address;
+        private final long mac;
+        private long time;
+
+        NDPEntry(long j, InetAddress inetAddress) {
+            this.mac = j;
+            this.address = inetAddress;
+            updateTime();
+        }
+
+        public long getMac() {
+            return this.mac;
+        }
+
+        public InetAddress getAddress() {
+            return this.address;
+        }
+
+        /* access modifiers changed from: package-private */
+        public void updateTime() {
+            this.time = System.currentTimeMillis();
+        }
+
+        public boolean equals(NDPEntry nDPEntry) {
+            return this.mac == nDPEntry.mac && this.address.equals(nDPEntry.address);
+        }
     }
 }

@@ -2,7 +2,7 @@ package net.kaaass.zerotierfix.model;
 
 import android.database.Cursor;
 import android.database.sqlite.SQLiteStatement;
-import java.util.List;
+
 import org.greenrobot.greendao.AbstractDao;
 import org.greenrobot.greendao.Property;
 import org.greenrobot.greendao.database.Database;
@@ -12,21 +12,11 @@ import org.greenrobot.greendao.query.Query;
 import org.greenrobot.greendao.query.QueryBuilder;
 import org.greenrobot.greendao.query.WhereCondition;
 
+import java.util.List;
+
 public class DnsServerDao extends AbstractDao<DnsServer, Long> {
     public static final String TABLENAME = "DNS_SERVER";
     private Query<DnsServer> networkConfig_DnsServersQuery;
-
-    public static class Properties {
-        public static final Property Id = new Property(0, Long.class, "id", true, "_id");
-        public static final Property Nameserver = new Property(2, String.class, "nameserver", false, "NAMESERVER");
-        public static final Property NetworkId = new Property(1, Long.class, "networkId", false, "NETWORK_ID");
-    }
-
-    /* access modifiers changed from: protected */
-    @Override // org.greenrobot.greendao.AbstractDao
-    public final boolean isEntityUpdateable() {
-        return true;
-    }
 
     public DnsServerDao(DaoConfig daoConfig) {
         super(daoConfig);
@@ -44,6 +34,12 @@ public class DnsServerDao extends AbstractDao<DnsServer, Long> {
 
     public static void dropTable(Database database, boolean z) {
         database.execSQL("DROP TABLE " + (z ? "IF EXISTS " : "") + "\"DNS_SERVER\"");
+    }
+
+    /* access modifiers changed from: protected */
+    @Override // org.greenrobot.greendao.AbstractDao
+    public final boolean isEntityUpdateable() {
+        return true;
     }
 
     /* access modifiers changed from: protected */
@@ -137,12 +133,18 @@ public class DnsServerDao extends AbstractDao<DnsServer, Long> {
         synchronized (this) {
             if (this.networkConfig_DnsServersQuery == null) {
                 QueryBuilder queryBuilder = queryBuilder();
-                queryBuilder.where(Properties.NetworkId.eq(null), new WhereCondition[0]);
+                queryBuilder.where(Properties.NetworkId.eq(null));
                 this.networkConfig_DnsServersQuery = queryBuilder.build();
             }
         }
         Query<DnsServer> forCurrentThread = this.networkConfig_DnsServersQuery.forCurrentThread();
-        forCurrentThread.setParameter(0, (Object) l);
+        forCurrentThread.setParameter(0, l);
         return forCurrentThread.list();
+    }
+
+    public static class Properties {
+        public static final Property Id = new Property(0, Long.class, "id", true, "_id");
+        public static final Property Nameserver = new Property(2, String.class, "nameserver", false, "NAMESERVER");
+        public static final Property NetworkId = new Property(1, Long.class, "networkId", false, "NETWORK_ID");
     }
 }

@@ -74,10 +74,10 @@ public class AssignedAddress {
         UNKNOWN(0),
         IPV4(1),
         IPV6(2);
-        
+
         final int id;
 
-        private AddressType(int i) {
+        AddressType(int i) {
             this.id = i;
         }
 

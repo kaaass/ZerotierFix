@@ -1,15 +1,16 @@
 package net.kaaass.zerotierfix.service;
 
 import android.util.Log;
+
 import java.net.InetAddress;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 
 public class ARPTable {
+    public static final String TAG = "ARPTable";
     private static final long ENTRY_TIMEOUT = 120000;
     private static final int REPLY = 2;
     private static final int REQUEST = 1;
-    public static final String TAG = "ARPTable";
     private final HashMap<Long, ArpEntry> entriesMap = new HashMap<>();
     private final HashMap<InetAddress, Long> inetAddressToMacAddress = new HashMap<>();
     private final HashMap<InetAddress, ArpEntry> ipEntriesMap = new HashMap<>();
@@ -48,6 +49,12 @@ public class ARPTable {
 
     public ARPTable() {
         this.timeoutThread.start();
+    }
+
+    public static byte[] longToBytes(long j) {
+        ByteBuffer allocate = ByteBuffer.allocate(8);
+        allocate.putLong(j);
+        return allocate.array();
     }
 
     /* access modifiers changed from: protected */
@@ -141,12 +148,6 @@ public class ARPTable {
         return containsKey;
     }
 
-    public static byte[] longToBytes(long j) {
-        ByteBuffer allocate = ByteBuffer.allocate(8);
-        allocate.putLong(j);
-        return allocate.array();
-    }
-
     public byte[] getRequestPacket(long j, InetAddress inetAddress, InetAddress inetAddress2) {
         return getARPPacket(1, j, 0, inetAddress, inetAddress2);
     }
@@ -224,8 +225,8 @@ public class ARPTable {
 
     /* access modifiers changed from: private */
     public static class ArpEntry {
-        private InetAddress address;
-        private long mac;
+        private final InetAddress address;
+        private final long mac;
         private long time;
 
         ArpEntry(long j, InetAddress inetAddress) {

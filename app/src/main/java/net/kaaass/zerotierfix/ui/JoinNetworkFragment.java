@@ -13,8 +13,10 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
+
 import androidx.fragment.app.Fragment;
 import androidx.viewpager.widget.ViewPager;
+
 import com.google.android.material.tabs.TabLayout;
 
 import net.kaaass.zerotierfix.AnalyticsApplication;
@@ -27,11 +29,12 @@ import net.kaaass.zerotierfix.model.NetworkConfig;
 import net.kaaass.zerotierfix.model.NetworkDao;
 import net.kaaass.zerotierfix.util.NetworkIdUtils;
 
-import java.util.HashSet;
-import java.util.Set;
 import org.apache.commons.validator.routines.InetAddressValidator;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.greendao.query.WhereCondition;
+
+import java.util.HashSet;
+import java.util.Set;
 
 public class JoinNetworkFragment extends Fragment implements CustomDNSListener {
     public static final String TAG = "JoinNetwork";
@@ -66,14 +69,14 @@ public class JoinNetworkFragment extends Fragment implements CustomDNSListener {
     public View onCreateView(LayoutInflater layoutInflater, ViewGroup viewGroup, Bundle bundle) {
         super.onCreateView(layoutInflater, viewGroup, bundle);
         View inflate = layoutInflater.inflate(R.layout.fragment_join_network, viewGroup, false);
-        CheckBox checkBox = (CheckBox) inflate.findViewById(R.id.join_network_default_route);
+        CheckBox checkBox = inflate.findViewById(R.id.join_network_default_route);
         this.mDefaultRouteCheckBox = checkBox;
         checkBox.setEnabled(false);
-        this.mDNSTabLayout = (TabLayout) inflate.findViewById(R.id.dns_tab_layout);
-        this.mDNSViewSwitcher = (ViewPager) inflate.findViewById(R.id.dns_view_pager);
+        this.mDNSTabLayout = inflate.findViewById(R.id.dns_tab_layout);
+        this.mDNSViewSwitcher = inflate.findViewById(R.id.dns_view_pager);
         this.mDNSViewSwitcher.setAdapter(new DNSPagerAdapter(inflate.getContext(), getParentFragmentManager(), this));
         this.mDNSTabLayout.setupWithViewPager(this.mDNSViewSwitcher);
-        this.mDNSTabLayout.addOnTabSelectedListener((TabLayout.OnTabSelectedListener) new TabLayout.OnTabSelectedListener() {
+        this.mDNSTabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             /* class com.zerotier.one.ui.JoinNetworkFragment.AnonymousClass1 */
 
             @Override // com.google.android.material.tabs.TabLayout.BaseOnTabSelectedListener
@@ -90,7 +93,7 @@ public class JoinNetworkFragment extends Fragment implements CustomDNSListener {
                 JoinNetworkFragment.this.mDNSMode = tab.getPosition();
             }
         });
-        EditText editText = (EditText) inflate.findViewById(R.id.join_network_edit_text);
+        EditText editText = inflate.findViewById(R.id.join_network_edit_text);
         this.mNetworkIdTextView = editText;
         editText.addTextChangedListener(new TextValidator(this.mNetworkIdTextView) {
             /* class com.zerotier.one.ui.JoinNetworkFragment.AnonymousClass2 */
@@ -135,7 +138,7 @@ public class JoinNetworkFragment extends Fragment implements CustomDNSListener {
                 }
             }
         });
-        Button button = (Button) inflate.findViewById(R.id.button_join_network);
+        Button button = inflate.findViewById(R.id.button_join_network);
         this.mJoinButton = button;
         button.setEnabled(false);
         this.mJoinButton.setOnClickListener(new View.OnClickListener() {
@@ -230,6 +233,10 @@ public class JoinNetworkFragment extends Fragment implements CustomDNSListener {
     abstract class TextValidator implements TextWatcher {
         private final EditText editText;
 
+        public TextValidator(EditText editText2) {
+            this.editText = editText2;
+        }
+
         public final void beforeTextChanged(CharSequence charSequence, int i, int i2, int i3) {
         }
 
@@ -237,10 +244,6 @@ public class JoinNetworkFragment extends Fragment implements CustomDNSListener {
         }
 
         public abstract void validate(EditText editText2, String str);
-
-        public TextValidator(EditText editText2) {
-            this.editText = editText2;
-        }
 
         public final void afterTextChanged(Editable editable) {
             validate(this.editText, this.editText.getText().toString());

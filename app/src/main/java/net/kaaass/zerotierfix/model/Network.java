@@ -65,7 +65,7 @@ public class Network {
         if (l == null || !l.equals(Long.valueOf(j))) {
             DaoSession daoSession2 = this.daoSession;
             if (daoSession2 != null) {
-                NetworkConfig networkConfig2 = (NetworkConfig) daoSession2.getNetworkConfigDao().load(Long.valueOf(j));
+                NetworkConfig networkConfig2 = daoSession2.getNetworkConfigDao().load(Long.valueOf(j));
                 synchronized (this) {
                     this.networkConfig = networkConfig2;
                     this.networkConfig__resolvedKey = Long.valueOf(j);

@@ -4,11 +4,6 @@ public class IsServiceRunningEvent {
     public boolean isRunning = false;
     public Type type = Type.REQUEST;
 
-    public enum Type {
-        REQUEST,
-        REPLY
-    }
-
     private IsServiceRunningEvent() {
     }
 
@@ -21,5 +16,10 @@ public class IsServiceRunningEvent {
         isServiceRunningEvent.isRunning = z;
         isServiceRunningEvent.type = Type.REPLY;
         return isServiceRunningEvent;
+    }
+
+    public enum Type {
+        REQUEST,
+        REPLY
     }
 }

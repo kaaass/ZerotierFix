@@ -1,8 +1,8 @@
 package net.kaaass.zerotierfix.events;
 
 public class DefaultRouteChangedEvent {
-    private boolean isDefaultRoute;
-    private long networkId;
+    private final boolean isDefaultRoute;
+    private final long networkId;
 
     public DefaultRouteChangedEvent(long j, boolean z) {
         this.networkId = j;

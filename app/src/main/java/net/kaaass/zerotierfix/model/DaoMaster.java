@@ -3,6 +3,7 @@ package net.kaaass.zerotierfix.model;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
+
 import org.greenrobot.greendao.AbstractDaoMaster;
 import org.greenrobot.greendao.database.Database;
 import org.greenrobot.greendao.database.DatabaseOpenHelper;
@@ -11,6 +12,19 @@ import org.greenrobot.greendao.identityscope.IdentityScopeType;
 
 public class DaoMaster extends AbstractDaoMaster {
     public static final int SCHEMA_VERSION = 20;
+
+    public DaoMaster(SQLiteDatabase sQLiteDatabase) {
+        this(new StandardDatabase(sQLiteDatabase));
+    }
+
+    public DaoMaster(Database database) {
+        super(database, 20);
+        registerDaoClass(AppNodeDao.class);
+        registerDaoClass(AssignedAddressDao.class);
+        registerDaoClass(DnsServerDao.class);
+        registerDaoClass(NetworkDao.class);
+        registerDaoClass(NetworkConfigDao.class);
+    }
 
     public static void createAllTables(Database database, boolean z) {
         AppNodeDao.createTable(database, z);
@@ -30,19 +44,6 @@ public class DaoMaster extends AbstractDaoMaster {
 
     public static DaoSession newDevSession(Context context, String str) {
         return new DaoMaster(new DevOpenHelper(context, str).getWritableDb()).newSession();
-    }
-
-    public DaoMaster(SQLiteDatabase sQLiteDatabase) {
-        this(new StandardDatabase(sQLiteDatabase));
-    }
-
-    public DaoMaster(Database database) {
-        super(database, 20);
-        registerDaoClass(AppNodeDao.class);
-        registerDaoClass(AssignedAddressDao.class);
-        registerDaoClass(DnsServerDao.class);
-        registerDaoClass(NetworkDao.class);
-        registerDaoClass(NetworkConfigDao.class);
     }
 
     @Override // org.greenrobot.greendao.AbstractDaoMaster

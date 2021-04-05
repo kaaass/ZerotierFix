@@ -3,6 +3,7 @@ package net.kaaass.zerotierfix.ui;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -10,12 +11,13 @@ import androidx.fragment.app.FragmentManager;
 import net.kaaass.zerotierfix.R;
 
 public abstract class SingleFragmentActivity extends AppCompatActivity {
-    private static String TAG = "SingleFragmentActivity";
+    private static final String TAG = "SingleFragmentActivity";
 
     /* access modifiers changed from: protected */
     public abstract Fragment createFragment();
 
-    @Override // androidx.activity.ComponentActivity, androidx.core.app.ComponentActivity, androidx.appcompat.app.AppCompatActivity, androidx.fragment.app.FragmentActivity
+    @Override
+    // androidx.activity.ComponentActivity, androidx.core.app.ComponentActivity, androidx.appcompat.app.AppCompatActivity, androidx.fragment.app.FragmentActivity
     public void onCreate(Bundle bundle) {
         super.onCreate(bundle);
         setContentView(R.layout.activity_fragment);

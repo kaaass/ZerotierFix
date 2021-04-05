@@ -1,6 +1,7 @@
 package net.kaaass.zerotierfix.ui;
 
 import android.content.Context;
+
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
@@ -8,18 +9,18 @@ import androidx.fragment.app.FragmentPagerAdapter;
 import net.kaaass.zerotierfix.R;
 
 public class DNSPagerAdapter extends FragmentPagerAdapter {
-    private Context mContext;
-    private CustomDNSListener mDNSListener;
-
-    @Override // androidx.viewpager.widget.PagerAdapter
-    public int getCount() {
-        return 3;
-    }
+    private final Context mContext;
+    private final CustomDNSListener mDNSListener;
 
     public DNSPagerAdapter(Context context, FragmentManager fragmentManager, CustomDNSListener customDNSListener) {
         super(fragmentManager);
         this.mContext = context;
         this.mDNSListener = customDNSListener;
+    }
+
+    @Override // androidx.viewpager.widget.PagerAdapter
+    public int getCount() {
+        return 3;
     }
 
     @Override // androidx.fragment.app.FragmentPagerAdapter

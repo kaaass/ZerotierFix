@@ -15,13 +15,13 @@ public class Route {
     }
 
     /* access modifiers changed from: package-private */
-    public void setGateway(InetAddress inetAddress) {
-        this.gateway = inetAddress;
+    public InetAddress getGateway() {
+        return this.gateway;
     }
 
     /* access modifiers changed from: package-private */
-    public InetAddress getGateway() {
-        return this.gateway;
+    public void setGateway(InetAddress inetAddress) {
+        this.gateway = inetAddress;
     }
 
     public boolean belongsToRoute(InetAddress inetAddress) {

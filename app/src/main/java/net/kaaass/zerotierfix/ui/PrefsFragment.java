@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
+
 import androidx.preference.PreferenceFragmentCompat;
 
 import net.kaaass.zerotierfix.R;

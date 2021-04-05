@@ -35,12 +35,12 @@ public class TunTapAdapter implements VirtualNetworkFrameListener {
     private VirtualNetworkConfig cfg;
     private FileInputStream in;
     private NDPTable ndpTable = new NDPTable();
-    private long networkId;
+    private final long networkId;
     private Node node;
     private FileOutputStream out;
     private Thread receiveThread;
     private ParcelFileDescriptor vpnSocket;
-    private ZeroTierOneService ztService;
+    private final ZeroTierOneService ztService;
 
     public TunTapAdapter(ZeroTierOneService zeroTierOneService, long j) {
         this.ztService = zeroTierOneService;
@@ -99,18 +99,12 @@ public class TunTapAdapter implements VirtualNetworkFrameListener {
 
     private boolean isIPv4Multicast(InetAddress inetAddress) {
         byte[] address = inetAddress.getAddress();
-        if (address[0] < -32 || address[0] > -17) {
-            return false;
-        }
-        return true;
+        return address[0] >= -32 && address[0] <= -17;
     }
 
     private boolean isIPv6Multicast(InetAddress inetAddress) {
         byte[] address = inetAddress.getAddress();
-        if (address[0] != -1 || address[1] < 0 || address[1] > -2) {
-            return false;
-        }
-        return true;
+        return address[0] == -1 && address[1] >= 0 && address[1] <= -2;
     }
 
     public void startThreads() {
@@ -298,7 +292,7 @@ public class TunTapAdapter implements VirtualNetworkFrameListener {
             }
 
             if (var19 == null) {
-                Log.e("TunTapAdapter", "Couldn\'t determine local address");
+                Log.e("TunTapAdapter", "Couldn't determine local address");
             } else {
                 long var9;
                 long var11;
@@ -478,7 +472,7 @@ public class TunTapAdapter implements VirtualNetworkFrameListener {
         } else if (bArr.length >= 14) {
             Log.d(TAG, "Unknown Packet Type Received: 0x" + String.format("%02X%02X", bArr[12], bArr[13]));
         } else {
-            Log.d(TAG, "Unknown Packet Received.  Packet Length: " + Integer.toString(bArr.length));
+            Log.d(TAG, "Unknown Packet Received.  Packet Length: " + bArr.length);
         }
     }
 

@@ -2,8 +2,10 @@ package net.kaaass.zerotierfix.service;
 
 import android.content.Context;
 import android.util.Log;
+
 import com.zerotier.sdk.DataStoreGetListener;
 import com.zerotier.sdk.DataStorePutListener;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -14,7 +16,7 @@ import java.io.StringWriter;
 
 public class DataStore implements DataStoreGetListener, DataStorePutListener {
     private static final String TAG = "DataStore";
-    private Context _ctx;
+    private final Context _ctx;
 
     public DataStore(Context context) {
         this._ctx = context;
@@ -89,12 +91,12 @@ public class DataStore implements DataStoreGetListener, DataStorePutListener {
                 FileInputStream fileInputStream = new FileInputStream(file2);
                 int read = fileInputStream.read(bArr);
                 fileInputStream.close();
-                return (long) read;
+                return read;
             }
             FileInputStream openFileInput = this._ctx.openFileInput(str);
             int read2 = openFileInput.read(bArr);
             openFileInput.close();
-            return (long) read2;
+            return read2;
         } catch (FileNotFoundException unused) {
             return -1;
         } catch (IOException e) {

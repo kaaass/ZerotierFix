@@ -71,13 +71,13 @@ public class NetworkListFragment extends Fragment {
     public static final int START_VPN = 2;
     public static final String TAG = "NetworkListFragment";
     boolean mIsBound = false;
-    private EventBus eventBus;
+    private final EventBus eventBus;
     private JoinAfterAuth joinAfterAuth;
     private MenuItem joinNetworkMenu;
     private NetworkAdapter listAdapter;
     private ListView listView;
     private ZeroTierOneService mBoundService;
-    private ServiceConnection mConnection = new ServiceConnection() {
+    private final ServiceConnection mConnection = new ServiceConnection() {
         /* class com.zerotier.one.ui.NetworkListFragment.AnonymousClass1 */
 
         public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
@@ -164,16 +164,16 @@ public class NetworkListFragment extends Fragment {
     public View onCreateView(LayoutInflater layoutInflater, ViewGroup viewGroup, Bundle bundle) {
         super.onCreateView(layoutInflater, viewGroup, bundle);
         View inflate = layoutInflater.inflate(R.layout.network_list_fragment, viewGroup, false);
-        ListView listView2 = (ListView) inflate.findViewById(R.id.joined_networks_list);
+        ListView listView2 = inflate.findViewById(R.id.joined_networks_list);
         this.listView = listView2;
         listView2.setClickable(true);
         this.listView.setLongClickable(true);
         this.mNetworks = getNetworkList();
         NetworkAdapter networkAdapter = new NetworkAdapter(this, this.mNetworks);
         this.listAdapter = networkAdapter;
-        this.listView.setAdapter((ListAdapter) networkAdapter);
-        this.nodeIdView = (TextView) inflate.findViewById(R.id.node_id);
-        this.nodeStatusView = (TextView) inflate.findViewById(R.id.node_status);
+        this.listView.setAdapter(networkAdapter);
+        this.nodeIdView = inflate.findViewById(R.id.node_id);
+        this.nodeStatusView = inflate.findViewById(R.id.node_status);
         setNodeIdText();
         return inflate;
     }
@@ -451,11 +451,7 @@ public class NetworkListFragment extends Fragment {
             if (this.mVNC != null) {
                 for (Network network3 : networkList) {
                     for (VirtualNetworkConfig virtualNetworkConfig : this.mVNC) {
-                        if (network3.getNetworkId() == virtualNetworkConfig.networkId()) {
-                            network3.setConnected(true);
-                        } else {
-                            network3.setConnected(false);
-                        }
+                        network3.setConnected(network3.getNetworkId() == virtualNetworkConfig.networkId());
                     }
                 }
             }
@@ -590,9 +586,9 @@ public class NetworkListFragment extends Fragment {
                 NetworkListFragment.this.listView.setItemsCanFocus(true);
             }
             if (view == null) {
-                view = NetworkListFragment.this.getActivity().getLayoutInflater().inflate(R.layout.list_item_network, (ViewGroup) null);
+                view = NetworkListFragment.this.getActivity().getLayoutInflater().inflate(R.layout.list_item_network, null);
             }
-            final Network network = (Network) getItem(i);
+            final Network network = getItem(i);
             view.setClickable(true);
             view.setOnClickListener(new View.OnClickListener() {
                 /* class com.zerotier.one.ui.NetworkListFragment.NetworkAdapter.AnonymousClass1 */
@@ -649,14 +645,14 @@ public class NetworkListFragment extends Fragment {
                 }
             });
             ((TextView) view.findViewById(R.id.network_list_network_id)).setText(network.getNetworkIdStr());
-            TextView textView = (TextView) view.findViewById(R.id.network_list_network_name);
+            TextView textView = view.findViewById(R.id.network_list_network_name);
             String networkName = network.getNetworkName();
             if (networkName != null) {
                 textView.setText(networkName);
             } else {
                 textView.setText(EnvironmentCompat.MEDIA_UNKNOWN);
             }
-            final Switch r0 = (Switch) view.findViewById(R.id.network_start_network_switch);
+            final Switch r0 = view.findViewById(R.id.network_start_network_switch);
             r0.setOnCheckedChangeListener(null);
             r0.setChecked(network.getConnected());
             r0.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {

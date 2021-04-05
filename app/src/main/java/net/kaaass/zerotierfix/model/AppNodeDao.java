@@ -2,6 +2,7 @@ package net.kaaass.zerotierfix.model;
 
 import android.database.Cursor;
 import android.database.sqlite.SQLiteStatement;
+
 import org.greenrobot.greendao.AbstractDao;
 import org.greenrobot.greendao.Property;
 import org.greenrobot.greendao.database.Database;
@@ -10,17 +11,6 @@ import org.greenrobot.greendao.internal.DaoConfig;
 
 public class AppNodeDao extends AbstractDao<AppNode, Long> {
     public static final String TABLENAME = "APP_NODE";
-
-    public static class Properties {
-        public static final Property NodeId = new Property(0, Long.class, "nodeId", true, "_id");
-        public static final Property NodeIdStr = new Property(1, String.class, "nodeIdStr", false, "NODE_ID_STR");
-    }
-
-    /* access modifiers changed from: protected */
-    @Override // org.greenrobot.greendao.AbstractDao
-    public final boolean isEntityUpdateable() {
-        return true;
-    }
 
     public AppNodeDao(DaoConfig daoConfig) {
         super(daoConfig);
@@ -36,6 +26,12 @@ public class AppNodeDao extends AbstractDao<AppNode, Long> {
 
     public static void dropTable(Database database, boolean z) {
         database.execSQL("DROP TABLE " + (z ? "IF EXISTS " : "") + "\"APP_NODE\"");
+    }
+
+    /* access modifiers changed from: protected */
+    @Override // org.greenrobot.greendao.AbstractDao
+    public final boolean isEntityUpdateable() {
+        return true;
     }
 
     /* access modifiers changed from: protected */
@@ -108,5 +104,10 @@ public class AppNodeDao extends AbstractDao<AppNode, Long> {
 
     public boolean hasKey(AppNode appNode) {
         return appNode.getNodeId() != null;
+    }
+
+    public static class Properties {
+        public static final Property NodeId = new Property(0, Long.class, "nodeId", true, "_id");
+        public static final Property NodeIdStr = new Property(1, String.class, "nodeIdStr", false, "NODE_ID_STR");
     }
 }

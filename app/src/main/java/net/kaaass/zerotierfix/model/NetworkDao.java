@@ -2,8 +2,7 @@ package net.kaaass.zerotierfix.model;
 
 import android.database.Cursor;
 import android.database.sqlite.SQLiteStatement;
-import java.util.ArrayList;
-import java.util.List;
+
 import org.greenrobot.greendao.AbstractDao;
 import org.greenrobot.greendao.Property;
 import org.greenrobot.greendao.database.Database;
@@ -11,25 +10,13 @@ import org.greenrobot.greendao.database.DatabaseStatement;
 import org.greenrobot.greendao.internal.DaoConfig;
 import org.greenrobot.greendao.internal.SqlUtils;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class NetworkDao extends AbstractDao<Network, Long> {
     public static final String TABLENAME = "NETWORK";
     private DaoSession daoSession;
     private String selectDeep;
-
-    public static class Properties {
-        public static final Property LastActivated = new Property(4, Boolean.TYPE, "lastActivated", false, "LAST_ACTIVATED");
-        public static final Property NetworkConfigId = new Property(5, Long.TYPE, "networkConfigId", false, "NETWORK_CONFIG_ID");
-        public static final Property NetworkId = new Property(0, Long.class, "networkId", true, "_id");
-        public static final Property NetworkIdStr = new Property(1, String.class, "networkIdStr", false, "NETWORK_ID_STR");
-        public static final Property NetworkName = new Property(2, String.class, "networkName", false, "NETWORK_NAME");
-        public static final Property UseDefaultRoute = new Property(3, Boolean.TYPE, "useDefaultRoute", false, "USE_DEFAULT_ROUTE");
-    }
-
-    /* access modifiers changed from: protected */
-    @Override // org.greenrobot.greendao.AbstractDao
-    public final boolean isEntityUpdateable() {
-        return true;
-    }
 
     public NetworkDao(DaoConfig daoConfig) {
         super(daoConfig);
@@ -46,6 +33,12 @@ public class NetworkDao extends AbstractDao<Network, Long> {
 
     public static void dropTable(Database database, boolean z) {
         database.execSQL("DROP TABLE " + (z ? "IF EXISTS " : "") + "\"NETWORK\"");
+    }
+
+    /* access modifiers changed from: protected */
+    @Override // org.greenrobot.greendao.AbstractDao
+    public final boolean isEntityUpdateable() {
+        return true;
     }
 
     /* access modifiers changed from: protected */
@@ -245,5 +238,14 @@ public class NetworkDao extends AbstractDao<Network, Long> {
 
     public List<Network> queryDeep(String str, String... strArr) {
         return loadDeepAllAndCloseCursor(this.db.rawQuery(getSelectDeep() + str, strArr));
+    }
+
+    public static class Properties {
+        public static final Property LastActivated = new Property(4, Boolean.TYPE, "lastActivated", false, "LAST_ACTIVATED");
+        public static final Property NetworkConfigId = new Property(5, Long.TYPE, "networkConfigId", false, "NETWORK_CONFIG_ID");
+        public static final Property NetworkId = new Property(0, Long.class, "networkId", true, "_id");
+        public static final Property NetworkIdStr = new Property(1, String.class, "networkIdStr", false, "NETWORK_ID_STR");
+        public static final Property NetworkName = new Property(2, String.class, "networkName", false, "NETWORK_NAME");
+        public static final Property UseDefaultRoute = new Property(3, Boolean.TYPE, "useDefaultRoute", false, "USE_DEFAULT_ROUTE");
     }
 }
