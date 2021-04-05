@@ -4,7 +4,8 @@ plugins {
 }
 
 greendao {
-    schemaVersion 1 //当前数据库版本
+    schemaVersion 20
+    daoPackage 'net.kaaass.zerotierfix.model'
 }
 
 android {

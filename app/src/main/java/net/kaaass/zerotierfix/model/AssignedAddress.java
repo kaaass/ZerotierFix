@@ -1,24 +1,41 @@
 package net.kaaass.zerotierfix.model;
 
+import org.greenrobot.greendao.annotation.Convert;
+import org.greenrobot.greendao.annotation.Entity;
+import org.greenrobot.greendao.annotation.Id;
 import org.greenrobot.greendao.converter.PropertyConverter;
+import org.greenrobot.greendao.annotation.Generated;
 
+@Entity
 public class AssignedAddress {
-    private byte[] addressBytes;
-    private String addressString;
+
+    @Id
     private Long id;
+
     private long networkId;
-    private short prefix;
+
+    @Convert(converter = AddressTypeConverter.class, columnType = Integer.class)
     private AddressType type;
 
-    public AssignedAddress(Long l, long j, AddressType addressType, byte[] bArr, String str, short s) {
-        this.id = l;
-        this.networkId = j;
-        this.type = addressType;
-        this.addressBytes = bArr;
-        this.addressString = str;
-        this.prefix = s;
+    private byte[] addressBytes;
+
+    private String addressString;
+
+    private short prefix;
+    
+
+    @Generated(hash = 294212135)
+    public AssignedAddress(Long id, long networkId, AddressType type, byte[] addressBytes,
+            String addressString, short prefix) {
+        this.id = id;
+        this.networkId = networkId;
+        this.type = type;
+        this.addressBytes = addressBytes;
+        this.addressString = addressString;
+        this.prefix = prefix;
     }
 
+    @Generated(hash = 1516348015)
     public AssignedAddress() {
     }
 

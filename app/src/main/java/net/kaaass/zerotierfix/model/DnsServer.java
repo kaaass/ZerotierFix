@@ -1,40 +1,51 @@
 package net.kaaass.zerotierfix.model;
 
+import org.greenrobot.greendao.annotation.Entity;
+import org.greenrobot.greendao.annotation.Id;
+import org.greenrobot.greendao.annotation.Generated;
+
+@Entity
 public class DnsServer {
+
+    @Id
     private Long id;
-    private String nameserver;
+
     private Long networkId;
 
-    public DnsServer(Long l, Long l2, String str) {
-        this.id = l;
-        this.networkId = l2;
-        this.nameserver = str;
+    private String nameserver;
+
+    @Generated(hash = 1177086365)
+    public DnsServer(Long id, Long networkId, String nameserver) {
+        this.id = id;
+        this.networkId = networkId;
+        this.nameserver = nameserver;
     }
 
+    @Generated(hash = 1462226712)
     public DnsServer() {
-    }
-
-    public Long getNetworkId() {
-        return this.networkId;
-    }
-
-    public void setNetworkId(Long l) {
-        this.networkId = l;
-    }
-
-    public String getNameserver() {
-        return this.nameserver;
-    }
-
-    public void setNameserver(String str) {
-        this.nameserver = str;
     }
 
     public Long getId() {
         return this.id;
     }
 
-    public void setId(Long l) {
-        this.id = l;
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Long getNetworkId() {
+        return this.networkId;
+    }
+
+    public void setNetworkId(Long networkId) {
+        this.networkId = networkId;
+    }
+
+    public String getNameserver() {
+        return this.nameserver;
+    }
+
+    public void setNameserver(String nameserver) {
+        this.nameserver = nameserver;
     }
 }

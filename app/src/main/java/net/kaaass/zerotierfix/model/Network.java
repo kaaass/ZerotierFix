@@ -1,29 +1,54 @@
 package net.kaaass.zerotierfix.model;
 
-import org.greenrobot.greendao.DaoException;
+import androidx.annotation.Nullable;
 
+import org.greenrobot.greendao.DaoException;
+import org.greenrobot.greendao.annotation.Entity;
+import org.greenrobot.greendao.annotation.Id;
+import org.greenrobot.greendao.annotation.ToOne;
+import org.greenrobot.greendao.annotation.Generated;
+import org.greenrobot.greendao.annotation.NotNull;
+import org.greenrobot.greendao.annotation.Transient;
+
+@Entity
 public class Network {
-    private boolean connected;
-    private transient DaoSession daoSession;
-    private boolean lastActivated;
-    private transient NetworkDao myDao;
-    private NetworkConfig networkConfig;
-    private long networkConfigId;
-    private transient Long networkConfig__resolvedKey;
+    @Id
     private Long networkId;
+
     private String networkIdStr;
+
     private String networkName;
+
     private boolean useDefaultRoute;
 
-    public Network(Long l, String str, String str2, boolean z, boolean z2, long j) {
-        this.networkId = l;
-        this.networkIdStr = str;
-        this.networkName = str2;
-        this.useDefaultRoute = z;
-        this.lastActivated = z2;
-        this.networkConfigId = j;
+    private boolean lastActivated;
+
+    private long networkConfigId;
+
+    @Transient
+    private boolean connected;
+
+    @ToOne(joinProperty = "networkConfigId")
+    private NetworkConfig networkConfig;
+    /** Used to resolve relations */
+    @Generated(hash = 2040040024)
+    private transient DaoSession daoSession;
+    /** Used for active entity operations. */
+    @Generated(hash = 1869807503)
+    private transient NetworkDao myDao;
+
+    @Generated(hash = 1813013561)
+    public Network(Long networkId, String networkIdStr, String networkName, boolean useDefaultRoute,
+            boolean lastActivated, long networkConfigId) {
+        this.networkId = networkId;
+        this.networkIdStr = networkIdStr;
+        this.networkName = networkName;
+        this.useDefaultRoute = useDefaultRoute;
+        this.lastActivated = lastActivated;
+        this.networkConfigId = networkConfigId;
     }
 
+    @Generated(hash = 1981325040)
     public Network() {
     }
 
@@ -31,118 +56,135 @@ public class Network {
         return this.networkId;
     }
 
-    public void setNetworkId(Long l) {
-        this.networkId = l;
+    public void setNetworkId(Long networkId) {
+        this.networkId = networkId;
     }
 
     public String getNetworkIdStr() {
         return this.networkIdStr;
     }
 
-    public void setNetworkIdStr(String str) {
-        this.networkIdStr = str;
+    public void setNetworkIdStr(String networkIdStr) {
+        this.networkIdStr = networkIdStr;
     }
 
     public String getNetworkName() {
         return this.networkName;
     }
 
-    public void setNetworkName(String str) {
-        this.networkName = str;
-    }
-
-    public long getNetworkConfigId() {
-        return this.networkConfigId;
-    }
-
-    public void setNetworkConfigId(long j) {
-        this.networkConfigId = j;
-    }
-
-    public NetworkConfig getNetworkConfig() {
-        long j = this.networkConfigId;
-        Long l = this.networkConfig__resolvedKey;
-        if (l == null || !l.equals(Long.valueOf(j))) {
-            DaoSession daoSession2 = this.daoSession;
-            if (daoSession2 != null) {
-                NetworkConfig networkConfig2 = daoSession2.getNetworkConfigDao().load(Long.valueOf(j));
-                synchronized (this) {
-                    this.networkConfig = networkConfig2;
-                    this.networkConfig__resolvedKey = Long.valueOf(j);
-                }
-            } else {
-                throw new DaoException("Entity is detached from DAO context");
-            }
-        }
-        return this.networkConfig;
-    }
-
-    public void setNetworkConfig(NetworkConfig networkConfig2) {
-        if (networkConfig2 != null) {
-            synchronized (this) {
-                this.networkConfig = networkConfig2;
-                long longValue = networkConfig2.getId().longValue();
-                this.networkConfigId = longValue;
-                this.networkConfig__resolvedKey = Long.valueOf(longValue);
-            }
-            return;
-        }
-        throw new DaoException("To-one property 'networkConfigId' has not-null constraint; cannot set to-one to null");
-    }
-
-    public void delete() {
-        NetworkDao networkDao = this.myDao;
-        if (networkDao != null) {
-            networkDao.delete(this);
-            return;
-        }
-        throw new DaoException("Entity is detached from DAO context");
-    }
-
-    public void refresh() {
-        NetworkDao networkDao = this.myDao;
-        if (networkDao != null) {
-            networkDao.refresh(this);
-            return;
-        }
-        throw new DaoException("Entity is detached from DAO context");
-    }
-
-    public void update() {
-        NetworkDao networkDao = this.myDao;
-        if (networkDao != null) {
-            networkDao.update(this);
-            return;
-        }
-        throw new DaoException("Entity is detached from DAO context");
+    public void setNetworkName(String networkName) {
+        this.networkName = networkName;
     }
 
     public boolean getUseDefaultRoute() {
         return this.useDefaultRoute;
     }
 
-    public void setUseDefaultRoute(boolean z) {
-        this.useDefaultRoute = z;
-    }
-
-    public boolean getConnected() {
-        return this.connected;
-    }
-
-    public void setConnected(boolean z) {
-        this.connected = z;
+    public void setUseDefaultRoute(boolean useDefaultRoute) {
+        this.useDefaultRoute = useDefaultRoute;
     }
 
     public boolean getLastActivated() {
         return this.lastActivated;
     }
 
-    public void setLastActivated(boolean z) {
-        this.lastActivated = z;
+    public void setLastActivated(boolean lastActivated) {
+        this.lastActivated = lastActivated;
     }
 
-    public void __setDaoSession(DaoSession daoSession2) {
-        this.daoSession = daoSession2;
-        this.myDao = daoSession2 != null ? daoSession2.getNetworkDao() : null;
+    public long getNetworkConfigId() {
+        return this.networkConfigId;
+    }
+
+    public void setNetworkConfigId(long networkConfigId) {
+        this.networkConfigId = networkConfigId;
+    }
+
+    public boolean getConnected() {
+        return this.connected;
+    }
+
+    public void setConnected(boolean connected) {
+        this.connected = connected;
+    }
+
+    @Generated(hash = 1230649737)
+    private transient Long networkConfig__resolvedKey;
+
+    /** To-one relationship, resolved on first access. */
+    @Generated(hash = 507065422)
+    public NetworkConfig getNetworkConfig() {
+        long __key = this.networkConfigId;
+        if (networkConfig__resolvedKey == null
+                || !networkConfig__resolvedKey.equals(__key)) {
+            final DaoSession daoSession = this.daoSession;
+            if (daoSession == null) {
+                throw new DaoException("Entity is detached from DAO context");
+            }
+            NetworkConfigDao targetDao = daoSession.getNetworkConfigDao();
+            NetworkConfig networkConfigNew = targetDao.load(__key);
+            synchronized (this) {
+                networkConfig = networkConfigNew;
+                networkConfig__resolvedKey = __key;
+            }
+        }
+        return networkConfig;
+    }
+
+    /** called by internal mechanisms, do not call yourself. */
+    @Generated(hash = 26187198)
+    public void setNetworkConfig(@NotNull NetworkConfig networkConfig) {
+        if (networkConfig == null) {
+            throw new DaoException(
+                    "To-one property 'networkConfigId' has not-null constraint; cannot set to-one to null");
+        }
+        synchronized (this) {
+            this.networkConfig = networkConfig;
+            networkConfigId = networkConfig.getId();
+            networkConfig__resolvedKey = networkConfigId;
+        }
+    }
+
+    /**
+     * Convenient call for {@link org.greenrobot.greendao.AbstractDao#delete(Object)}.
+     * Entity must attached to an entity context.
+     */
+    @Generated(hash = 128553479)
+    public void delete() {
+        if (myDao == null) {
+            throw new DaoException("Entity is detached from DAO context");
+        }
+        myDao.delete(this);
+    }
+
+    /**
+     * Convenient call for {@link org.greenrobot.greendao.AbstractDao#refresh(Object)}.
+     * Entity must attached to an entity context.
+     */
+    @Generated(hash = 1942392019)
+    public void refresh() {
+        if (myDao == null) {
+            throw new DaoException("Entity is detached from DAO context");
+        }
+        myDao.refresh(this);
+    }
+
+    /**
+     * Convenient call for {@link org.greenrobot.greendao.AbstractDao#update(Object)}.
+     * Entity must attached to an entity context.
+     */
+    @Generated(hash = 713229351)
+    public void update() {
+        if (myDao == null) {
+            throw new DaoException("Entity is detached from DAO context");
+        }
+        myDao.update(this);
+    }
+
+    /** called by internal mechanisms, do not call yourself. */
+    @Generated(hash = 75076313)
+    public void __setDaoSession(DaoSession daoSession) {
+        this.daoSession = daoSession;
+        myDao = daoSession != null ? daoSession.getNetworkDao() : null;
     }
 }

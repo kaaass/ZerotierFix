@@ -179,15 +179,15 @@ public class NetworkListFragment extends Fragment {
 
     /* access modifiers changed from: private */
     /* access modifiers changed from: public */
-    private void sendStartServiceIntent(long j, boolean z) {
+    private void sendStartServiceIntent(long networkId, boolean useDefaultRoute) {
         Intent prepare = VpnService.prepare(getActivity());
         if (prepare != null) {
-            this.joinAfterAuth = new JoinAfterAuth(j, z);
+            this.joinAfterAuth = new JoinAfterAuth(networkId, useDefaultRoute);
             startActivityForResult(prepare, 3);
             return;
         }
         Log.d(TAG, "Intent is NULL.  Already approved.");
-        startService(j, z);
+        startService(networkId, useDefaultRoute);
     }
 
     @Override // androidx.fragment.app.Fragment
@@ -475,10 +475,10 @@ public class NetworkListFragment extends Fragment {
         this.listAdapter.notifyDataSetChanged();
     }
 
-    private void startService(long j, boolean z) {
+    private void startService(long networkId, boolean useDefaultRoute) {
         Intent intent = new Intent(getActivity(), ZeroTierOneService.class);
-        intent.putExtra(ZeroTierOneService.ZT1_NETWORK_ID, j);
-        intent.putExtra(ZeroTierOneService.ZT1_USE_DEFAULT_ROUTE, z);
+        intent.putExtra(ZeroTierOneService.ZT1_NETWORK_ID, networkId);
+        intent.putExtra(ZeroTierOneService.ZT1_USE_DEFAULT_ROUTE, useDefaultRoute);
         doBindService();
         getActivity().startService(intent);
     }
@@ -542,7 +542,7 @@ public class NetworkListFragment extends Fragment {
             if (view == null) {
                 view = NetworkListFragment.this.getActivity().getLayoutInflater().inflate(R.layout.list_item_network, null);
             }
-            final Network network = getItem(i);
+            final Network currentNetwork = getItem(i);
             view.setClickable(true);
             view.setOnClickListener(new View.OnClickListener() {
                 /* class com.zerotier.one.ui.NetworkListFragment.NetworkAdapter.AnonymousClass1 */
@@ -550,7 +550,7 @@ public class NetworkListFragment extends Fragment {
                 public void onClick(View view) {
                     Log.d(NetworkListFragment.TAG, "ConvertView OnClickListener");
                     Intent intent = new Intent(NetworkListFragment.this.getActivity(), NetworkDetailActivity.class);
-                    intent.putExtra(NetworkListFragment.NETWORK_ID_MESSAGE, network.getNetworkId());
+                    intent.putExtra(NetworkListFragment.NETWORK_ID_MESSAGE, currentNetwork.getNetworkId());
                     NetworkListFragment.this.startActivity(intent);
                 }
             });
@@ -573,11 +573,11 @@ public class NetworkListFragment extends Fragment {
                             AssignedAddressDao assignedAddressDao = daoSession.getAssignedAddressDao();
                             NetworkConfigDao networkConfigDao = daoSession.getNetworkConfigDao();
                             NetworkDao networkDao = daoSession.getNetworkDao();
-                            if (network != null) {
-                                if (network.getConnected()) {
+                            if (currentNetwork != null) {
+                                if (currentNetwork.getConnected()) {
                                     NetworkListFragment.this.stopService();
                                 }
-                                NetworkConfig networkConfig = network.getNetworkConfig();
+                                NetworkConfig networkConfig = currentNetwork.getNetworkConfig();
                                 if (networkConfig != null) {
                                     List<AssignedAddress> assignedAddresses = networkConfig.getAssignedAddresses();
                                     if (!assignedAddresses.isEmpty()) {
@@ -587,7 +587,7 @@ public class NetworkListFragment extends Fragment {
                                     }
                                     networkConfigDao.delete(networkConfig);
                                 }
-                                networkDao.delete(network);
+                                networkDao.delete(currentNetwork);
                             }
                             daoSession.clear();
                             NetworkListFragment.this.updateNetworkList();
@@ -598,57 +598,64 @@ public class NetworkListFragment extends Fragment {
                     return true;
                 }
             });
-            ((TextView) view.findViewById(R.id.network_list_network_id)).setText(network.getNetworkIdStr());
+            ((TextView) view.findViewById(R.id.network_list_network_id)).setText(currentNetwork.getNetworkIdStr());
             TextView textView = view.findViewById(R.id.network_list_network_name);
-            String networkName = network.getNetworkName();
+            String networkName = currentNetwork.getNetworkName();
             if (networkName != null) {
                 textView.setText(networkName);
             } else {
                 textView.setText(EnvironmentCompat.MEDIA_UNKNOWN);
             }
+            // 网络控制开关
             final Switch networkSwitch = view.findViewById(R.id.network_start_network_switch);
             networkSwitch.setOnCheckedChangeListener(null);
-            networkSwitch.setChecked(network.getConnected());
-            /* class com.zerotier.one.ui.NetworkListFragment.NetworkAdapter.AnonymousClass3 */
+            networkSwitch.setChecked(currentNetwork.getConnected());
             networkSwitch.setOnCheckedChangeListener((compoundButton, checked) -> {
                 NetworkDao networkDao = ((AnalyticsApplication) NetworkListFragment.this.getActivity().getApplication()).getDaoSession().getNetworkDao();
                 if (checked) {
+                    // 启动网络
                     boolean useCellularData = PreferenceManager.getDefaultSharedPreferences(NetworkAdapter.this.getContext()).getBoolean("network_use_cellular_data", false);
                     NetworkInfo activeNetworkInfo = ((ConnectivityManager) NetworkAdapter.this.getContext().getSystemService(Context.CONNECTIVITY_SERVICE)).getActiveNetworkInfo();
                     if (activeNetworkInfo == null || !activeNetworkInfo.isConnectedOrConnecting()) {
+                        // 设备无网络
                         Toast.makeText(NetworkAdapter.this.getContext(), R.string.toast_no_network, Toast.LENGTH_SHORT).show();
                         networkSwitch.setChecked(false);
                     } else if (useCellularData || !(activeNetworkInfo == null || activeNetworkInfo.getType() == 0)) {
-                        for (Network network1 : NetworkListFragment.this.mNetworks) {
-                            if (network1.getConnected()) {
-                                network1.setConnected(false);
+                        // 关闭所有网络连接
+                        for (Network network : NetworkListFragment.this.mNetworks) {
+                            if (network.getConnected()) {
+                                network.setConnected(false);
                             }
-                            network1.setLastActivated(false);
-                            network1.update();
+                            network.setLastActivated(false);
+                            network.update();
                         }
                         NetworkListFragment.this.stopService();
+                        // 连接目标网络
                         if (!NetworkListFragment.this.isBound()) {
-                            NetworkListFragment.this.sendStartServiceIntent(network.getNetworkId(), network.getUseDefaultRoute());
+                            NetworkListFragment.this.sendStartServiceIntent(currentNetwork.getNetworkId(), currentNetwork.getUseDefaultRoute());
                         } else {
-                            NetworkListFragment.this.mBoundService.joinNetwork(network.getNetworkId(), network.getUseDefaultRoute());
+                            NetworkListFragment.this.mBoundService.joinNetwork(currentNetwork.getNetworkId(), currentNetwork.getUseDefaultRoute());
                         }
-                        Log.d(NetworkListFragment.TAG, "Joining Network: " + network.getNetworkIdStr());
-                        network.setConnected(true);
-                        network.setLastActivated(true);
-                        networkDao.save(network);
+                        Log.d(NetworkListFragment.TAG, "Joining Network: " + currentNetwork.getNetworkIdStr());
+                        currentNetwork.setConnected(true);
+                        currentNetwork.setLastActivated(true);
+                        networkDao.save(currentNetwork);
+                        // TODO 设置网络 orbit
                     } else {
+                        // 移动数据且未确认
                         Toast.makeText(NetworkAdapter.this.getContext(), R.string.toast_mobile_data, Toast.LENGTH_SHORT).show();
                         networkSwitch.setChecked(false);
                     }
                 } else {
-                    Log.d(NetworkListFragment.TAG, "Leaving Leaving Network: " + network.getNetworkIdStr());
-                    if (!(!NetworkListFragment.this.isBound() || NetworkListFragment.this.mBoundService == null || network == null)) {
-                        NetworkListFragment.this.mBoundService.leaveNetwork(network.getNetworkId());
+                    // 关闭网络
+                    Log.d(NetworkListFragment.TAG, "Leaving Leaving Network: " + currentNetwork.getNetworkIdStr());
+                    if (!(!NetworkListFragment.this.isBound() || NetworkListFragment.this.mBoundService == null || currentNetwork == null)) {
+                        NetworkListFragment.this.mBoundService.leaveNetwork(currentNetwork.getNetworkId());
                         NetworkListFragment.this.doUnbindService();
                     }
                     NetworkListFragment.this.stopService();
-                    network.setConnected(false);
-                    networkDao.save(network);
+                    currentNetwork.setConnected(false);
+                    networkDao.save(currentNetwork);
                     NetworkListFragment.this.mVNC = null;
                 }
             });
