@@ -136,8 +136,8 @@ public class ZeroTierOneService extends VpnService implements Runnable, EventLis
                     } catch (IOException unused2) {
                         Log.e(ZeroTierOneService.TAG, "Error parsing /proc/net/igmp");
                     }
-                    ArrayList<String> arrayList2 = new ArrayList(this.subscriptions);
-                    ArrayList<String> arrayList3 = new ArrayList(arrayList);
+                    ArrayList<String> arrayList2 = new ArrayList<>(this.subscriptions);
+                    ArrayList<String> arrayList3 = new ArrayList<>(arrayList);
                     arrayList3.removeAll(arrayList2);
                     for (String str : arrayList3) {
                         try {
@@ -148,10 +148,10 @@ public class ZeroTierOneService extends VpnService implements Runnable, EventLis
                                 hexStringToByteArray[(hexStringToByteArray.length - i) - 1] = b;
                             }
                             ZeroTierOneService.this.node.multicastSubscribe(ZeroTierOneService.this.networkId, TunTapAdapter.multicastAddressToMAC(InetAddress.getByAddress(hexStringToByteArray)));
-                        } catch (Exception unused3) {
+                        } catch (Exception ignored) {
                         }
                     }
-                    arrayList2.removeAll(new ArrayList(arrayList));
+                    arrayList2.removeAll(new ArrayList<>(arrayList));
                     for (String str2 : arrayList2) {
                         try {
                             byte[] hexStringToByteArray2 = ZeroTierOneService.this.hexStringToByteArray(str2);
@@ -161,7 +161,7 @@ public class ZeroTierOneService extends VpnService implements Runnable, EventLis
                                 hexStringToByteArray2[(hexStringToByteArray2.length - i2) - 1] = b2;
                             }
                             ZeroTierOneService.this.node.multicastUnsubscribe(ZeroTierOneService.this.networkId, TunTapAdapter.multicastAddressToMAC(InetAddress.getByAddress(hexStringToByteArray2)));
-                        } catch (Exception unused4) {
+                        } catch (Exception ignored) {
                         }
                     }
                     this.subscriptions = arrayList;
@@ -313,7 +313,7 @@ public class ZeroTierOneService extends VpnService implements Runnable, EventLis
                 i3++;
             }
             if (activeNetworkInfo == null || !activeNetworkInfo.isConnectedOrConnecting()) {
-                Toast.makeText(this, "No Network Connectivity.  ZeroTier cannot start.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, R.string.toast_no_network, Toast.LENGTH_SHORT).show();
                 return START_NOT_STICKY;
             } else if (z || !(activeNetworkInfo == null || activeNetworkInfo.getType() == 0)) {
                 synchronized (this) {
@@ -382,7 +382,7 @@ public class ZeroTierOneService extends VpnService implements Runnable, EventLis
                 joinNetwork(j, this.useDefaultRoute);
                 return START_STICKY;
             } else {
-                Toast.makeText(this, "Currently using mobile data.  Enable \"Use Cellular Data\" in order to start ZeroTier.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, R.string.toast_mobile_data, Toast.LENGTH_SHORT).show();
                 stopSelf(this.mStartID);
                 Node node3 = this.node;
                 if (node3 != null) {

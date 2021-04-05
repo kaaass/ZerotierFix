@@ -76,11 +76,11 @@ public class NetworkDetailFragment extends Fragment {
                     if (networkConfig != null) {
                         TextView textView2 = inflate.findViewById(R.id.network_type_textview);
                         if (networkConfig.getType() != null) {
-                            textView2.setText(networkConfig.getType().toString());
+                            textView2.setText(networkConfig.getType().toStringId());
                         }
                         TextView textView3 = inflate.findViewById(R.id.network_status_textview);
                         if (networkConfig.getStatus() != null) {
-                            textView3.setText(networkConfig.getStatus().toString());
+                            textView3.setText(networkConfig.getStatus().toStringId());
                         }
                         TextView textView4 = inflate.findViewById(R.id.network_mac_textview);
                         if (networkConfig.getMac() != null) {
@@ -90,20 +90,20 @@ public class NetworkDetailFragment extends Fragment {
                         if (networkConfig.getMtu() != null) {
                             textView5.setText(networkConfig.getMtu());
                         }
-                        String str = "Enabled";
-                        ((TextView) inflate.findViewById(R.id.network_broadcast_textview)).setText(networkConfig.getBroadcast() ? str : "Disabled");
+                        String str = getString(R.string.enabled);
+                        ((TextView) inflate.findViewById(R.id.network_broadcast_textview)).setText(networkConfig.getBroadcast() ? str : getString(R.string.disabled));
                         TextView textView6 = inflate.findViewById(R.id.network_bridging_textview);
                         if (!networkConfig.getBridging()) {
-                            str = "Disabled";
+                            str = getString(R.string.disabled);
                         }
                         textView6.setText(str);
                         List<AssignedAddress> assignedAddresses = networkConfig.getAssignedAddresses();
                         StringBuilder sb = new StringBuilder();
-                        boolean z = PreferenceManager.getDefaultSharedPreferences(getActivity()).getBoolean("network_disable_ipv6", false);
+                        boolean disableIpv6 = PreferenceManager.getDefaultSharedPreferences(getActivity()).getBoolean("network_disable_ipv6", false);
                         for (int i = 0; i < assignedAddresses.size(); i++) {
                             try {
                                 InetAddress byAddress = InetAddress.getByAddress(assignedAddresses.get(i).getAddressBytes());
-                                if (!z || !(byAddress instanceof Inet6Address)) {
+                                if (!disableIpv6 || !(byAddress instanceof Inet6Address)) {
                                     String inetAddress = byAddress.toString();
                                     if (inetAddress.startsWith("/")) {
                                         inetAddress = inetAddress.substring(1);
@@ -115,7 +115,7 @@ public class NetworkDetailFragment extends Fragment {
                                         sb.append('\n');
                                     }
                                 }
-                            } catch (Exception unused) {
+                            } catch (Exception ignored) {
                             }
                         }
                         ((TextView) inflate.findViewById(R.id.network_ipaddresses_textview)).setText(sb.toString());

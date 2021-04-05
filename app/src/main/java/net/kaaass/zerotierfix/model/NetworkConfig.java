@@ -1,5 +1,7 @@
 package net.kaaass.zerotierfix.model;
 
+import net.kaaass.zerotierfix.R;
+
 import org.greenrobot.greendao.DaoException;
 import org.greenrobot.greendao.converter.PropertyConverter;
 
@@ -209,6 +211,14 @@ public class NetworkConfig {
             }
             return "Private";
         }
+
+        public int toStringId() {
+            int i = this.id;
+            if (i != 1) {
+                return i != 2 ? R.string.network_type_unknown : R.string.network_type_public;
+            }
+            return R.string.network_type_private;
+        }
     }
 
     public enum DNSMode {
@@ -265,6 +275,25 @@ public class NetworkConfig {
                     return "REQUESTING CONFIGURATION";
                 default:
                     return "UNKNOWN";
+            }
+        }
+
+        public int toStringId() {
+            switch (this.id) {
+                case 1:
+                    return R.string.network_status_ok;
+                case 2:
+                    return R.string.network_status_access_denied;
+                case 3:
+                    return R.string.network_status_client_too_old;
+                case 4:
+                    return R.string.network_status_not_found;
+                case 5:
+                    return R.string.network_status_port_error;
+                case 6:
+                    return R.string.network_status_requesting_configuration;
+                default:
+                    return R.string.network_status_unknown;
             }
         }
     }
