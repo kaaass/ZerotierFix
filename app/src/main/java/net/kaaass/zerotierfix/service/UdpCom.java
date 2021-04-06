@@ -63,7 +63,7 @@ public class UdpCom implements PacketSender, Runnable {
                         }
                         this.ztService.setNextBackgroundTaskDeadline(jArr[0]);
                     }
-                } catch (SocketTimeoutException unused) {
+                } catch (SocketTimeoutException ignored) {
                 }
             }
         } catch (Exception e) {

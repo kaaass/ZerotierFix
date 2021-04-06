@@ -74,4 +74,10 @@
     <string name="moon_seed_hint">Moon种子是持有Moon信息的任意节点。若不确定，可以和Moon地址相同。</string>
     <string name="moon_orbit_info">Moon 入轨信息</string>
     <string name="add">添加</string>
+    <string name="no_data">无数据</string>
+    <string name="moon_world_id_wrong_format">Moon 地址格式错误!</string>
+    <string name="moon_seed_wrong_format">Moon 种子格式错误!</string>
+    <string name="moon_orbit_exist">Moon 入轨信息已经存在!</string>
+    <string name="moon_orbit_add_success">Moon orbit 添加成功</string>
+    <string name="moon_orbit_delete_success">Moon orbit 删除成功。需要手动断开、重连使配置生效。</string>
 </resources>

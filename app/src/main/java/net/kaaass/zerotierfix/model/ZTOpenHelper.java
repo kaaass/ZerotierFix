@@ -32,12 +32,13 @@ public class ZTOpenHelper extends DaoMaster.OpenHelper {
     }
 
     private List<Migration> getMigrations() {
-        ArrayList<Migration> arrayList = new ArrayList<Migration>();
-        arrayList.add(new MigrationV18());
-        arrayList.add(new MigrationV19());
-        arrayList.add(new MigrationV20());
-        Collections.sort(arrayList, (migration, migration2) -> migration.getVersion().compareTo(migration2.getVersion()));
-        return arrayList;
+        ArrayList<Migration> migrations = new ArrayList<>();
+        migrations.add(new MigrationV18());
+        migrations.add(new MigrationV19());
+        migrations.add(new MigrationV20());
+        migrations.add(new MigrationV21());
+        Collections.sort(migrations, (migration, migration2) -> migration.getVersion().compareTo(migration2.getVersion()));
+        return migrations;
     }
 
     private interface Migration {
@@ -88,6 +89,21 @@ public class ZTOpenHelper extends DaoMaster.OpenHelper {
         @Override
         public void runMigration(Database database) {
             database.execSQL("UPDATE NETWORK_CONFIG SET " + NetworkConfigDao.Properties.DnsMode.columnName + " = 2 WHERE " + NetworkConfigDao.Properties.UseCustomDNS.columnName + " = 1 ");
+        }
+    }
+
+    private static class MigrationV21 implements Migration {
+        private MigrationV21() {
+        }
+
+        @Override
+        public Integer getVersion() {
+            return 21;
+        }
+
+        @Override
+        public void runMigration(Database database) {
+            MoonOrbitDao.createTable(database, true);
         }
     }
 }

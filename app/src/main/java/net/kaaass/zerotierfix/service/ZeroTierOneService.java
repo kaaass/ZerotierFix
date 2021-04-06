@@ -33,6 +33,7 @@ import com.zerotier.sdk.VirtualNetworkRoute;
 
 import net.kaaass.zerotierfix.AnalyticsApplication;
 import net.kaaass.zerotierfix.R;
+import net.kaaass.zerotierfix.events.AfterJoinNetworkEvent;
 import net.kaaass.zerotierfix.events.DefaultRouteChangedEvent;
 import net.kaaass.zerotierfix.events.ErrorEvent;
 import net.kaaass.zerotierfix.events.IsServiceRunningEvent;
@@ -43,6 +44,7 @@ import net.kaaass.zerotierfix.events.NetworkReconfigureEvent;
 import net.kaaass.zerotierfix.events.NodeDestroyedEvent;
 import net.kaaass.zerotierfix.events.NodeIDEvent;
 import net.kaaass.zerotierfix.events.NodeStatusEvent;
+import net.kaaass.zerotierfix.events.OrbitMoonEvent;
 import net.kaaass.zerotierfix.events.RequestNetworkInfoEvent;
 import net.kaaass.zerotierfix.events.RequestNetworkListEvent;
 import net.kaaass.zerotierfix.events.RequestNodeStatusEvent;
@@ -52,11 +54,13 @@ import net.kaaass.zerotierfix.model.AppNodeDao;
 import net.kaaass.zerotierfix.model.DaoSession;
 import net.kaaass.zerotierfix.model.DnsServer;
 import net.kaaass.zerotierfix.model.DnsServerDao;
+import net.kaaass.zerotierfix.model.MoonOrbit;
 import net.kaaass.zerotierfix.model.Network;
 import net.kaaass.zerotierfix.model.NetworkConfig;
 import net.kaaass.zerotierfix.model.NetworkConfigDao;
 import net.kaaass.zerotierfix.model.NetworkDao;
 import net.kaaass.zerotierfix.ui.NetworkListActivity;
+import net.kaaass.zerotierfix.ui.NetworkListFragment;
 import net.kaaass.zerotierfix.util.InetAddressUtils;
 
 import org.greenrobot.eventbus.EventBus;
@@ -561,7 +565,10 @@ public class ZeroTierOneService extends VpnService implements Runnable, EventLis
         ResultCode result = this.node.join(networkId);
         if (result != ResultCode.RESULT_OK) {
             this.eventBus.post(new ErrorEvent(result));
+            return;
         }
+        // 连接后事件
+        this.eventBus.post(new AfterJoinNetworkEvent());
     }
 
     public void leaveNetwork(long j) {
@@ -921,6 +928,22 @@ public class ZeroTierOneService extends VpnService implements Runnable, EventLis
     }
 
     /**
+     * 入轨事件
+     */
+    @Subscribe
+    public void onOrbitMoonEvent(OrbitMoonEvent event) {
+        if (this.node == null) {
+            Log.e(TAG, "Can't orbit network if ZeroTier isn't running");
+            return;
+        }
+        // 入轨
+        for (MoonOrbit moonOrbit : event.getMoonOrbits()) {
+            Log.i(TAG, "Orbiting moon: " + Long.toHexString(moonOrbit.getMoonWorldId()));
+            this.orbitNetwork(moonOrbit.getMoonWorldId(), moonOrbit.getMoonSeed());
+        }
+    }
+
+    /**
      * 当前网络入轨 Moon
      * @param moonWorldId
      * @param moonSeed
@@ -930,9 +953,10 @@ public class ZeroTierOneService extends VpnService implements Runnable, EventLis
             Log.e(TAG, "Can't orbit network if ZeroTier isn't running");
             return;
         }
-        // Do Orbiting
+        // 入轨
         ResultCode result = this.node.orbit(moonWorldId, moonSeed);
         if (result != ResultCode.RESULT_OK) {
+            Log.e(TAG, "Failed to orbit " + Long.toHexString(moonWorldId));
             this.eventBus.post(new ErrorEvent(result));
         }
     }

@@ -1,30 +1,37 @@
 package net.kaaass.zerotierfix.ui;
 
 import android.app.AlertDialog;
-import android.app.Dialog;
 import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.Window;
 import android.widget.EditText;
 import android.widget.PopupMenu;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 
+import net.kaaass.zerotierfix.AnalyticsApplication;
 import net.kaaass.zerotierfix.R;
+import net.kaaass.zerotierfix.events.AddMoonOrbitEvent;
+import net.kaaass.zerotierfix.events.OrbitMoonEvent;
+import net.kaaass.zerotierfix.events.RemoveMoonOrbitEvent;
+import net.kaaass.zerotierfix.model.DaoSession;
 import net.kaaass.zerotierfix.model.MoonOrbit;
+import net.kaaass.zerotierfix.model.MoonOrbitDao;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,9 +42,32 @@ import java.util.List;
 public class MoonOrbitFragment extends Fragment {
 
     public static final String TAG = "MoonOrbitFragment";
-    private static final String DIALOG_TAG = "dialog-moon-orbit";
+
+    private final List<MoonOrbit> moonOrbitList = new ArrayList<>();
+    private final EventBus eventBus;
+    private RecyclerViewAdapter recyclerViewAdapter = null;
+    private RecyclerView recyclerView = null;
+    private View emptyView = null;
+    final private RecyclerView.AdapterDataObserver checkIfEmptyObserver = new RecyclerView.AdapterDataObserver() {
+        @Override
+        public void onChanged() {
+            checkIfEmpty();
+        }
+
+        @Override
+        public void onItemRangeInserted(int positionStart, int itemCount) {
+            checkIfEmpty();
+        }
+
+        @Override
+        public void onItemRangeRemoved(int positionStart, int itemCount) {
+            checkIfEmpty();
+        }
+    };
 
     public MoonOrbitFragment() {
+        this.eventBus = EventBus.getDefault();
+        this.eventBus.register(this);
     }
 
     @Override
@@ -50,21 +80,42 @@ public class MoonOrbitFragment extends Fragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_moon_orbit_list, container, false);
 
+        // 空列表提示
+        this.emptyView = view.findViewById(R.id.no_data);
+
         // 设置适配器
-        RecyclerView recyclerView = view.findViewById(R.id.list_moon_orbit);
+        this.recyclerView = view.findViewById(R.id.list_moon_orbit);
         Context context = recyclerView.getContext();
         recyclerView.setLayoutManager(new LinearLayoutManager(context));
-        recyclerView.setAdapter(new RecyclerViewAdapter(new ArrayList<MoonOrbit>() {{
-            add(new MoonOrbit(0x123L, 0x456L));
-            add(new MoonOrbit(0x123L, 0x456L));
-            add(new MoonOrbit(0x123L, 0x456L));
-        }}));
+        this.recyclerViewAdapter = new RecyclerViewAdapter(this.moonOrbitList);
+        this.recyclerViewAdapter.registerAdapterDataObserver(checkIfEmptyObserver);
+        recyclerView.setAdapter(this.recyclerViewAdapter);
 
         // 设置添加按钮
         FloatingActionButton fab = view.findViewById(R.id.fab_moon_orbit);
         fab.setOnClickListener(parentView -> showMoonOrbitDialog());
 
+        // 更新入轨数据
+        updateOrbitList();
+
         return view;
+    }
+
+    /**
+     * 更新数据列表
+     */
+    private void updateOrbitList() {
+        this.moonOrbitList.clear();
+        this.moonOrbitList.addAll(getMoonOrbitList());
+        this.recyclerViewAdapter.notifyDataSetChanged();
+    }
+
+    /**
+     * 获得 Moon 入轨配置列表
+     */
+    private List<MoonOrbit> getMoonOrbitList() {
+        DaoSession daoSession = ((AnalyticsApplication) getActivity().getApplication()).getDaoSession();
+        return daoSession.getMoonOrbitDao().loadAll();
     }
 
     /**
@@ -79,10 +130,85 @@ public class MoonOrbitFragment extends Fragment {
                 .setView(view)
                 .setTitle(R.string.moon_orbit_info)
                 .setPositiveButton(getString(R.string.add), (dialog, which) -> {
-                    Toast.makeText(getContext(), "textMoonWorldId = " + textMoonWorldId.getText() + ", textMoonSeed = " + textMoonSeed.getText(), Toast.LENGTH_SHORT).show();
+                    long moonWorldId;
+                    long moonSeed;
+                    // 解析数字
+                    try {
+                        moonWorldId = Long.parseLong(textMoonWorldId.getText().toString(), 16);
+                        if (!(0 <= moonWorldId && moonWorldId <= 0xffffffffffL))
+                            throw new NumberFormatException();
+                    } catch (NumberFormatException ignored) {
+                        Snackbar.make(getView(), R.string.moon_world_id_wrong_format, BaseTransientBottomBar.LENGTH_SHORT).show();
+                        return;
+                    }
+                    try {
+                        moonSeed = Long.parseLong(textMoonSeed.getText().toString(), 16);
+                        if (!(0 <= moonSeed && moonSeed <= 0xffffffffffL))
+                            throw new NumberFormatException();
+                    } catch (NumberFormatException ignored) {
+                        Snackbar.make(getView(), R.string.moon_seed_wrong_format, BaseTransientBottomBar.LENGTH_SHORT).show();
+                        return;
+                    }
+                    // 触发事件
+                    this.eventBus.post(new AddMoonOrbitEvent(moonWorldId, moonSeed));
                 });
 
         builder.create().show();
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onAddMoonOrbitEvent(AddMoonOrbitEvent event) {
+        long moonWorldId = event.getMoonWorldId();
+        long moonSeed = event.getMoonSeed();
+        Log.i(TAG, "add orbit info " + Long.toHexString(moonWorldId));
+        // 数据库修改
+        DaoSession daoSession = ((AnalyticsApplication) getActivity().getApplication()).getDaoSession();
+        long existCount = daoSession.getMoonOrbitDao().queryBuilder()
+                .where(MoonOrbitDao.Properties.MoonWorldId.eq(moonWorldId),
+                        MoonOrbitDao.Properties.MoonSeed.eq(moonSeed))
+                .buildCount()
+                .count();
+        if (existCount > 0) {
+            Snackbar.make(getView(), R.string.moon_orbit_exist, BaseTransientBottomBar.LENGTH_SHORT).show();
+            return;
+        }
+        MoonOrbit moonOrbit = new MoonOrbit(moonWorldId, moonSeed);
+        daoSession.getMoonOrbitDao().insert(moonOrbit);
+        Snackbar.make(getView(), R.string.moon_orbit_add_success, BaseTransientBottomBar.LENGTH_SHORT).show();
+        // 触发事件入轨
+        this.eventBus.post(new OrbitMoonEvent(new ArrayList<MoonOrbit>() {{
+            add(moonOrbit);
+        }}));
+        // 更新界面
+        updateOrbitList();
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onRemoveMoonOrbitEvent(RemoveMoonOrbitEvent event) {
+        long moonWorldId = event.getMoonWorldId();
+        long moonSeed = event.getMoonSeed();
+        Log.i(TAG, "remove orbit info " + Long.toHexString(moonWorldId));
+        // 删除数据
+        DaoSession daoSession = ((AnalyticsApplication) getActivity().getApplication()).getDaoSession();
+        daoSession.getMoonOrbitDao().queryBuilder()
+                .where(MoonOrbitDao.Properties.MoonWorldId.eq(moonWorldId),
+                        MoonOrbitDao.Properties.MoonSeed.eq(moonSeed))
+                .buildDelete()
+                .executeDeleteWithoutDetachingEntities();
+        Snackbar.make(getView(), R.string.moon_orbit_delete_success, BaseTransientBottomBar.LENGTH_SHORT).show();
+        // 更新界面
+        updateOrbitList();
+    }
+
+    /**
+     * 检查列表是否为空
+     */
+    void checkIfEmpty() {
+        if (emptyView != null && this.recyclerViewAdapter != null) {
+            final boolean emptyViewVisible = this.recyclerViewAdapter.getItemCount() == 0;
+            this.emptyView.setVisibility(emptyViewVisible ? View.VISIBLE : View.GONE);
+            this.recyclerView.setVisibility(emptyViewVisible ? View.GONE : View.VISIBLE);
+        }
     }
 
     /**
@@ -141,6 +267,8 @@ public class MoonOrbitFragment extends Fragment {
                 popupMenu.show();
                 popupMenu.setOnMenuItemClickListener(menuItem -> {
                     Log.d(TAG, "Click popup delete " + this);
+                    // 触发事件
+                    MoonOrbitFragment.this.eventBus.post(new RemoveMoonOrbitEvent(mItem.getMoonWorldId(), mItem.getMoonSeed()));
                     return true;
                 });
                 return true;

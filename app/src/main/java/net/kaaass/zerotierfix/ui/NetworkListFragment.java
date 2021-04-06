@@ -36,12 +36,14 @@ import com.zerotier.sdk.VirtualNetworkType;
 
 import net.kaaass.zerotierfix.AnalyticsApplication;
 import net.kaaass.zerotierfix.R;
+import net.kaaass.zerotierfix.events.AfterJoinNetworkEvent;
 import net.kaaass.zerotierfix.events.IsServiceRunningEvent;
 import net.kaaass.zerotierfix.events.NetworkInfoReplyEvent;
 import net.kaaass.zerotierfix.events.NetworkListReplyEvent;
 import net.kaaass.zerotierfix.events.NodeDestroyedEvent;
 import net.kaaass.zerotierfix.events.NodeIDEvent;
 import net.kaaass.zerotierfix.events.NodeStatusEvent;
+import net.kaaass.zerotierfix.events.OrbitMoonEvent;
 import net.kaaass.zerotierfix.events.RequestNetworkListEvent;
 import net.kaaass.zerotierfix.events.RequestNodeStatusEvent;
 import net.kaaass.zerotierfix.events.StopEvent;
@@ -505,6 +507,9 @@ public class NetworkListFragment extends Fragment {
         this.mVNC = null;
     }
 
+    /**
+     * 获得 Moon 入轨配置列表
+     */
     private List<MoonOrbit> getMoonOrbitList() {
         DaoSession daoSession = ((AnalyticsApplication) getActivity().getApplication()).getDaoSession();
         return daoSession.getMoonOrbitDao().loadAll();
@@ -534,6 +539,14 @@ public class NetworkListFragment extends Fragment {
             this.networkId = j;
             this.useDefaultRoute = z;
         }
+    }
+
+    @Subscribe
+    public void onAfterJoinNetworkEvent(AfterJoinNetworkEvent event) {
+        Log.d(TAG, "Event on: AfterJoinNetworkEvent");
+        // 设置网络 orbit
+        List<MoonOrbit> moonOrbits = NetworkListFragment.this.getMoonOrbitList();
+        this.eventBus.post(new OrbitMoonEvent(moonOrbits));
     }
 
     /* access modifiers changed from: private */
@@ -640,12 +653,6 @@ public class NetworkListFragment extends Fragment {
                         currentNetwork.setConnected(true);
                         currentNetwork.setLastActivated(true);
                         networkDao.save(currentNetwork);
-                        // 设置网络 orbit
-                        List<MoonOrbit> moonOrbits = NetworkListFragment.this.getMoonOrbitList();
-                        for (MoonOrbit moonOrbit : moonOrbits) {
-                            Log.i(TAG, "Orbiting moon: " + Long.toHexString(moonOrbit.getMoonWorldId()));
-                            NetworkListFragment.this.mBoundService.orbitNetwork(moonOrbit.getMoonWorldId(), moonOrbit.getMoonSeed());
-                        }
                     } else {
                         // 移动数据且未确认
                         Toast.makeText(NetworkAdapter.this.getContext(), R.string.toast_mobile_data, Toast.LENGTH_SHORT).show();

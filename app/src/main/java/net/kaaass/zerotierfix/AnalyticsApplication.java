@@ -24,7 +24,7 @@ public class AnalyticsApplication extends Application {
     public void onCreate() {
         super.onCreate();
         Log.i("Application", "Starting Application");
-        this.mDaoSession = new DaoMaster(new ZTOpenHelper(this, "ztdb", null).getWritableDatabase()).newSession();
+        this.mDaoSession = new DaoMaster(new ZTOpenHelper(this, "ztfixdb", null).getWritableDatabase()).newSession();
         transferKnownNetworks();
     }
 

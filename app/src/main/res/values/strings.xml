@@ -76,4 +76,10 @@
     <string name="moon_seed_hint">Moon Seed is an arbitrary node that holds Moon information. If you are not sure, it can be the same as Moon World ID.</string>
     <string name="moon_orbit_info">Moon Orbit Information</string>
     <string name="add">Add</string>
+    <string name="no_data">No data</string>
+    <string name="moon_world_id_wrong_format">Moon World ID has wrong format!</string>
+    <string name="moon_seed_wrong_format">Moon Seed has wrong format!</string>
+    <string name="moon_orbit_exist">Moon Orbit information exists!</string>
+    <string name="moon_orbit_add_success">Moon orbit added successfully.</string>
+    <string name="moon_orbit_delete_success">Moon orbit deleted successfully. Disconnect &amp; reconnect for this setting to take effect.</string>
 </resources>
