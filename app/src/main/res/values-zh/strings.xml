@@ -70,4 +70,8 @@
     <string name="moon_seed">Moon 种子:</string>
     <string name="moon_orbit_activity">Moon 入轨</string>
     <string name="load_planet_summary">需要手动重新连接使配置生效</string>
+    <string name="delete_moon_orbit">删除</string>
+    <string name="moon_seed_hint">Moon种子是持有Moon信息的任意节点。若不确定，可以和Moon地址相同。</string>
+    <string name="moon_orbit_info">Moon 入轨信息</string>
+    <string name="add">添加</string>
 </resources>

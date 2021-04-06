@@ -72,4 +72,8 @@
     <string name="moon_world_id">Moon World ID:</string>
     <string name="moon_seed">Moon Seed:</string>
     <string name="moon_orbit_activity">Moon Orbit</string>
+    <string name="delete_moon_orbit">Delete</string>
+    <string name="moon_seed_hint">Moon Seed is an arbitrary node that holds Moon information. If you are not sure, it can be the same as Moon World ID.</string>
+    <string name="moon_orbit_info">Moon Orbit Information</string>
+    <string name="add">Add</string>
 </resources>

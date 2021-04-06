@@ -546,71 +546,60 @@ public class NetworkListFragment extends Fragment {
             Log.d(NetworkListFragment.TAG, "Created network list item adapter");
         }
 
-        public View getView(int i, View view, ViewGroup viewGroup) {
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
             if (!NetworkListFragment.this.listView.getItemsCanFocus()) {
                 NetworkListFragment.this.listView.setItemsCanFocus(true);
             }
-            if (view == null) {
-                view = NetworkListFragment.this.getActivity().getLayoutInflater().inflate(R.layout.list_item_network, null);
+            if (convertView == null) {
+                convertView = NetworkListFragment.this.getActivity().getLayoutInflater().inflate(R.layout.list_item_network, null);
             }
-            final Network currentNetwork = getItem(i);
-            view.setClickable(true);
-            view.setOnClickListener(new View.OnClickListener() {
-                /* class com.zerotier.one.ui.NetworkListFragment.NetworkAdapter.AnonymousClass1 */
-
-                public void onClick(View view) {
-                    Log.d(NetworkListFragment.TAG, "ConvertView OnClickListener");
-                    Intent intent = new Intent(NetworkListFragment.this.getActivity(), NetworkDetailActivity.class);
-                    intent.putExtra(NetworkListFragment.NETWORK_ID_MESSAGE, currentNetwork.getNetworkId());
-                    NetworkListFragment.this.startActivity(intent);
-                }
+            final Network currentNetwork = getItem(position);
+            convertView.setClickable(true);
+            convertView.setOnClickListener(view -> {
+                Log.d(NetworkListFragment.TAG, "ConvertView OnClickListener");
+                Intent intent = new Intent(NetworkListFragment.this.getActivity(), NetworkDetailActivity.class);
+                intent.putExtra(NetworkListFragment.NETWORK_ID_MESSAGE, currentNetwork.getNetworkId());
+                NetworkListFragment.this.startActivity(intent);
             });
-            view.setOnLongClickListener(new View.OnLongClickListener() {
-                /* class com.zerotier.one.ui.NetworkListFragment.NetworkAdapter.AnonymousClass2 */
-
-                public boolean onLongClick(View view) {
-                    Log.d(NetworkListFragment.TAG, "ConvertView OnLongClickListener");
-                    PopupMenu popupMenu = new PopupMenu(NetworkListFragment.this.getActivity(), view);
-                    popupMenu.getMenuInflater().inflate(R.menu.context_menu_network_item, popupMenu.getMenu());
-                    popupMenu.show();
-                    popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-                        /* class com.zerotier.one.ui.NetworkListFragment.NetworkAdapter.AnonymousClass2.AnonymousClass1 */
-
-                        public boolean onMenuItemClick(MenuItem menuItem) {
-                            if (menuItem.getItemId() != R.id.menu_item_delete_network) {
-                                return false;
-                            }
-                            DaoSession daoSession = ((AnalyticsApplication) NetworkListFragment.this.getActivity().getApplication()).getDaoSession();
-                            AssignedAddressDao assignedAddressDao = daoSession.getAssignedAddressDao();
-                            NetworkConfigDao networkConfigDao = daoSession.getNetworkConfigDao();
-                            NetworkDao networkDao = daoSession.getNetworkDao();
-                            if (currentNetwork != null) {
-                                if (currentNetwork.getConnected()) {
-                                    NetworkListFragment.this.stopService();
-                                }
-                                NetworkConfig networkConfig = currentNetwork.getNetworkConfig();
-                                if (networkConfig != null) {
-                                    List<AssignedAddress> assignedAddresses = networkConfig.getAssignedAddresses();
-                                    if (!assignedAddresses.isEmpty()) {
-                                        for (AssignedAddress assignedAddress : assignedAddresses) {
-                                            assignedAddressDao.delete(assignedAddress);
-                                        }
-                                    }
-                                    networkConfigDao.delete(networkConfig);
-                                }
-                                networkDao.delete(currentNetwork);
-                            }
-                            daoSession.clear();
-                            NetworkListFragment.this.updateNetworkList();
-                            NetworkAdapter.this.parentView.sortNetworkListAndNotify();
-                            return true;
+            convertView.setOnLongClickListener(view -> {
+                Log.d(NetworkListFragment.TAG, "ConvertView OnLongClickListener");
+                PopupMenu popupMenu = new PopupMenu(NetworkListFragment.this.getActivity(), view);
+                popupMenu.getMenuInflater().inflate(R.menu.context_menu_network_item, popupMenu.getMenu());
+                popupMenu.show();
+                popupMenu.setOnMenuItemClickListener(menuItem -> {
+                    if (menuItem.getItemId() != R.id.menu_item_delete_network) {
+                        return false;
+                    }
+                    DaoSession daoSession = ((AnalyticsApplication) NetworkListFragment.this.getActivity().getApplication()).getDaoSession();
+                    AssignedAddressDao assignedAddressDao = daoSession.getAssignedAddressDao();
+                    NetworkConfigDao networkConfigDao = daoSession.getNetworkConfigDao();
+                    NetworkDao networkDao = daoSession.getNetworkDao();
+                    if (currentNetwork != null) {
+                        if (currentNetwork.getConnected()) {
+                            NetworkListFragment.this.stopService();
                         }
-                    });
+                        NetworkConfig networkConfig = currentNetwork.getNetworkConfig();
+                        if (networkConfig != null) {
+                            List<AssignedAddress> assignedAddresses = networkConfig.getAssignedAddresses();
+                            if (!assignedAddresses.isEmpty()) {
+                                for (AssignedAddress assignedAddress : assignedAddresses) {
+                                    assignedAddressDao.delete(assignedAddress);
+                                }
+                            }
+                            networkConfigDao.delete(networkConfig);
+                        }
+                        networkDao.delete(currentNetwork);
+                    }
+                    daoSession.clear();
+                    NetworkListFragment.this.updateNetworkList();
+                    NetworkAdapter.this.parentView.sortNetworkListAndNotify();
                     return true;
-                }
+                });
+                return true;
             });
-            ((TextView) view.findViewById(R.id.network_list_network_id)).setText(currentNetwork.getNetworkIdStr());
-            TextView textView = view.findViewById(R.id.network_list_network_name);
+            ((TextView) convertView.findViewById(R.id.network_list_network_id)).setText(currentNetwork.getNetworkIdStr());
+            TextView textView = convertView.findViewById(R.id.network_list_network_name);
             String networkName = currentNetwork.getNetworkName();
             if (networkName != null) {
                 textView.setText(networkName);
@@ -618,7 +607,7 @@ public class NetworkListFragment extends Fragment {
                 textView.setText(EnvironmentCompat.MEDIA_UNKNOWN);
             }
             // 网络控制开关
-            final Switch networkSwitch = view.findViewById(R.id.network_start_network_switch);
+            final Switch networkSwitch = convertView.findViewById(R.id.network_start_network_switch);
             networkSwitch.setOnCheckedChangeListener(null);
             networkSwitch.setChecked(currentNetwork.getConnected());
             networkSwitch.setOnCheckedChangeListener((compoundButton, checked) -> {
@@ -675,7 +664,7 @@ public class NetworkListFragment extends Fragment {
                     NetworkListFragment.this.mVNC = null;
                 }
             });
-            return view;
+            return convertView;
         }
     }
 }
