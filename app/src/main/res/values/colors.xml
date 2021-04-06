@@ -12,4 +12,6 @@
     <color name="tooltip_background_dark">#e6616161</color>
     <color name="tooltip_background_light">#e6ffffff</color>
     <color name="primary_green">#234447</color>
+
+    <color name="logo_bkg">#FAC073</color>
 </resources>
