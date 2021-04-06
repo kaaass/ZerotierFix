@@ -47,7 +47,7 @@
     <string name="no_dns_text">DNS settings will not be configured.</string>
     <string name="planet_settings">Planet Settings</string>
     <string name="preferences_general">General Settings</string>
-    <string name="preferences_general_start_on_boot">Start ZeroTier One on Device Startup</string>
+    <string name="preferences_general_start_on_boot">Start ZeroTier Fix on Device Startup</string>
     <string name="preferences_network">Network Settings</string>
     <string name="preferences_network_auto_rejoin">Automatically Re-join Networks on Start</string>
     <string name="preferences_network_disable_ipv6">Disable IPv6</string>
@@ -57,9 +57,9 @@
     <string name="reset_planet">Reset Planet</string>
     <string name="settings">Settings</string>
     <string name="status_label">Status:</string>
-    <string name="title_activity_zero_tier_one__main">ZeroTier One</string>
+    <string name="title_activity_zero_tier_one__main">ZeroTier Fix</string>
     <string name="use_custom_dns">Use Custom DNS Servers</string>
-    <string name="versionName" translatable="false">1.6.4–1</string>
+    <string name="versionName" translatable="false">1.6.5</string>
     <string name="status_offline">OFFLINE</string>
     <string name="status_online">ONLINE</string>
     <string name="toast_no_network">No Network Connectivity.  ZeroTier cannot start.</string>
@@ -69,4 +69,7 @@
     <string name="menu_orbit">Orbit</string>
     <string name="enabled">Enabled</string>
     <string name="disabled">Disabled</string>
+    <string name="moon_world_id">Moon World ID:</string>
+    <string name="moon_seed">Moon Seed:</string>
+    <string name="moon_orbit_activity">Moon Orbit</string>
 </resources>

@@ -18,7 +18,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.CompoundButton;
 import android.widget.ListView;
 import android.widget.PopupMenu;
 import android.widget.Switch;
@@ -28,6 +27,8 @@ import android.widget.Toast;
 import androidx.core.os.EnvironmentCompat;
 import androidx.fragment.app.Fragment;
 
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.snackbar.Snackbar;
 import com.zerotier.sdk.NodeStatus;
 import com.zerotier.sdk.VirtualNetworkConfig;
 import com.zerotier.sdk.VirtualNetworkStatus;
@@ -48,6 +49,7 @@ import net.kaaass.zerotierfix.model.AppNode;
 import net.kaaass.zerotierfix.model.AssignedAddress;
 import net.kaaass.zerotierfix.model.AssignedAddressDao;
 import net.kaaass.zerotierfix.model.DaoSession;
+import net.kaaass.zerotierfix.model.MoonOrbit;
 import net.kaaass.zerotierfix.model.Network;
 import net.kaaass.zerotierfix.model.NetworkConfig;
 import net.kaaass.zerotierfix.model.NetworkConfigDao;
@@ -72,7 +74,6 @@ public class NetworkListFragment extends Fragment {
     private final EventBus eventBus;
     boolean mIsBound = false;
     private JoinAfterAuth joinAfterAuth;
-    private MenuItem joinNetworkMenu;
     private NetworkAdapter listAdapter;
     private ListView listView;
     private ZeroTierOneService mBoundService;
@@ -162,8 +163,8 @@ public class NetworkListFragment extends Fragment {
     @Override // androidx.fragment.app.Fragment
     public View onCreateView(LayoutInflater layoutInflater, ViewGroup viewGroup, Bundle bundle) {
         super.onCreateView(layoutInflater, viewGroup, bundle);
-        View inflate = layoutInflater.inflate(R.layout.network_list_fragment, viewGroup, false);
-        ListView listView2 = inflate.findViewById(R.id.joined_networks_list);
+        View view = layoutInflater.inflate(R.layout.network_list_fragment, viewGroup, false);
+        ListView listView2 = view.findViewById(R.id.joined_networks_list);
         this.listView = listView2;
         listView2.setClickable(true);
         this.listView.setLongClickable(true);
@@ -171,10 +172,18 @@ public class NetworkListFragment extends Fragment {
         NetworkAdapter networkAdapter = new NetworkAdapter(this, this.mNetworks);
         this.listAdapter = networkAdapter;
         this.listView.setAdapter(networkAdapter);
-        this.nodeIdView = inflate.findViewById(R.id.node_id);
-        this.nodeStatusView = inflate.findViewById(R.id.node_status);
+        this.nodeIdView = view.findViewById(R.id.node_id);
+        this.nodeStatusView = view.findViewById(R.id.node_status);
         setNodeIdText();
-        return inflate;
+
+        // 设置添加按钮
+        FloatingActionButton fab = view.findViewById(R.id.fab_add_network);
+        fab.setOnClickListener(parentView -> {
+            Log.d(TAG, "Selected Join Network");
+            startActivity(new Intent(getActivity(), JoinNetworkActivity.class));
+        });
+
+        return view;
     }
 
     /* access modifiers changed from: private */
@@ -213,7 +222,6 @@ public class NetworkListFragment extends Fragment {
     public void onCreateOptionsMenu(Menu menu, MenuInflater menuInflater) {
         Log.d(TAG, "NetworkListFragment.onCreateOptionsMenu");
         menuInflater.inflate(R.menu.menu_network_list, menu);
-        this.joinNetworkMenu = menu.findItem(R.id.menu_item_join_network);
         super.onCreateOptionsMenu(menu, menuInflater);
         this.eventBus.post(new RequestNodeStatusEvent());
     }
@@ -221,21 +229,19 @@ public class NetworkListFragment extends Fragment {
     @Override // androidx.fragment.app.Fragment
     public boolean onOptionsItemSelected(MenuItem menuItem) {
         int menuId = menuItem.getItemId();
-        if (menuId == R.id.menu_item_join_network) {
-            Log.d(TAG, "Selected Join Network");
-            startActivity(new Intent(getActivity(), JoinNetworkActivity.class));
-            return true;
-        } else if (menuId == R.id.menu_item_settings) {
+        if (menuId == R.id.menu_item_settings) {
             Log.d(TAG, "Selected Settings");
             startActivity(new Intent(getActivity(), PrefsActivity.class));
             return true;
         } else if (menuId == R.id.menu_item_peers) {
             Log.d(TAG, "Selected peers");
             // TODO
+            Snackbar.make(getView(), "WIP", Snackbar.LENGTH_LONG)
+                    .setAction("Action", null).show();
             return true;
         } else if (menuId == R.id.menu_item_orbit) {
             Log.d(TAG, "Selected orbit");
-            // TODO
+            startActivity(new Intent(getActivity(), MoonOrbitActivity.class));
             return true;
         }
         return super.onOptionsItemSelected(menuItem);
@@ -499,6 +505,11 @@ public class NetworkListFragment extends Fragment {
         this.mVNC = null;
     }
 
+    private List<MoonOrbit> getMoonOrbitList() {
+        DaoSession daoSession = ((AnalyticsApplication) getActivity().getApplication()).getDaoSession();
+        return daoSession.getMoonOrbitDao().loadAll();
+    }
+
     /* renamed from: com.zerotier.one.ui.NetworkListFragment$2  reason: invalid class name */
     static /* synthetic */ class AnonymousClass2 {
         static final /* synthetic */ int[] $SwitchMap$com$zerotier$sdk$VirtualNetworkStatus;
@@ -640,7 +651,12 @@ public class NetworkListFragment extends Fragment {
                         currentNetwork.setConnected(true);
                         currentNetwork.setLastActivated(true);
                         networkDao.save(currentNetwork);
-                        // TODO 设置网络 orbit
+                        // 设置网络 orbit
+                        List<MoonOrbit> moonOrbits = NetworkListFragment.this.getMoonOrbitList();
+                        for (MoonOrbit moonOrbit : moonOrbits) {
+                            Log.i(TAG, "Orbiting moon: " + Long.toHexString(moonOrbit.getMoonWorldId()));
+                            NetworkListFragment.this.mBoundService.orbitNetwork(moonOrbit.getMoonWorldId(), moonOrbit.getMoonSeed());
+                        }
                     } else {
                         // 移动数据且未确认
                         Toast.makeText(NetworkAdapter.this.getContext(), R.string.toast_mobile_data, Toast.LENGTH_SHORT).show();

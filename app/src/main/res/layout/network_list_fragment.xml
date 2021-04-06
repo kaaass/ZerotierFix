@@ -1,9 +1,69 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android" android:id="@+id/network_list_fragment" android:layout_width="match_parent" android:layout_height="match_parent">
-    <RelativeLayout android:layout_gravity="center_vertical" android:orientation="horizontal" android:id="@+id/status_bar" android:background="@color/primary_green" android:padding="5dp" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_alignParentBottom="true">
-        <TextView android:textColor="@color/tablerow_grey" android:gravity="center" android:id="@+id/node_id" android:padding="5dp" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="" android:layout_centerVertical="true"/>
-        <TextView android:textColor="@color/tablerow_grey" android:id="@+id/node_status" android:padding="5dp" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/status_offline" android:layout_toRightOf="@+id/node_id" android:layout_centerVertical="true"/>
-        <TextView android:textColor="@color/tablerow_grey" android:id="@+id/zt_version" android:padding="5dp" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/versionName" android:layout_toRightOf="@+id/node_status" android:layout_centerVertical="true"/>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/network_list_fragment"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <ListView
+            android:id="@+id/joined_networks_list"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_above="@+id/status_bar"
+            android:layout_alignParentTop="true" />
+
+        <RelativeLayout
+            android:id="@+id/status_bar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_gravity="bottom"
+            android:background="@color/primary_green"
+            android:orientation="horizontal"
+            android:padding="5dp">
+
+            <TextView
+                android:id="@+id/node_id"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:gravity="center"
+                android:padding="5dp"
+                android:text=""
+                android:textColor="@color/tablerow_grey" />
+
+            <TextView
+                android:id="@+id/node_status"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_toRightOf="@+id/node_id"
+                android:padding="5dp"
+                android:text="@string/status_offline"
+                android:textColor="@color/tablerow_grey" />
+
+            <TextView
+                android:id="@+id/zt_version"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_toRightOf="@+id/node_status"
+                android:padding="5dp"
+                android:text="@string/versionName"
+                android:textColor="@color/tablerow_grey" />
+        </RelativeLayout>
+
     </RelativeLayout>
-    <ListView android:id="@+id/joined_networks_list" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_above="@+id/status_bar" android:layout_alignParentTop="true"/>
-</RelativeLayout>
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fab_add_network"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="@dimen/fab_margin"
+        app:srcCompat="@android:drawable/ic_input_add" />
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

@@ -14,7 +14,6 @@
     <string name="join_network">添加网络</string>
     <string name="leave_button_text">离开网络</string>
     <string name="load_planet">加载 Planet</string>
-    <string name="load_planet_summary">You will need to disconnect and reconnect for this setting to take effect.</string>
     <string name="mac_label">MAC:</string>
     <string name="menu_join_network">添加网络</string>
     <string name="network_bridging">网络桥接</string>
@@ -44,16 +43,16 @@
     <string name="network_type_unknown">未知</string>
     <string name="no_dns_tab_title">无 DNS</string>
     <string name="no_dns_text">将不会配置 DNS。</string>
-    <string name="planet_settings">Planet Settings</string>
-    <string name="preferences_general">General Settings</string>
-    <string name="preferences_general_start_on_boot">Start ZeroTier One on Device Startup</string>
+    <string name="planet_settings">Planet 设置</string>
+    <string name="preferences_general">通用设置</string>
+    <string name="preferences_general_start_on_boot">开机时启动 ZeroTier Fix</string>
     <string name="preferences_network">网络设置</string>
-    <string name="preferences_network_auto_rejoin">Automatically Re-join Networks on Start</string>
+    <string name="preferences_network_auto_rejoin">打开时自动重新加入网络</string>
     <string name="preferences_network_disable_ipv6">禁用 IPv6</string>
     <string name="preferences_network_disable_ipv6_summary">需要手动断开、重连使配置生效</string>
     <string name="preferences_network_use_cell_data">允许移动网络下使用</string>
-    <string name="recent_networks">Recent Networks:</string>
-    <string name="reset_planet">Reset Planet</string>
+    <string name="recent_networks">最近连接的网络:</string>
+    <string name="reset_planet">重置 Planet</string>
     <string name="settings">设置</string>
     <string name="status_label">状态:</string>
     <string name="title_activity_zero_tier_one__main">ZeroTier 客户端</string>
@@ -67,4 +66,8 @@
     <string name="menu_orbit">入轨</string>
     <string name="enabled">启用</string>
     <string name="disabled">禁用</string>
+    <string name="moon_world_id">Moon 地址:</string>
+    <string name="moon_seed">Moon 种子:</string>
+    <string name="moon_orbit_activity">Moon 入轨</string>
+    <string name="load_planet_summary">需要手动重新连接使配置生效</string>
 </resources>

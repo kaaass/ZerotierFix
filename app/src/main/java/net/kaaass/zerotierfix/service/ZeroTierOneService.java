@@ -920,6 +920,23 @@ public class ZeroTierOneService extends VpnService implements Runnable, EventLis
         return bArr;
     }
 
+    /**
+     * 当前网络入轨 Moon
+     * @param moonWorldId
+     * @param moonSeed
+     */
+    public void orbitNetwork(Long moonWorldId, Long moonSeed) {
+        if (this.node == null) {
+            Log.e(TAG, "Can't orbit network if ZeroTier isn't running");
+            return;
+        }
+        // Do Orbiting
+        ResultCode result = this.node.orbit(moonWorldId, moonSeed);
+        if (result != ResultCode.RESULT_OK) {
+            this.eventBus.post(new ErrorEvent(result));
+        }
+    }
+
     /* renamed from: com.zerotier.one.service.ZeroTierOneService$3  reason: invalid class name */
     static /* synthetic */ class AnonymousClass3 {
         static final /* synthetic */ int[] $SwitchMap$com$zerotier$sdk$VirtualNetworkConfigOperation;

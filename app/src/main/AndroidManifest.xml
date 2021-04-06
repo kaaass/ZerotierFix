@@ -43,6 +43,9 @@
         <activity
             android:name=".ui.NetworkDetailActivity"
             android:label="@string/app_name" />
+        <activity
+            android:name=".ui.MoonOrbitActivity"
+            android:label="@string/moon_orbit_activity" />
 
         <receiver
             android:name=".service.StartupReceiver"
