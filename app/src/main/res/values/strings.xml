@@ -102,4 +102,7 @@
     <string name="fail_retrieve_peer_list">Failed to retrieve peer info. Please check your network connection.</string>
     <string name="peer_relay">Relay</string>
     <string name="click_to_add_network">Click + to add network</string>
+    <string name="copy_network_id_to_clipboard">Copy Network ID to Clipboard</string>
+    <string name="text_copied">Text copied</string>
+    <string name="copy_moon_world_id_to_clipboard">Copy Moon World ID to clipboard</string>
 </resources>

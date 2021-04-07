@@ -1,5 +1,7 @@
 package net.kaaass.zerotierfix.ui;
 
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -77,6 +79,7 @@ public class NetworkListFragment extends Fragment {
     public static final int START_VPN = 2;
     public static final String TAG = "NetworkListFragment";
     private final EventBus eventBus;
+    private final List<Network> mNetworks = new ArrayList<>();
     boolean mIsBound = false;
     private JoinAfterAuth joinAfterAuth;
     private RecyclerViewAdapter recyclerViewAdapter;
@@ -94,7 +97,6 @@ public class NetworkListFragment extends Fragment {
             NetworkListFragment.this.setIsBound(false);
         }
     };
-    private final List<Network> mNetworks = new ArrayList<>();
     private VirtualNetworkConfig[] mVNC;
     private TextView nodeIdView;
     private TextView nodeStatusView;
@@ -489,7 +491,7 @@ public class NetworkListFragment extends Fragment {
      */
     private void updateNetworkList() {
         List<Network> networkList = getNetworkList();
-        if (!networkList.isEmpty()) {
+        if (networkList != null) {
             // 设置连接状态
             for (Network oldNetwork : this.mNetworks) {
                 for (Network network : networkList) {
@@ -669,37 +671,44 @@ public class NetworkListFragment extends Fragment {
             public boolean onLongClick(View view) {
                 Log.d(NetworkListFragment.TAG, "ConvertView OnLongClickListener");
                 PopupMenu popupMenu = new PopupMenu(NetworkListFragment.this.getActivity(), view);
-                popupMenu.getMenuInflater().inflate(R.menu.context_menu_network_item, popupMenu.getMenu());
+                popupMenu.getMenuInflater().inflate(R.menu.popup_menu_network_item, popupMenu.getMenu());
                 popupMenu.show();
                 popupMenu.setOnMenuItemClickListener(menuItem -> {
-                    if (menuItem.getItemId() != R.id.menu_item_delete_network) {
-                        return false;
-                    }
-                    // 删除对应网络
-                    DaoSession daoSession = ((AnalyticsApplication) NetworkListFragment.this.getActivity().getApplication()).getDaoSession();
-                    AssignedAddressDao assignedAddressDao = daoSession.getAssignedAddressDao();
-                    NetworkConfigDao networkConfigDao = daoSession.getNetworkConfigDao();
-                    NetworkDao networkDao = daoSession.getNetworkDao();
-                    if (this.mItem != null) {
-                        if (this.mItem.getConnected()) {
-                            NetworkListFragment.this.stopService();
-                        }
-                        NetworkConfig networkConfig = this.mItem.getNetworkConfig();
-                        if (networkConfig != null) {
-                            List<AssignedAddress> assignedAddresses = networkConfig.getAssignedAddresses();
-                            if (!assignedAddresses.isEmpty()) {
-                                for (AssignedAddress assignedAddress : assignedAddresses) {
-                                    assignedAddressDao.delete(assignedAddress);
-                                }
+                    if (menuItem.getItemId() == R.id.menu_item_delete_network) {
+                        // 删除对应网络
+                        DaoSession daoSession = ((AnalyticsApplication) NetworkListFragment.this.getActivity().getApplication()).getDaoSession();
+                        AssignedAddressDao assignedAddressDao = daoSession.getAssignedAddressDao();
+                        NetworkConfigDao networkConfigDao = daoSession.getNetworkConfigDao();
+                        NetworkDao networkDao = daoSession.getNetworkDao();
+                        if (this.mItem != null) {
+                            if (this.mItem.getConnected()) {
+                                NetworkListFragment.this.stopService();
                             }
-                            networkConfigDao.delete(networkConfig);
+                            NetworkConfig networkConfig = this.mItem.getNetworkConfig();
+                            if (networkConfig != null) {
+                                List<AssignedAddress> assignedAddresses = networkConfig.getAssignedAddresses();
+                                if (!assignedAddresses.isEmpty()) {
+                                    for (AssignedAddress assignedAddress : assignedAddresses) {
+                                        assignedAddressDao.delete(assignedAddress);
+                                    }
+                                }
+                                networkConfigDao.delete(networkConfig);
+                            }
+                            networkDao.delete(this.mItem);
                         }
-                        networkDao.delete(this.mItem);
+                        daoSession.clear();
+                        // 更新数据
+                        NetworkListFragment.this.updateNetworkListAndNotify();
+                        return true;
+                    } else if (menuItem.getItemId() == R.id.menu_item_copy_network_id) {
+                        // 复制网络 ID
+                        ClipboardManager clipboard = (ClipboardManager) getContext().getSystemService(Context.CLIPBOARD_SERVICE);
+                        ClipData clip = ClipData.newPlainText(getString(R.string.network_id), this.mItem.getNetworkIdStr());
+                        clipboard.setPrimaryClip(clip);
+                        Toast.makeText(getContext(), R.string.text_copied, Toast.LENGTH_SHORT).show();
+                        return true;
                     }
-                    daoSession.clear();
-                    // 更新数据
-                    NetworkListFragment.this.updateNetworkListAndNotify();
-                    return true;
+                    return false;
                 });
                 return true;
             }

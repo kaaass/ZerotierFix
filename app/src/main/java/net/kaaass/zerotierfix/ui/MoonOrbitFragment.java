@@ -1,6 +1,8 @@
 package net.kaaass.zerotierfix.ui;
 
 import android.app.AlertDialog;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
@@ -10,6 +12,7 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.PopupMenu;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -268,13 +271,22 @@ public class MoonOrbitFragment extends Fragment {
             public boolean onLongClick(View view) {
                 Log.d(TAG, "Long click " + this);
                 PopupMenu popupMenu = new PopupMenu(MoonOrbitFragment.this.getActivity(), view);
-                popupMenu.getMenuInflater().inflate(R.menu.context_menu_network_item, popupMenu.getMenu());
+                popupMenu.getMenuInflater().inflate(R.menu.popup_menu_moon_orbit, popupMenu.getMenu());
                 popupMenu.show();
                 popupMenu.setOnMenuItemClickListener(menuItem -> {
-                    Log.d(TAG, "Click popup delete " + this);
-                    // 触发事件
-                    MoonOrbitFragment.this.eventBus.post(new RemoveMoonOrbitEvent(mItem.getMoonWorldId(), mItem.getMoonSeed()));
-                    return true;
+                    if (menuItem.getItemId() == R.id.menu_item_delete_moon_orbit) {
+                        // 触发事件
+                        MoonOrbitFragment.this.eventBus.post(new RemoveMoonOrbitEvent(mItem.getMoonWorldId(), mItem.getMoonSeed()));
+                        return true;
+                    } else if (menuItem.getItemId() == R.id.menu_item_copy_moon_world_id) {
+                        // 复制 Moon 地址
+                        ClipboardManager clipboard = (ClipboardManager) getContext().getSystemService(Context.CLIPBOARD_SERVICE);
+                        ClipData clip = ClipData.newPlainText(getString(R.string.network_id), Long.toHexString(this.mItem.getMoonWorldId()));
+                        clipboard.setPrimaryClip(clip);
+                        Toast.makeText(getContext(), R.string.text_copied, Toast.LENGTH_SHORT).show();
+                        return true;
+                    }
+                    return false;
                 });
                 return true;
             }

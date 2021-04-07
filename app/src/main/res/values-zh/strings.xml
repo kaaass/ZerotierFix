@@ -99,4 +99,7 @@
     <string name="fail_retrieve_peer_list">无法获得结点信息，请检查网络连接状况</string>
     <string name="peer_relay">中继</string>
     <string name="click_to_add_network">点击 + 按钮添加网络</string>
+    <string name="copy_network_id_to_clipboard">复制网络 ID 到剪切板</string>
+    <string name="text_copied">文本已复制</string>
+    <string name="copy_moon_world_id_to_clipboard">复制 Moon 地址到剪切板</string>
 </resources>
