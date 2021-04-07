@@ -63,7 +63,7 @@
     <string name="toast_no_network">没有网络连接，无法启动 ZeroTier</string>
     <string name="toast_mobile_data">设备正在使用移动网络，必须开启“允许移动网络下使用”选项以启动 ZeroTier</string>
     <string name="toast_not_authorized">无权使用该网络</string>
-    <string name="menu_peers">Peers</string>
+    <string name="menu_peers">结点列表</string>
     <string name="menu_orbit">入轨</string>
     <string name="enabled">启用</string>
     <string name="disabled">禁用</string>
@@ -84,4 +84,19 @@
     <string name="network_connected">已连接</string>
     <string name="connected_to_network">已连接到网络 %s</string>
     <string name="network_detail">网络信息</string>
+    <string name="peer_address">结点地址:</string>
+    <string name="peer_role">类型:</string>
+    <string name="peer_client_version">客户端版本:</string>
+    <string name="peer_latency">延迟:</string>
+    <string name="peer_preferred_path">通信路径:</string>
+    <string name="invalid_ipv4_dns">IPv4 DNS 地址格式错误</string>
+    <string name="invalid_ipv6_dns">IPv6 DNS 地址格式错误</string>
+    <string name="peer_no_connection">无连接</string>
+    <string name="peer_list">结点列表</string>
+    <string name="peer_role_planet">根服务器</string>
+    <string name="peer_role_leaf">叶结点</string>
+    <string name="peer_role_moon">Moon 中转</string>
+    <string name="fail_retrieve_peer_list">无法获得结点信息，请检查网络连接状况</string>
+    <string name="peer_relay">中继</string>
+    <string name="click_to_add_network">点击 + 按钮添加网络</string>
 </resources>

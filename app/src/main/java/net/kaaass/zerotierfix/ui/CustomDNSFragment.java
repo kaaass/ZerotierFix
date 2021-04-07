@@ -49,7 +49,7 @@ public class CustomDNSFragment extends Fragment {
                     CustomDNSFragment.this.mListener.setDNSv4_1(str);
                     return;
                 }
-                editText.setError("Invalid IPv4 DNS address.");
+                editText.setError(getString(R.string.invalid_ipv4_dns));
                 CustomDNSFragment.this.mListener.setDNSv4_1("");
             }
         });
@@ -65,7 +65,7 @@ public class CustomDNSFragment extends Fragment {
                     CustomDNSFragment.this.mListener.setDNSv4_2(str);
                     return;
                 }
-                editText.setError("Invalid IPv4 DNS address");
+                editText.setError(getString(R.string.invalid_ipv4_dns));
                 CustomDNSFragment.this.mListener.setDNSv4_2("");
             }
         });
@@ -81,7 +81,7 @@ public class CustomDNSFragment extends Fragment {
                     CustomDNSFragment.this.mListener.setDNSv6_1(str);
                     return;
                 }
-                editText.setError("Invalid IPv6 DNS address");
+                editText.setError(getString(R.string.invalid_ipv6_dns));
                 CustomDNSFragment.this.mListener.setDNSv6_1("");
             }
         });
@@ -97,7 +97,7 @@ public class CustomDNSFragment extends Fragment {
                     CustomDNSFragment.this.mListener.setDNSv6_2(str);
                     return;
                 }
-                editText.setError("Invalid IPv6 DNS address");
+                editText.setError(getString(R.string.invalid_ipv6_dns));
                 CustomDNSFragment.this.mListener.setDNSv6_2("");
             }
         });

@@ -85,4 +85,21 @@
     <string name="network_connected">Connected</string>
     <string name="connected_to_network">Connected to %s</string>
     <string name="network_detail">Network Detail</string>
+    <string name="peer_address">Peer Address:</string>
+    <string name="peer_role">Role:</string>
+    <string name="peer_client_version">Client version:</string>
+    <string name="peer_latency">Latency:</string>
+    <string name="peer_preferred_path">Preferred path:</string>
+    <string name="invalid_ipv4_dns">Invalid IPv4 DNS address.</string>
+    <string name="invalid_ipv6_dns">Invalid IPv6 DNS address</string>
+    <string name="peer_no_connection">No connection</string>
+    <string name="peer_list">Peer List</string>
+    <string name="peer_role_planet">Planet</string>
+    <string name="peer_role_leaf">Leaf</string>
+    <string name="peer_role_moon">Moon</string>
+    <string name="ver_maj_min_rev" translatable="false">%d.%d.%d</string>
+    <string name="peer_lat" translatable="false">%d ms</string>
+    <string name="fail_retrieve_peer_list">Failed to retrieve peer info. Please check your network connection.</string>
+    <string name="peer_relay">Relay</string>
+    <string name="click_to_add_network">Click + to add network</string>
 </resources>

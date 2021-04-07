@@ -46,6 +46,9 @@
         <activity
             android:name=".ui.MoonOrbitActivity"
             android:label="@string/moon_orbit_activity" />
+        <activity
+            android:name=".ui.PeerListActivity"
+            android:label="@string/peer_list" />
 
         <receiver
             android:name=".service.StartupReceiver"

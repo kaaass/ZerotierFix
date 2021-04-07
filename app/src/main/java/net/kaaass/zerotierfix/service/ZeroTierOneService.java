@@ -45,9 +45,11 @@ import net.kaaass.zerotierfix.events.NodeDestroyedEvent;
 import net.kaaass.zerotierfix.events.NodeIDEvent;
 import net.kaaass.zerotierfix.events.NodeStatusEvent;
 import net.kaaass.zerotierfix.events.OrbitMoonEvent;
+import net.kaaass.zerotierfix.events.PeerInfoReplyEvent;
 import net.kaaass.zerotierfix.events.RequestNetworkInfoEvent;
 import net.kaaass.zerotierfix.events.RequestNetworkListEvent;
 import net.kaaass.zerotierfix.events.RequestNodeStatusEvent;
+import net.kaaass.zerotierfix.events.RequestPeerInfoEvent;
 import net.kaaass.zerotierfix.events.StopEvent;
 import net.kaaass.zerotierfix.model.AppNode;
 import net.kaaass.zerotierfix.model.AppNodeDao;
@@ -623,6 +625,15 @@ public class ZeroTierOneService extends VpnService implements Runnable, EventLis
         if (node2 != null) {
             this.eventBus.post(new NodeStatusEvent(node2.status()));
         }
+    }
+
+    @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    public void onRequestPeerInfo(RequestPeerInfoEvent event) {
+        if (this.node == null) {
+            this.eventBus.post(new PeerInfoReplyEvent(null));
+            return;
+        }
+        this.eventBus.post(new PeerInfoReplyEvent(this.node.peers()));
     }
 
     @Subscribe(threadMode = ThreadMode.ASYNC)

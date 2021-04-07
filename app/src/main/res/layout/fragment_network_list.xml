@@ -14,11 +14,29 @@
             android:name="net.kaaass.zerotierfix.ui.NetworkListFragment"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:layout_above="@+id/status_bar"
+            android:layout_alignParentTop="true"
+            android:clipToPadding="false"
+            android:paddingBottom="80dp"
             app:layoutManager="LinearLayoutManager"
             tools:context=".ui.NetworkListFragment"
-            tools:listitem="@layout/list_item_network"
+            tools:listitem="@layout/list_item_network" />
+
+        <RelativeLayout xmlns:tools="http://schemas.android.com/tools"
+            android:id="@+id/no_data"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
             android:layout_above="@+id/status_bar"
-            android:layout_alignParentTop="true" />
+            android:layout_alignParentTop="true">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:text="@string/click_to_add_network"
+                android:textColor="?attr/lightGreyText"
+                android:textSize="36sp" />
+        </RelativeLayout>
 
         <RelativeLayout
             android:id="@+id/status_bar"

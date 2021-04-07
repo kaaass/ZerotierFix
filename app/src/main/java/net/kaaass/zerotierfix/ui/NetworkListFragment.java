@@ -28,7 +28,6 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.snackbar.Snackbar;
 import com.zerotier.sdk.NodeStatus;
 import com.zerotier.sdk.VirtualNetworkConfig;
 import com.zerotier.sdk.VirtualNetworkStatus;
@@ -95,10 +94,40 @@ public class NetworkListFragment extends Fragment {
             NetworkListFragment.this.setIsBound(false);
         }
     };
-    private List<Network> mNetworks = new ArrayList<>();
+    private final List<Network> mNetworks = new ArrayList<>();
     private VirtualNetworkConfig[] mVNC;
     private TextView nodeIdView;
     private TextView nodeStatusView;
+
+    private View emptyView = null;
+
+    final private RecyclerView.AdapterDataObserver checkIfEmptyObserver = new RecyclerView.AdapterDataObserver() {
+        @Override
+        public void onChanged() {
+            checkIfEmpty();
+        }
+
+        @Override
+        public void onItemRangeInserted(int positionStart, int itemCount) {
+            checkIfEmpty();
+        }
+
+        @Override
+        public void onItemRangeRemoved(int positionStart, int itemCount) {
+            checkIfEmpty();
+        }
+
+        /**
+         * 检查列表是否为空
+         */
+        void checkIfEmpty() {
+            if (emptyView != null && recyclerViewAdapter != null) {
+                final boolean emptyViewVisible = recyclerViewAdapter.getItemCount() == 0;
+                emptyView.setVisibility(emptyViewVisible ? View.VISIBLE : View.GONE);
+                recyclerView.setVisibility(emptyViewVisible ? View.GONE : View.VISIBLE);
+            }
+        }
+    };
 
     public NetworkListFragment() {
         Log.d(TAG, "Network List Fragment created");
@@ -168,13 +197,17 @@ public class NetworkListFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.network_list_fragment, container, false);
+        View view = inflater.inflate(R.layout.fragment_network_list, container, false);
+
+        // 空列表提示
+        this.emptyView = view.findViewById(R.id.no_data);
 
         // 列表、适配器设置
         this.recyclerView = view.findViewById(R.id.joined_networks_list);
         this.recyclerView.setClickable(true);
         this.recyclerView.setLongClickable(true);
         this.recyclerViewAdapter = new RecyclerViewAdapter(this.mNetworks);
+        this.recyclerViewAdapter.registerAdapterDataObserver(checkIfEmptyObserver);
         this.recyclerView.setAdapter(this.recyclerViewAdapter);
 
         // 网络状态栏设置
@@ -243,9 +276,7 @@ public class NetworkListFragment extends Fragment {
             return true;
         } else if (menuId == R.id.menu_item_peers) {
             Log.d(TAG, "Selected peers");
-            // TODO
-            Snackbar.make(getView(), "WIP", Snackbar.LENGTH_LONG)
-                    .setAction("Action", null).show();
+            startActivity(new Intent(getActivity(), PeerListActivity.class));
             return true;
         } else if (menuId == R.id.menu_item_orbit) {
             Log.d(TAG, "Selected orbit");
@@ -389,7 +420,7 @@ public class NetworkListFragment extends Fragment {
                 network.setNetworkConfig(networkConfig);
                 networkDao.save(network);
                 networkConfigDao.save(networkConfig);
-                ((AnalyticsApplication) getActivity().getApplication()).getDaoSession().getAssignedAddressDao().queryBuilder().where(AssignedAddressDao.Properties.NetworkId.eq(Long.valueOf(networkInfo.networkId())), new WhereCondition[0]).buildDelete().forCurrentThread().forCurrentThread().executeDeleteWithoutDetachingEntities();
+                ((AnalyticsApplication) getActivity().getApplication()).getDaoSession().getAssignedAddressDao().queryBuilder().where(AssignedAddressDao.Properties.NetworkId.eq(networkInfo.networkId()), new WhereCondition[0]).buildDelete().forCurrentThread().forCurrentThread().executeDeleteWithoutDetachingEntities();
                 ((AnalyticsApplication) getActivity().getApplication()).getDaoSession().clear();
                 AssignedAddressDao assignedAddressDao = ((AnalyticsApplication) getActivity().getApplication()).getDaoSession().getAssignedAddressDao();
                 InetSocketAddress[] assignedAddresses = networkInfo.assignedAddresses();
@@ -524,6 +555,14 @@ public class NetworkListFragment extends Fragment {
         return daoSession.getMoonOrbitDao().loadAll();
     }
 
+    @Subscribe
+    public void onAfterJoinNetworkEvent(AfterJoinNetworkEvent event) {
+        Log.d(TAG, "Event on: AfterJoinNetworkEvent");
+        // 设置网络 orbit
+        List<MoonOrbit> moonOrbits = NetworkListFragment.this.getMoonOrbitList();
+        this.eventBus.post(new OrbitMoonEvent(moonOrbits));
+    }
+
     /* renamed from: com.zerotier.one.ui.NetworkListFragment$2  reason: invalid class name */
     static /* synthetic */ class AnonymousClass2 {
         static final /* synthetic */ int[] $SwitchMap$com$zerotier$sdk$VirtualNetworkStatus;
@@ -548,14 +587,6 @@ public class NetworkListFragment extends Fragment {
             this.networkId = j;
             this.useDefaultRoute = z;
         }
-    }
-
-    @Subscribe
-    public void onAfterJoinNetworkEvent(AfterJoinNetworkEvent event) {
-        Log.d(TAG, "Event on: AfterJoinNetworkEvent");
-        // 设置网络 orbit
-        List<MoonOrbit> moonOrbits = NetworkListFragment.this.getMoonOrbitList();
-        this.eventBus.post(new OrbitMoonEvent(moonOrbits));
     }
 
     /**

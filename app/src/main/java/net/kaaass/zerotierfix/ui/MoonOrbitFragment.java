@@ -44,10 +44,15 @@ public class MoonOrbitFragment extends Fragment {
     public static final String TAG = "MoonOrbitFragment";
 
     private final List<MoonOrbit> moonOrbitList = new ArrayList<>();
+
     private final EventBus eventBus;
+
     private RecyclerViewAdapter recyclerViewAdapter = null;
+
     private RecyclerView recyclerView = null;
+
     private View emptyView = null;
+
     final private RecyclerView.AdapterDataObserver checkIfEmptyObserver = new RecyclerView.AdapterDataObserver() {
         @Override
         public void onChanged() {
@@ -62,6 +67,17 @@ public class MoonOrbitFragment extends Fragment {
         @Override
         public void onItemRangeRemoved(int positionStart, int itemCount) {
             checkIfEmpty();
+        }
+
+        /**
+         * 检查列表是否为空
+         */
+        void checkIfEmpty() {
+            if (emptyView != null && recyclerViewAdapter != null) {
+                final boolean emptyViewVisible = recyclerViewAdapter.getItemCount() == 0;
+                emptyView.setVisibility(emptyViewVisible ? View.VISIBLE : View.GONE);
+                recyclerView.setVisibility(emptyViewVisible ? View.GONE : View.VISIBLE);
+            }
         }
     };
 
@@ -201,17 +217,6 @@ public class MoonOrbitFragment extends Fragment {
     }
 
     /**
-     * 检查列表是否为空
-     */
-    void checkIfEmpty() {
-        if (emptyView != null && this.recyclerViewAdapter != null) {
-            final boolean emptyViewVisible = this.recyclerViewAdapter.getItemCount() == 0;
-            this.emptyView.setVisibility(emptyViewVisible ? View.VISIBLE : View.GONE);
-            this.recyclerView.setVisibility(emptyViewVisible ? View.GONE : View.VISIBLE);
-        }
-    }
-
-    /**
      * Moon 入轨信息列表适配器
      */
     public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.ViewHolder> {
@@ -226,7 +231,7 @@ public class MoonOrbitFragment extends Fragment {
         @Override
         public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
             View view = LayoutInflater.from(parent.getContext())
-                    .inflate(R.layout.fragment_moon_orbit, parent, false);
+                    .inflate(R.layout.list_item_moon_orbit, parent, false);
             return new ViewHolder(view);
         }
 
