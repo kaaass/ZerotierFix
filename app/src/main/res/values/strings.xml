@@ -59,7 +59,6 @@
     <string name="status_label">Status:</string>
     <string name="title_activity_zero_tier_one__main">ZeroTier Fix</string>
     <string name="use_custom_dns">Use Custom DNS Servers</string>
-    <string name="versionName" translatable="false">1.6.5</string>
     <string name="status_offline">OFFLINE</string>
     <string name="status_online">ONLINE</string>
     <string name="toast_no_network">No Network Connectivity.  ZeroTier cannot start.</string>
@@ -82,4 +81,5 @@
     <string name="moon_orbit_exist">Moon Orbit information exists!</string>
     <string name="moon_orbit_add_success">Moon orbit added successfully.</string>
     <string name="moon_orbit_delete_success">Moon orbit deleted successfully. Disconnect &amp; reconnect for this setting to take effect.</string>
+    <string name="core_version" translatable="false">1.6.4</string>
 </resources>

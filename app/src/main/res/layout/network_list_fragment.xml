@@ -53,7 +53,7 @@
                 android:layout_centerVertical="true"
                 android:layout_toRightOf="@+id/node_status"
                 android:padding="5dp"
-                android:text="@string/versionName"
+                android:text="@string/core_version"
                 android:textColor="@color/tablerow_grey" />
         </RelativeLayout>
 

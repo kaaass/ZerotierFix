@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="app_name">Zerotier Fix</string>
     <string name="button_connect">连接</string>
     <string name="button_disconnect">断开连接</string>
     <string name="custom_dns">DNS 服务器</string>
