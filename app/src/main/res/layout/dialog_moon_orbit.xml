@@ -8,25 +8,34 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:labelFor="@id/text_moon_world_id"
         android:text="@string/moon_world_id" />
 
     <EditText
         android:id="@+id/text_moon_world_id"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:ems="10" />
+        android:autofillHints=""
+        android:digits="0123456789ABCDEFabcdef"
+        android:ems="10"
+        android:inputType="text"
+        android:maxLength="10" />
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:labelFor="@id/text_moon_seed"
         android:text="@string/moon_seed" />
 
     <EditText
         android:id="@+id/text_moon_seed"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:autofillHints=""
+        android:digits="0123456789ABCDEFabcdef"
         android:ems="10"
-        android:inputType="textPersonName" />
+        android:inputType="text"
+        android:maxLength="10" />
 
     <TextView
         android:layout_width="match_parent"
