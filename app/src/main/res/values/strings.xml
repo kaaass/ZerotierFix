@@ -84,4 +84,5 @@
     <string name="core_version" translatable="false">1.6.4</string>
     <string name="network_connected">Connected</string>
     <string name="connected_to_network">Connected to %s</string>
+    <string name="network_detail">Network Detail</string>
 </resources>
