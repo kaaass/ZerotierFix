@@ -35,7 +35,7 @@
                 android:paddingLeft="4dp"
                 android:paddingRight="4dp"
                 android:text="@string/moon_world_id"
-                android:textColor="#555555"
+                android:textColor="?attr/greyText"
                 android:textStyle="bold" />
 
             <TextView
@@ -45,7 +45,7 @@
                 android:layout_weight="1"
                 android:fontFamily="serif-monospace"
                 android:text="8056c2e21c"
-                android:textColor="#555555" />
+                android:textColor="?attr/greyText" />
 
         </LinearLayout>
 
@@ -64,7 +64,7 @@
                 android:paddingLeft="4dp"
                 android:paddingRight="4dp"
                 android:text="@string/moon_seed"
-                android:textColor="#555555"
+                android:textColor="?attr/greyText"
                 android:textStyle="bold" />
 
             <TextView
@@ -74,7 +74,7 @@
                 android:layout_weight="1"
                 android:fontFamily="serif-monospace"
                 android:text="8056c2e21c"
-                android:textColor="#555555" />
+                android:textColor="?attr/greyText" />
         </LinearLayout>
 
     </LinearLayout>

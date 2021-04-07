@@ -10,6 +10,6 @@
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
         android:text="@string/no_data"
-        android:textColor="@color/tablerow_grey"
+        android:textColor="?attr/lightGreyText"
         android:textSize="36sp" />
 </RelativeLayout>

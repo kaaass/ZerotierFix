@@ -34,7 +34,7 @@
                 android:gravity="center"
                 android:padding="5dp"
                 android:text=""
-                android:textColor="@color/tablerow_grey" />
+                android:textColor="?attr/lightGreyText" />
 
             <TextView
                 android:id="@+id/node_status"
@@ -44,7 +44,7 @@
                 android:layout_toRightOf="@+id/node_id"
                 android:padding="5dp"
                 android:text="@string/status_offline"
-                android:textColor="@color/tablerow_grey" />
+                android:textColor="?attr/lightGreyText" />
 
             <TextView
                 android:id="@+id/zt_version"
@@ -54,7 +54,7 @@
                 android:layout_toRightOf="@+id/node_status"
                 android:padding="5dp"
                 android:text="@string/core_version"
-                android:textColor="@color/tablerow_grey" />
+                android:textColor="?attr/lightGreyText" />
         </RelativeLayout>
 
     </RelativeLayout>

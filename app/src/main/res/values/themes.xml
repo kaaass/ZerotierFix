@@ -12,6 +12,9 @@
         <!-- Status bar color. -->
         <item name="android:statusBarColor" tools:targetApi="l">?attr/colorPrimaryVariant</item>
         <!-- Customize your theme here. -->
+        <item name="greyText">@color/grey_text</item>
+        <item name="lightGreyText">@color/light_grey_text</item>
+        <item name="tableRowGrey">@color/table_row_grey</item>
     </style>
 
     <style name="Theme.ZerotierFix.NoActionBar">
