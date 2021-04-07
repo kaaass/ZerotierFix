@@ -27,7 +27,9 @@ original author is Grant Limberg (glimberg@gmail.com). See [AUTHORS.md](https://
 
 ## Roadmap
 
+- [ ] Add moon config persistent & file config
 - [ ] Add peer list view
+- [ ] Support planet config
 - [ ] Rewrite & update UI to fit Material Design
 - [ ] Replace pre-built JNI library
 - [ ] Clear up code (remove decompiler tag and refine)
