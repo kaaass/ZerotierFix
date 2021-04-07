@@ -81,4 +81,6 @@
     <string name="moon_orbit_exist">Moon 入轨信息已经存在!</string>
     <string name="moon_orbit_add_success">Moon orbit 添加成功</string>
     <string name="moon_orbit_delete_success">Moon orbit 删除成功。需要手动断开、重连使配置生效。</string>
+    <string name="network_connected">已连接</string>
+    <string name="connected_to_network">已连接到网络 %s</string>
 </resources>

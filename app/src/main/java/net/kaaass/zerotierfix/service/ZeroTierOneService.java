@@ -884,25 +884,27 @@ public class ZeroTierOneService extends VpnService implements Runnable, EventLis
                 this.tunTapAdapter.setVpnSocket(this.vpnSocket);
                 this.tunTapAdapter.setFileStreams(this.in, this.out);
                 this.tunTapAdapter.startThreads();
+                // 状态栏提示
                 if (this.notificationManager == null)
                     this.notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
                 if (Build.VERSION.SDK_INT >= 26) {
                     NotificationChannel notificationChannel = new NotificationChannel("ZeroTierOne", "ZeroTier One", NotificationManager.IMPORTANCE_MIN);
-                    notificationChannel.setDescription("Connected");
+                    notificationChannel.setDescription(getString(R.string.network_connected));
                     this.notificationManager.createNotificationChannel(notificationChannel);
                 }
                 Intent intent = new Intent(this, NetworkListActivity.class);
                 PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
                 NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "ZeroTierOne");
-                String contentText = "Connected to " + Long.toHexString(this.networkConfigs.networkId());
+                String contentText = String.format(getString(R.string.connected_to_network), Long.toHexString(this.networkConfigs.networkId()));
                 Notification notification = builder.setOngoing(true)
                         .setSmallIcon(R.mipmap.ic_launcher)
-                        .setContentTitle("Connected")
+                        .setContentTitle(getString(R.string.network_connected))
                         .setContentText(contentText)
                         .setSubText("")
                         .setContentIntent(pendingIntent).build();
                 this.notificationManager.notify(ZT_NOTIFICATION_TAG, notification);
                 Log.i("ZT1_Service", "ZeroTier One Connected");
+                // 多播处理进程
                 Thread thread = this.v4multicastScanner;
                 if (!((thread != null) && !thread.isAlive()) && Build.VERSION.SDK_INT < 29)
                     this.v4multicastScanner.start();

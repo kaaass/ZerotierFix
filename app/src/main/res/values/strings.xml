@@ -82,4 +82,6 @@
     <string name="moon_orbit_add_success">Moon orbit added successfully.</string>
     <string name="moon_orbit_delete_success">Moon orbit deleted successfully. Disconnect &amp; reconnect for this setting to take effect.</string>
     <string name="core_version" translatable="false">1.6.4</string>
+    <string name="network_connected">Connected</string>
+    <string name="connected_to_network">Connected to %s</string>
 </resources>
