@@ -61,6 +61,7 @@ import net.kaaass.zerotierfix.model.NetworkConfigDao;
 import net.kaaass.zerotierfix.model.NetworkDao;
 import net.kaaass.zerotierfix.ui.NetworkListActivity;
 import net.kaaass.zerotierfix.ui.NetworkListFragment;
+import net.kaaass.zerotierfix.util.Constants;
 import net.kaaass.zerotierfix.util.InetAddressUtils;
 
 import org.greenrobot.eventbus.EventBus;
@@ -303,7 +304,7 @@ public class ZeroTierOneService extends VpnService implements Runnable, EventLis
             }
             this.networkId = longValue;
             SharedPreferences defaultSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-            boolean useCellularData = defaultSharedPreferences.getBoolean("network_use_cellular_data", false);
+            boolean useCellularData = defaultSharedPreferences.getBoolean(Constants.PREF_NETWORK_USE_CELLULAR_DATA, false);
             this.disableIPv6 = defaultSharedPreferences.getBoolean("network_disable_ipv6", false);
             ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
             NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();

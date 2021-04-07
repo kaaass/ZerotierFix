@@ -10,6 +10,7 @@ import androidx.preference.PreferenceFragmentCompat;
 
 import net.kaaass.zerotierfix.R;
 import net.kaaass.zerotierfix.service.ZeroTierOneService;
+import net.kaaass.zerotierfix.util.Constants;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -35,7 +36,7 @@ public class PrefsFragment extends PreferenceFragmentCompat implements SharedPre
     }
 
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String str) {
-        if (str.equals("network_use_cellular_data") && sharedPreferences.getBoolean("network_use_cellular_data", false)) {
+        if (str.equals(Constants.PREF_NETWORK_USE_CELLULAR_DATA) && sharedPreferences.getBoolean(Constants.PREF_NETWORK_USE_CELLULAR_DATA, false)) {
             getActivity().startService(new Intent(getActivity(), ZeroTierOneService.class));
         }
     }

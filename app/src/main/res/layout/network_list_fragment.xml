@@ -9,10 +9,14 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <ListView
+        <androidx.recyclerview.widget.RecyclerView xmlns:tools="http://schemas.android.com/tools"
             android:id="@+id/joined_networks_list"
+            android:name="net.kaaass.zerotierfix.ui.NetworkListFragment"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            app:layoutManager="LinearLayoutManager"
+            tools:context=".ui.NetworkListFragment"
+            tools:listitem="@layout/list_item_network"
             android:layout_above="@+id/status_bar"
             android:layout_alignParentTop="true" />
 
