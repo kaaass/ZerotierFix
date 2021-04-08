@@ -13,5 +13,7 @@ public class Constants {
 
     public static final String FILE_CUSTOM_PLANET = "planet.custom";
 
+    public static final String FILE_TEMP = "temp";
+
     public static final String FILE_PLANET = "planet";
 }

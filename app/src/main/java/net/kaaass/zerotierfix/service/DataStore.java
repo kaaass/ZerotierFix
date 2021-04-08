@@ -31,23 +31,24 @@ public class DataStore implements DataStoreGetListener, DataStorePutListener {
         this.context = context;
     }
 
-    @Override // com.zerotier.sdk.DataStorePutListener
-    public int onDataStorePut(String str, byte[] bArr, boolean z) {
-        Log.d(TAG, "Writing File: " + str + ", to: " + this.context.getFilesDir());
+    @Override
+    public int onDataStorePut(String name, byte[] buffer, boolean secure) {
+        Log.d(TAG, "Writing File: " + name + ", to: " + this.context.getFilesDir());
+        name = hookPlanetFile(name);
         try {
-            if (str.contains("/")) {
-                File file = new File(this.context.getFilesDir(), str.substring(0, str.lastIndexOf('/')));
+            if (name.contains("/")) {
+                File file = new File(this.context.getFilesDir(), name.substring(0, name.lastIndexOf('/')));
                 if (!file.exists()) {
                     file.mkdirs();
                 }
-                FileOutputStream fileOutputStream = new FileOutputStream(new File(file, str.substring(str.lastIndexOf('/') + 1)));
-                fileOutputStream.write(bArr);
+                FileOutputStream fileOutputStream = new FileOutputStream(new File(file, name.substring(name.lastIndexOf('/') + 1)));
+                fileOutputStream.write(buffer);
                 fileOutputStream.flush();
                 fileOutputStream.close();
                 return 0;
             }
-            FileOutputStream openFileOutput = this.context.openFileOutput(str, 0);
-            openFileOutput.write(bArr);
+            FileOutputStream openFileOutput = this.context.openFileOutput(name, 0);
+            openFileOutput.write(buffer);
             openFileOutput.flush();
             openFileOutput.close();
             return 0;
@@ -67,35 +68,28 @@ public class DataStore implements DataStoreGetListener, DataStorePutListener {
         }
     }
 
-    @Override // com.zerotier.sdk.DataStorePutListener
-    public int onDelete(String str) {
-        boolean z;
-        Log.d(TAG, "Deleting File: " + str);
-        if (str.contains("/")) {
-            File file = new File(this.context.getFilesDir(), str);
+    @Override
+    public int onDelete(String name) {
+        boolean deleted;
+        Log.d(TAG, "Deleting File: " + name);
+        name = hookPlanetFile(name);
+        if (name.contains("/")) {
+            File file = new File(this.context.getFilesDir(), name);
             if (!file.exists()) {
-                z = true;
+                deleted = true;
             } else {
-                z = file.delete();
+                deleted = file.delete();
             }
         } else {
-            z = this.context.deleteFile(str);
+            deleted = this.context.deleteFile(name);
         }
-        return !z ? 1 : 0;
+        return !deleted ? 1 : 0;
     }
 
     @Override
     public long onDataStoreGet(String name, byte[] out_buffer) {
         Log.d(TAG, "Reading File: " + name);
-        // 判断 Planet 文件
-        if (Constants.FILE_PLANET.equals(name)) {
-            boolean customPlanet = PreferenceManager
-                    .getDefaultSharedPreferences(this.context)
-                    .getBoolean(Constants.PREF_PLANET_USE_CUSTOM, false);
-            if (customPlanet) {
-                name = Constants.FILE_CUSTOM_PLANET;
-            }
-        }
+        name = hookPlanetFile(name);
         // 读入文件
         try {
             if (name.contains("/")) {
@@ -125,5 +119,20 @@ public class DataStore implements DataStoreGetListener, DataStorePutListener {
             Log.e(TAG, "", e);
             return -3;
         }
+    }
+
+    /**
+     * 判断自定义 Planet 文件
+     */
+    String hookPlanetFile(String name) {
+        if (Constants.FILE_PLANET.equals(name)) {
+            boolean customPlanet = PreferenceManager
+                    .getDefaultSharedPreferences(this.context)
+                    .getBoolean(Constants.PREF_PLANET_USE_CUSTOM, false);
+            if (customPlanet) {
+                return Constants.FILE_CUSTOM_PLANET;
+            }
+        }
+        return name;
     }
 }
