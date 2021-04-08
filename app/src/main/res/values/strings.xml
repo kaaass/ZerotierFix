@@ -105,4 +105,13 @@
     <string name="copy_network_id_to_clipboard">Copy Network ID to Clipboard</string>
     <string name="text_copied">Text copied</string>
     <string name="copy_moon_world_id_to_clipboard">Copy Moon World ID to clipboard</string>
+    <string name="use_custom_planet">Use Custom Planet</string>
+    <string name="load_planet_file">Load planet file</string>
+    <string name="enter_planet_file_url">Enter planet file url:</string>
+    <string name="file">File</string>
+    <string name="import_via_file">Import via file</string>
+    <string name="url">URL</string>
+    <string name="import_via_url">Import via URL</string>
+    <string name="cannot_copy_planet">Cannot copy planet file.</string>
+    <string name="set_planet_file">Set planet file</string>
 </resources>

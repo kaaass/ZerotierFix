@@ -102,4 +102,13 @@
     <string name="copy_network_id_to_clipboard">复制网络 ID 到剪切板</string>
     <string name="text_copied">文本已复制</string>
     <string name="copy_moon_world_id_to_clipboard">复制 Moon 地址到剪切板</string>
+    <string name="use_custom_planet">启动自定义 Planet</string>
+    <string name="load_planet_file">加载 Planet 文件</string>
+    <string name="enter_planet_file_url">输入 Planet 文件的 URL:</string>
+    <string name="file">文件</string>
+    <string name="import_via_file">从文件导入</string>
+    <string name="url">URL</string>
+    <string name="import_via_url">从 URL 导入</string>
+    <string name="cannot_copy_planet">无法复制 Planet 文件</string>
+    <string name="set_planet_file">设置 Planet 文件</string>
 </resources>

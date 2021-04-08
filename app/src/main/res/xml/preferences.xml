@@ -1,7 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory android:title="@string/planet_settings">
+        <SwitchPreference
+            android:defaultValue="false"
+            android:key="planet_use_custom"
+            android:title="@string/use_custom_planet" />
+        <Preference
+            android:key="set_planet_file"
+            android:title="@string/set_planet_file" />
+    </PreferenceCategory>
     <PreferenceCategory android:title="@string/preferences_network">
-        <CheckBoxPreference android:title="@string/preferences_network_use_cell_data" android:key="network_use_cellular_data" android:defaultValue="false"/>
-        <CheckBoxPreference android:title="@string/preferences_network_disable_ipv6" android:key="network_disable_ipv6" android:summary="@string/preferences_network_disable_ipv6_summary" android:defaultValue="false"/>
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="network_use_cellular_data"
+            android:title="@string/preferences_network_use_cell_data" />
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="network_disable_ipv6"
+            android:summary="@string/preferences_network_disable_ipv6_summary"
+            android:title="@string/preferences_network_disable_ipv6" />
     </PreferenceCategory>
 </PreferenceScreen>

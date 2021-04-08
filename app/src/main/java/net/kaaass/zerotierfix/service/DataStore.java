@@ -3,8 +3,12 @@ package net.kaaass.zerotierfix.service;
 import android.content.Context;
 import android.util.Log;
 
+import androidx.preference.PreferenceManager;
+
 import com.zerotier.sdk.DataStoreGetListener;
 import com.zerotier.sdk.DataStorePutListener;
+
+import net.kaaass.zerotierfix.util.Constants;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -14,30 +18,35 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
+/**
+ * Zerotier 文件数据源
+ */
 public class DataStore implements DataStoreGetListener, DataStorePutListener {
+
     private static final String TAG = "DataStore";
-    private final Context _ctx;
+
+    private final Context context;
 
     public DataStore(Context context) {
-        this._ctx = context;
+        this.context = context;
     }
 
     @Override // com.zerotier.sdk.DataStorePutListener
     public int onDataStorePut(String str, byte[] bArr, boolean z) {
-        Log.d(TAG, "Writing File: " + str + ", to: " + this._ctx.getFilesDir());
+        Log.d(TAG, "Writing File: " + str + ", to: " + this.context.getFilesDir());
         try {
             if (str.contains("/")) {
-                File file = new File(this._ctx.getFilesDir(), str.substring(0, str.lastIndexOf(47)));
+                File file = new File(this.context.getFilesDir(), str.substring(0, str.lastIndexOf('/')));
                 if (!file.exists()) {
                     file.mkdirs();
                 }
-                FileOutputStream fileOutputStream = new FileOutputStream(new File(file, str.substring(str.lastIndexOf("/") + 1)));
+                FileOutputStream fileOutputStream = new FileOutputStream(new File(file, str.substring(str.lastIndexOf('/') + 1)));
                 fileOutputStream.write(bArr);
                 fileOutputStream.flush();
                 fileOutputStream.close();
                 return 0;
             }
-            FileOutputStream openFileOutput = this._ctx.openFileOutput(str, 0);
+            FileOutputStream openFileOutput = this.context.openFileOutput(str, 0);
             openFileOutput.write(bArr);
             openFileOutput.flush();
             openFileOutput.close();
@@ -63,38 +72,48 @@ public class DataStore implements DataStoreGetListener, DataStorePutListener {
         boolean z;
         Log.d(TAG, "Deleting File: " + str);
         if (str.contains("/")) {
-            File file = new File(this._ctx.getFilesDir(), str);
+            File file = new File(this.context.getFilesDir(), str);
             if (!file.exists()) {
                 z = true;
             } else {
                 z = file.delete();
             }
         } else {
-            z = this._ctx.deleteFile(str);
+            z = this.context.deleteFile(str);
         }
         return !z ? 1 : 0;
     }
 
-    @Override // com.zerotier.sdk.DataStoreGetListener
-    public long onDataStoreGet(String str, byte[] bArr) {
-        Log.d(TAG, "Reading File: " + str);
+    @Override
+    public long onDataStoreGet(String name, byte[] out_buffer) {
+        Log.d(TAG, "Reading File: " + name);
+        // 判断 Planet 文件
+        if (Constants.FILE_PLANET.equals(name)) {
+            boolean customPlanet = PreferenceManager
+                    .getDefaultSharedPreferences(this.context)
+                    .getBoolean(Constants.PREF_PLANET_USE_CUSTOM, false);
+            if (customPlanet) {
+                name = Constants.FILE_CUSTOM_PLANET;
+            }
+        }
+        // 读入文件
         try {
-            if (str.contains("/")) {
-                File file = new File(this._ctx.getFilesDir(), str.substring(0, str.lastIndexOf(47)));
+            if (name.contains("/")) {
+                File file = new File(this.context.getFilesDir(), name.substring(0, name.lastIndexOf('/')));
                 if (!file.exists()) {
                     file.mkdirs();
                 }
-                File file2 = new File(file, str.substring(str.lastIndexOf(47) + 1));
+                File file2 = new File(file, name.substring(name.lastIndexOf('/') + 1));
                 if (!file2.exists()) {
                     return 0;
                 }
                 FileInputStream fileInputStream = new FileInputStream(file2);
-                int read = fileInputStream.read(bArr);
+                int read = fileInputStream.read(out_buffer);
                 fileInputStream.close();
                 return read;
             }
-            FileInputStream openFileInput = this._ctx.openFileInput(str);
-            int read2 = openFileInput.read(bArr);
+            FileInputStream openFileInput = this.context.openFileInput(name);
+            int read2 = openFileInput.read(out_buffer);
             openFileInput.close();
             return read2;
         } catch (FileNotFoundException unused) {
