@@ -5,9 +5,16 @@
 
 <h4 align="center">An unofficial Zerotier Android client patched from official client.</h4>
 
+<p align="center">
+  <img src="screenshots/main.png" alt="main" width="150"/>
+  <img src="screenshots/peers.png" alt="peers" width="150"/>
+  <img src="screenshots/moons.png" alt="moons" width="150"/>
+</p>
+
 ## Features
 
 - Self-hosted Moon Support
+- View peers list
 - Chinese translation
 
 ## Download
