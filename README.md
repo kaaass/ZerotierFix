@@ -14,6 +14,7 @@
 ## Features
 
 - Self-hosted Moon Support
+- Add custom planet config via file and URL
 - View peers list
 - Chinese translation
 
@@ -36,7 +37,7 @@ original author is Grant Limberg (glimberg@gmail.com). See [AUTHORS.md](https://
 
 - [ ] Add moon config persistent & file config
 - [x] Add peer list view
-- [ ] Support planet config
+- [x] Support planet config
 - [ ] Rewrite & update UI to fit Material Design
 - [ ] Replace pre-built JNI library
 - [ ] Clear up code (remove decompiler tag and refine)
