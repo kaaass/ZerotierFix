@@ -120,4 +120,5 @@
     <string name="planet_wrong_format">Wrong planet file format</string>
     <string name="downloading">Downloading</string>
     <string name="planet_download_timeout">Timeout when downloading planet file</string>
+    <string name="planet_use_custom_summary"><![CDATA[Allows you to bypass Zerotier official network. Reconnect for this setting to take effect.]]></string>
 </resources>

@@ -117,4 +117,5 @@
     <string name="planet_wrong_format">Planet 文件格式错误</string>
     <string name="downloading">下载中</string>
     <string name="planet_download_timeout">下载 Planet 文件超时</string>
+    <string name="planet_use_custom_summary"><![CDATA[可以让客户端完全隔离 Zerotier 官方服务器。需手动重连使配置生效。]]></string>
 </resources>

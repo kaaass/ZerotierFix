@@ -4,6 +4,7 @@
         <SwitchPreference
             android:defaultValue="false"
             android:key="planet_use_custom"
+            android:summary="@string/planet_use_custom_summary"
             android:title="@string/use_custom_planet" />
         <Preference
             android:key="set_planet_file"
