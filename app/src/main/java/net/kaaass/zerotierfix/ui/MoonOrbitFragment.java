@@ -41,6 +41,7 @@ import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -56,6 +57,7 @@ public class MoonOrbitFragment extends Fragment {
     public static final String TAG = "MoonOrbitFragment";
 
     private static final int REQUEST_MOON_FILE = 1;
+    private static final byte[] MOON_FILE_HEADER = new byte[]{0x7f};
 
     private final List<MoonOrbit> moonOrbitList = new ArrayList<>();
 
@@ -167,7 +169,7 @@ public class MoonOrbitFragment extends Fragment {
 
         // 选择入轨
         View viewOrbit = view.findViewById(R.id.from_orbit);
-        viewOrbit.setOnClickListener(v -> this.showMoonOrbitDialog(false));
+        viewOrbit.setOnClickListener(v -> this.showMoonOrbitDialog());
 
         // 窗口
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext())
@@ -181,13 +183,10 @@ public class MoonOrbitFragment extends Fragment {
     /**
      * 显示 Moon 入轨对话框
      */
-    private void showMoonOrbitDialog(boolean fromFile) {
+    private void showMoonOrbitDialog() {
         View view = LayoutInflater.from(getContext()).inflate(R.layout.dialog_moon_orbit, null);
         final EditText textMoonWorldId = view.findViewById(R.id.text_moon_world_id);
         final EditText textMoonSeed = view.findViewById(R.id.text_moon_seed);
-
-        // 文件导入时隐藏 Seed
-        view.findViewById(R.id.moon_seed).setVisibility(fromFile ? View.GONE : View.VISIBLE);
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext())
                 .setView(view)
@@ -205,20 +204,16 @@ public class MoonOrbitFragment extends Fragment {
                         return;
                     }
                     // 解析 Seed
-                    if (fromFile) {
-                        moonSeed = moonWorldId;
-                    } else {
-                        try {
-                            moonSeed = Long.parseLong(textMoonSeed.getText().toString(), 16);
-                            if (!(0 <= moonSeed && moonSeed <= 0xffffffffffL))
-                                throw new NumberFormatException();
-                        } catch (NumberFormatException ignored) {
-                            Snackbar.make(getView(), R.string.moon_seed_wrong_format, BaseTransientBottomBar.LENGTH_SHORT).show();
-                            return;
-                        }
+                    try {
+                        moonSeed = Long.parseLong(textMoonSeed.getText().toString(), 16);
+                        if (!(0 <= moonSeed && moonSeed <= 0xffffffffffL))
+                            throw new NumberFormatException();
+                    } catch (NumberFormatException ignored) {
+                        Snackbar.make(getView(), R.string.moon_seed_wrong_format, BaseTransientBottomBar.LENGTH_SHORT).show();
+                        return;
                     }
                     // 触发事件
-                    this.eventBus.post(new AddMoonOrbitEvent(moonWorldId, moonSeed, fromFile));
+                    this.eventBus.post(new AddMoonOrbitEvent(moonWorldId, moonSeed, false));
                 })
                 .setOnDismissListener(dialog -> {
                     // 关闭外层对话框
@@ -226,8 +221,6 @@ public class MoonOrbitFragment extends Fragment {
                         this.providerDialog.dismiss();
                         this.providerDialog = null;
                     }
-                    // 清理临时文件
-                    FileUtil.clearTempFile(requireContext());
                 });
 
         builder.create().show();
@@ -235,16 +228,38 @@ public class MoonOrbitFragment extends Fragment {
 
     /**
      * 校验临时 Moon 文件
+     *
+     * @return Moon 地址
      */
-    private boolean checkTempMoonFile() {
-        // TODO Moon 文件校验
+    private long checkTempMoonFile() {
         File temp = FileUtil.tempFile(requireContext());
-        return true;
+        int dataLen = MOON_FILE_HEADER.length + 8;
+        byte[] buf = new byte[dataLen];
+        try (FileInputStream in = new FileInputStream(temp)) {
+            // 读入文件头
+            if (in.read(buf) != dataLen) {
+                return -1;
+            }
+            // 校验
+            if (buf[0] != MOON_FILE_HEADER[0]) {
+                Log.i(TAG, "Moon file has a wrong header");
+                return -1;
+            }
+            // 取得 Moon 地址
+            long moonWorldId = 0;
+            for (int i = MOON_FILE_HEADER.length; i < dataLen; i++) {
+                moonWorldId = (moonWorldId << 8) + (buf[i] & 0xff);
+            }
+            return moonWorldId;
+        } catch (IOException ignored) {
+        }
+        return -1;
     }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REQUEST_MOON_FILE && resultCode == -1 && data != null) {
+            long moonWorldId;
             // Moon 文件设置
             Uri uriData = data.getData();
             if (uriData == null) {
@@ -256,7 +271,8 @@ public class MoonOrbitFragment extends Fragment {
             try (InputStream in = context.getContentResolver().openInputStream(uriData)) {
                 FileUtils.copyInputStreamToFile(in, FileUtil.tempFile(requireContext()));
                 // 校验
-                if (!checkTempMoonFile()) {
+                moonWorldId = checkTempMoonFile();
+                if (moonWorldId < 0) {
                     Toast.makeText(getContext(), R.string.moon_wrong_file_format, Toast.LENGTH_LONG).show();
                     FileUtil.clearTempFile(requireContext());
                     return;
@@ -269,8 +285,8 @@ public class MoonOrbitFragment extends Fragment {
                 return;
             }
             Log.i(TAG, "Copy planet file successfully");
-            // 打开 Moon 地址输入框
-            showMoonOrbitDialog(true);
+            // 加入 Moon
+            onAddMoonOrbitEvent(new AddMoonOrbitEvent(moonWorldId, moonWorldId, true));
         }
     }
 
@@ -280,12 +296,6 @@ public class MoonOrbitFragment extends Fragment {
         long moonSeed = event.getMoonSeed();
         boolean fromFile = event.isFromFile();
         Log.i(TAG, "add orbit info " + Long.toHexString(moonWorldId));
-        // 移动临时文件
-        if (fromFile) {
-            File dest = new File(requireActivity().getFilesDir(),
-                    String.format(MoonOrbit.MOON_FILE_PATH, moonWorldId));
-            FileUtil.tempFile(requireContext()).renameTo(dest);
-        }
         // 数据库修改
         DaoSession daoSession = ((AnalyticsApplication) getActivity().getApplication()).getDaoSession();
         long existCount = daoSession.getMoonOrbitDao().queryBuilder()
@@ -294,11 +304,24 @@ public class MoonOrbitFragment extends Fragment {
                 .buildCount()
                 .count();
         if (existCount > 0) {
-            Snackbar.make(getView(), R.string.moon_orbit_exist, BaseTransientBottomBar.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), R.string.moon_orbit_exist, Toast.LENGTH_SHORT).show();
+            FileUtil.clearTempFile(requireContext());
             return;
+        }
+        // 移动临时文件
+        if (fromFile) {
+            File dest = new File(requireActivity().getFilesDir(),
+                    String.format(MoonOrbit.MOON_FILE_PATH, moonWorldId));
+            FileUtil.tempFile(requireContext()).renameTo(dest);
+            FileUtil.clearTempFile(requireContext());
         }
         MoonOrbit moonOrbit = new MoonOrbit(moonWorldId, moonSeed, fromFile);
         daoSession.getMoonOrbitDao().insert(moonOrbit);
+        // 关闭窗口并提示
+        if (this.providerDialog != null) {
+            this.providerDialog.dismiss();
+            this.providerDialog = null;
+        }
         Snackbar.make(getView(), R.string.moon_orbit_add_success, BaseTransientBottomBar.LENGTH_SHORT).show();
         // 触发事件入轨
         this.eventBus.post(new OrbitMoonEvent(new ArrayList<MoonOrbit>() {{
