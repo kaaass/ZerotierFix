@@ -117,4 +117,5 @@
     <string name="wrong_url_format">Wrong url format</string>
     <string name="cannot_download_planet_file">Cannot download planet file</string>
     <string name="set_planet_succ">Set custom planet file successfully.</string>
+    <string name="planet_wrong_format">Wrong planet file format</string>
 </resources>

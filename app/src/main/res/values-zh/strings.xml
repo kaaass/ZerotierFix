@@ -114,4 +114,5 @@
     <string name="wrong_url_format">URL 格式错误</string>
     <string name="cannot_download_planet_file">无法下载 Planet 文件</string>
     <string name="set_planet_succ">成功设置 Planet 文件</string>
+    <string name="planet_wrong_format">Planet 文件格式错误</string>
 </resources>

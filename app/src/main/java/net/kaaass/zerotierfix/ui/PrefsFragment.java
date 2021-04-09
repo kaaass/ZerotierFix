@@ -28,10 +28,12 @@ import net.kaaass.zerotierfix.util.Constants;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.Objects;
 
 /**
@@ -148,7 +150,15 @@ public class PrefsFragment extends PreferenceFragmentCompat implements SharedPre
                         try {
                             File destFile = new File(requireActivity().getFilesDir(), Constants.FILE_TEMP);
                             FileUtils.copyURLToFile(fileUrl, destFile);
-                            dealTempPlanetFile();
+                            boolean success = dealTempPlanetFile();
+                            if (!success) {
+                                // 校验失败
+                                requireActivity().runOnUiThread(() -> {
+                                    Toast.makeText(getContext(), R.string.planet_wrong_format, Toast.LENGTH_LONG).show();
+                                    closePlanetDialog();
+                                });
+                                return;
+                            }
                         } catch (IOException e) {
                             Log.e(TAG, "Cannot download planet file", e);
                             // 设置失败
@@ -201,7 +211,13 @@ public class PrefsFragment extends PreferenceFragmentCompat implements SharedPre
             try (InputStream in = context.getContentResolver().openInputStream(uriData)) {
                 File destFile = new File(requireActivity().getFilesDir(), Constants.FILE_TEMP);
                 FileUtils.copyInputStreamToFile(in, destFile);
-                dealTempPlanetFile();
+                boolean success = dealTempPlanetFile();
+                if (!success) {
+                    // 校验失败
+                    Toast.makeText(getContext(), R.string.planet_wrong_format, Toast.LENGTH_LONG).show();
+                    closePlanetDialog();
+                    return;
+                }
             } catch (IOException e) {
                 Log.e(TAG, "Cannot copy planet file", e);
                 // 设置失败
@@ -251,14 +267,35 @@ public class PrefsFragment extends PreferenceFragmentCompat implements SharedPre
     }
 
     /**
+     * Plant 文件固定头
+     */
+    private static final byte[] PLANET_FILE_HEADER = new byte[] {
+            0x01, 0x00, 0x00, 0x00, 0x00, 0x08, (byte) 0xea, (byte) 0xc9, 0x0a
+    };
+
+    /**
      * 将临时文件设置为 Planet 文件
      */
-    private void dealTempPlanetFile() {
-        // TODO 实现 Plant 文件校验。文件头：0100 0000 0008 eac9 0a
-        // 移动临时文件
+    private boolean dealTempPlanetFile() {
+        // Plant 文件校验
         File temp = new File(requireActivity().getFilesDir(), Constants.FILE_TEMP);
+        byte[] buf = new byte[PLANET_FILE_HEADER.length];
+        try (FileInputStream in = new FileInputStream(temp)) {
+            // 读入文件头
+            if (in.read(buf) != PLANET_FILE_HEADER.length) {
+                return false;
+            }
+            // 校验
+            if (!Arrays.equals(buf, PLANET_FILE_HEADER)) {
+                Log.i(TAG, "Planet file has a wrong header");
+                return false;
+            }
+        } catch (IOException e) {
+            return false;
+        }
+        // 移动临时文件
         File dest = new File(requireActivity().getFilesDir(), Constants.FILE_CUSTOM_PLANET);
-        temp.renameTo(dest);
+        return temp.renameTo(dest);
     }
 
     /**
