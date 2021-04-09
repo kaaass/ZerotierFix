@@ -12,6 +12,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.preference.Preference;
@@ -32,6 +33,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
+import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Objects;
@@ -45,11 +47,20 @@ public class PrefsFragment extends PreferenceFragmentCompat implements SharedPre
 
     private static final String TAG = "PreferencesFragment";
 
+    public static final int PLANET_DOWNLOAD_CONN_TIMEOUT = 5 * 1000;
+
+    public static final int PLANET_DOWNLOAD_TIMEOUT = 10 * 1000;
+
+    /**
+     * Plant 文件固定头
+     */
+    private static final byte[] PLANET_FILE_HEADER = new byte[]{
+            0x01, 0x00, 0x00, 0x00, 0x00, 0x08, (byte) 0xea, (byte) 0xc9, 0x0a
+    };
     private SwitchPreference prefPlanetUseCustom;
-
     private Preference prefSetPlanetFile;
-
     private Dialog planetDialog = null;
+    private Dialog loadingDialog = null;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -144,18 +155,20 @@ public class PrefsFragment extends PreferenceFragmentCompat implements SharedPre
                         this.planetDialog.dismiss();
                         this.planetDialog = null;
                     }
-                    // TODO 显示加载动画
+                    // 显示加载动画
+                    showLoadingDialog(R.string.downloading);
                     // 下载 Planet 文件
                     new Thread(() -> {
                         try {
                             File destFile = new File(requireActivity().getFilesDir(), Constants.FILE_TEMP);
-                            FileUtils.copyURLToFile(fileUrl, destFile);
+                            FileUtils.copyURLToFile(fileUrl, destFile, PLANET_DOWNLOAD_CONN_TIMEOUT, PLANET_DOWNLOAD_TIMEOUT);
                             boolean success = dealTempPlanetFile();
                             if (!success) {
                                 // 校验失败
                                 requireActivity().runOnUiThread(() -> {
                                     Toast.makeText(getContext(), R.string.planet_wrong_format, Toast.LENGTH_LONG).show();
                                     closePlanetDialog();
+                                    closeLoadingDialog();
                                 });
                                 return;
                             }
@@ -163,8 +176,13 @@ public class PrefsFragment extends PreferenceFragmentCompat implements SharedPre
                             Log.e(TAG, "Cannot download planet file", e);
                             // 设置失败
                             requireActivity().runOnUiThread(() -> {
-                                Toast.makeText(getContext(), R.string.cannot_download_planet_file, Toast.LENGTH_LONG).show();
+                                int messsage = R.string.cannot_download_planet_file;
+                                if (e instanceof SocketTimeoutException) {
+                                    messsage = R.string.planet_download_timeout;
+                                }
+                                Toast.makeText(getContext(), messsage, Toast.LENGTH_LONG).show();
                                 closePlanetDialog();
+                                closeLoadingDialog();
                             });
                             return;
                         } finally {
@@ -175,6 +193,7 @@ public class PrefsFragment extends PreferenceFragmentCompat implements SharedPre
                         requireActivity().runOnUiThread(() -> {
                             Snackbar.make(requireView(), R.string.set_planet_succ, BaseTransientBottomBar.LENGTH_LONG).show();
                             closePlanetDialog();
+                            closeLoadingDialog();
                         });
                     }).start();
                 });
@@ -267,13 +286,6 @@ public class PrefsFragment extends PreferenceFragmentCompat implements SharedPre
     }
 
     /**
-     * Plant 文件固定头
-     */
-    private static final byte[] PLANET_FILE_HEADER = new byte[] {
-            0x01, 0x00, 0x00, 0x00, 0x00, 0x08, (byte) 0xea, (byte) 0xc9, 0x0a
-    };
-
-    /**
      * 将临时文件设置为 Planet 文件
      */
     private boolean dealTempPlanetFile() {
@@ -305,6 +317,33 @@ public class PrefsFragment extends PreferenceFragmentCompat implements SharedPre
         File temp = new File(requireActivity().getFilesDir(), Constants.FILE_TEMP);
         if (temp.exists()) {
             temp.delete();
+        }
+    }
+
+    /**
+     * 显示加载框
+     */
+    private void showLoadingDialog(int prompt) {
+        closeLoadingDialog();
+        // 创建
+        View view = LayoutInflater.from(getContext()).inflate(R.layout.dialog_loading, null);
+
+        TextView textPrompt = view.findViewById(R.id.prompt);
+        textPrompt.setText(prompt);
+
+        this.loadingDialog = new AlertDialog.Builder(getContext())
+                .setView(view)
+                .setCancelable(false)
+                .create();
+        this.loadingDialog.show();
+    }
+
+    /**
+     * 关闭加载框
+     */
+    private void closeLoadingDialog() {
+        if (this.loadingDialog != null) {
+            this.loadingDialog.dismiss();
         }
     }
 }

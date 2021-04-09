@@ -118,4 +118,6 @@
     <string name="cannot_download_planet_file">Cannot download planet file</string>
     <string name="set_planet_succ">Set custom planet file successfully.</string>
     <string name="planet_wrong_format">Wrong planet file format</string>
+    <string name="downloading">Downloading</string>
+    <string name="planet_download_timeout">Timeout when downloading planet file</string>
 </resources>
