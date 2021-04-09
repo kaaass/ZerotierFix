@@ -299,8 +299,7 @@ public class MoonOrbitFragment extends Fragment {
         // 数据库修改
         DaoSession daoSession = ((AnalyticsApplication) getActivity().getApplication()).getDaoSession();
         long existCount = daoSession.getMoonOrbitDao().queryBuilder()
-                .where(MoonOrbitDao.Properties.MoonWorldId.eq(moonWorldId),
-                        MoonOrbitDao.Properties.MoonSeed.eq(moonSeed))
+                .where(MoonOrbitDao.Properties.MoonWorldId.eq(moonWorldId))
                 .buildCount()
                 .count();
         if (existCount > 0) {
@@ -441,6 +440,7 @@ public class MoonOrbitFragment extends Fragment {
                         // 删除缓存文件
                         this.mItem.deleteCacheFile(getContext());
                         this.mMoonConfig.setText(R.string.wait_to_fetch);
+                        Snackbar.make(getView(), R.string.cached_moon_file_delete, BaseTransientBottomBar.LENGTH_SHORT).show();
                         return true;
                     }
                     return false;

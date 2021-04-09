@@ -130,4 +130,5 @@
     <string name="cached">Cached</string>
     <string name="moon_wrong_file_format">Wrong moon file format</string>
     <string name="moon_world_id_hint">Zerotier address of Moon node. Also filename of its moon file.</string>
+    <string name="cached_moon_file_delete">Cached moon file deleted. Reconnect for this setting to take effect.</string>
 </resources>
