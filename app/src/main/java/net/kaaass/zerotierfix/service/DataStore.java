@@ -34,7 +34,10 @@ public class DataStore implements DataStoreGetListener, DataStorePutListener {
     @Override
     public int onDataStorePut(String name, byte[] buffer, boolean secure) {
         Log.d(TAG, "Writing File: " + name + ", to: " + this.context.getFilesDir());
-        name = hookPlanetFile(name);
+        // 保护自定义 Planet 文件
+        if (hookPlanetFile(name)) {
+            return 0;
+        }
         try {
             if (name.contains("/")) {
                 File file = new File(this.context.getFilesDir(), name.substring(0, name.lastIndexOf('/')));
@@ -72,7 +75,10 @@ public class DataStore implements DataStoreGetListener, DataStorePutListener {
     public int onDelete(String name) {
         boolean deleted;
         Log.d(TAG, "Deleting File: " + name);
-        name = hookPlanetFile(name);
+        // 保护自定义 Planet 文件
+        if (hookPlanetFile(name)) {
+            return 0;
+        }
         if (name.contains("/")) {
             File file = new File(this.context.getFilesDir(), name);
             if (!file.exists()) {
@@ -89,7 +95,9 @@ public class DataStore implements DataStoreGetListener, DataStorePutListener {
     @Override
     public long onDataStoreGet(String name, byte[] out_buffer) {
         Log.d(TAG, "Reading File: " + name);
-        name = hookPlanetFile(name);
+        if (hookPlanetFile(name)) {
+            name = Constants.FILE_CUSTOM_PLANET;
+        }
         // 读入文件
         try {
             if (name.contains("/")) {
@@ -124,15 +132,12 @@ public class DataStore implements DataStoreGetListener, DataStorePutListener {
     /**
      * 判断自定义 Planet 文件
      */
-    String hookPlanetFile(String name) {
+    boolean hookPlanetFile(String name) {
         if (Constants.FILE_PLANET.equals(name)) {
-            boolean customPlanet = PreferenceManager
+            return PreferenceManager
                     .getDefaultSharedPreferences(this.context)
                     .getBoolean(Constants.PREF_PLANET_USE_CUSTOM, false);
-            if (customPlanet) {
-                return Constants.FILE_CUSTOM_PLANET;
-            }
         }
-        return name;
+        return false;
     }
 }
