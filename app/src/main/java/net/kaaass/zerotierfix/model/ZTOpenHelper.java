@@ -37,6 +37,7 @@ public class ZTOpenHelper extends DaoMaster.OpenHelper {
         migrations.add(new MigrationV19());
         migrations.add(new MigrationV20());
         migrations.add(new MigrationV21());
+        migrations.add(new MigrationV22());
         Collections.sort(migrations, (migration, migration2) -> migration.getVersion().compareTo(migration2.getVersion()));
         return migrations;
     }
@@ -104,6 +105,21 @@ public class ZTOpenHelper extends DaoMaster.OpenHelper {
         @Override
         public void runMigration(Database database) {
             MoonOrbitDao.createTable(database, true);
+        }
+    }
+
+    private static class MigrationV22 implements Migration {
+        private MigrationV22() {
+        }
+
+        @Override
+        public Integer getVersion() {
+            return 22;
+        }
+
+        @Override
+        public void runMigration(Database database) {
+            database.execSQL("ALTER TABLE MOON_ORBIT ADD COLUMN " + MoonOrbitDao.Properties.FromFile.columnName + " INTEGER NOT NULL DEFAULT 0 ");
         }
     }
 }

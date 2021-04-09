@@ -25,6 +25,7 @@ import com.google.android.material.snackbar.Snackbar;
 import net.kaaass.zerotierfix.R;
 import net.kaaass.zerotierfix.service.ZeroTierOneService;
 import net.kaaass.zerotierfix.util.Constants;
+import net.kaaass.zerotierfix.util.FileUtil;
 
 import org.apache.commons.io.FileUtils;
 
@@ -160,8 +161,9 @@ public class PrefsFragment extends PreferenceFragmentCompat implements SharedPre
                     // 下载 Planet 文件
                     new Thread(() -> {
                         try {
-                            File destFile = new File(requireActivity().getFilesDir(), Constants.FILE_TEMP);
-                            FileUtils.copyURLToFile(fileUrl, destFile, PLANET_DOWNLOAD_CONN_TIMEOUT, PLANET_DOWNLOAD_TIMEOUT);
+                            FileUtils.copyURLToFile(fileUrl,
+                                    FileUtil.tempFile(requireContext()),
+                                    PLANET_DOWNLOAD_CONN_TIMEOUT, PLANET_DOWNLOAD_TIMEOUT);
                             boolean success = dealTempPlanetFile();
                             if (!success) {
                                 // 校验失败
@@ -186,7 +188,7 @@ public class PrefsFragment extends PreferenceFragmentCompat implements SharedPre
                             });
                             return;
                         } finally {
-                            clearTempFile();
+                            FileUtil.clearTempFile(requireContext());
                         }
 
                         // 关闭对话框
@@ -228,8 +230,7 @@ public class PrefsFragment extends PreferenceFragmentCompat implements SharedPre
             // 复制文件
             Context context = requireContext();
             try (InputStream in = context.getContentResolver().openInputStream(uriData)) {
-                File destFile = new File(requireActivity().getFilesDir(), Constants.FILE_TEMP);
-                FileUtils.copyInputStreamToFile(in, destFile);
+                FileUtils.copyInputStreamToFile(in, FileUtil.tempFile(requireContext()));
                 boolean success = dealTempPlanetFile();
                 if (!success) {
                     // 校验失败
@@ -244,7 +245,7 @@ public class PrefsFragment extends PreferenceFragmentCompat implements SharedPre
                 closePlanetDialog();
                 return;
             } finally {
-                clearTempFile();
+                FileUtil.clearTempFile(requireContext());
             }
             Log.i(TAG, "Copy planet file successfully");
             // 关闭对话框
@@ -290,7 +291,7 @@ public class PrefsFragment extends PreferenceFragmentCompat implements SharedPre
      */
     private boolean dealTempPlanetFile() {
         // Plant 文件校验
-        File temp = new File(requireActivity().getFilesDir(), Constants.FILE_TEMP);
+        File temp = FileUtil.tempFile(requireContext());
         byte[] buf = new byte[PLANET_FILE_HEADER.length];
         try (FileInputStream in = new FileInputStream(temp)) {
             // 读入文件头
@@ -308,16 +309,6 @@ public class PrefsFragment extends PreferenceFragmentCompat implements SharedPre
         // 移动临时文件
         File dest = new File(requireActivity().getFilesDir(), Constants.FILE_CUSTOM_PLANET);
         return temp.renameTo(dest);
-    }
-
-    /**
-     * 清理临时文件
-     */
-    private void clearTempFile() {
-        File temp = new File(requireActivity().getFilesDir(), Constants.FILE_TEMP);
-        if (temp.exists()) {
-            temp.delete();
-        }
     }
 
     /**

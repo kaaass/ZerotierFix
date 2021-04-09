@@ -73,7 +73,34 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:fontFamily="serif-monospace"
-                android:text="8056c2e21c"
+                android:text="-"
+                android:textColor="?attr/greyText" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="8dp"
+            android:layout_marginTop="4dp"
+            android:layout_marginRight="8dp"
+            android:layout_marginBottom="4dp"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingLeft="4dp"
+                android:paddingRight="4dp"
+                android:text="@string/config_file"
+                android:textColor="?attr/greyText"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/moon_config"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/wait_to_fetch"
                 android:textColor="?attr/greyText" />
         </LinearLayout>
 

@@ -118,4 +118,13 @@
     <string name="downloading">下载中</string>
     <string name="planet_download_timeout">下载 Planet 文件超时</string>
     <string name="planet_use_custom_summary"><![CDATA[可以让客户端完全隔离 Zerotier 官方服务器。需手动重连使配置生效。]]></string>
+    <string name="import_via_orbit">通过入轨导入</string>
+    <string name="import_moon_node">导入 Moon 结点</string>
+    <string name="wait_to_fetch">等待获取</string>
+    <string name="config_file">配置文件:</string>
+    <string name="delete_cache">删除缓存文件</string>
+    <string name="external_file">外部文件</string>
+    <string name="cached">已缓存</string>
+    <string name="moon_wrong_file_format">Moon 文件格式错误</string>
+    <string name="moon_world_id_hint">Moon 结点的 Zerotier 地址。即 Moon 文件的文件名（不包含扩展名）。</string>
 </resources>

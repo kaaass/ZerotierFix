@@ -121,4 +121,13 @@
     <string name="downloading">Downloading</string>
     <string name="planet_download_timeout">Timeout when downloading planet file</string>
     <string name="planet_use_custom_summary"><![CDATA[Allows you to bypass Zerotier official network. Reconnect for this setting to take effect.]]></string>
+    <string name="import_via_orbit">Import via Orbit</string>
+    <string name="import_moon_node">Import Moon node</string>
+    <string name="wait_to_fetch">Wait to fetch</string>
+    <string name="config_file">Config file</string>
+    <string name="delete_cache">Delete cache</string>
+    <string name="external_file">External file</string>
+    <string name="cached">Cached</string>
+    <string name="moon_wrong_file_format">Wrong moon file format</string>
+    <string name="moon_world_id_hint">Zerotier address of Moon node. Also filename of its moon file.</string>
 </resources>

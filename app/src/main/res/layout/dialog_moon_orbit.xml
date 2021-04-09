@@ -19,26 +19,43 @@
         android:digits="0123456789ABCDEFabcdef"
         android:ems="10"
         android:inputType="text"
-        android:maxLength="10" />
+        android:maxLength="16" />
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:labelFor="@id/text_moon_seed"
-        android:text="@string/moon_seed" />
+        android:text="@string/moon_world_id_hint" />
 
-    <EditText
-        android:id="@+id/text_moon_seed"
+    <Space
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:autofillHints=""
-        android:digits="0123456789ABCDEFabcdef"
-        android:ems="10"
-        android:inputType="text"
-        android:maxLength="10" />
+        android:layout_height="10dp" />
 
-    <TextView
+    <LinearLayout
+        android:id="@+id/moon_seed"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/moon_seed_hint" />
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:labelFor="@id/text_moon_seed"
+            android:text="@string/moon_seed" />
+
+        <EditText
+            android:id="@+id/text_moon_seed"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:autofillHints=""
+            android:digits="0123456789ABCDEFabcdef"
+            android:ems="10"
+            android:inputType="text"
+            android:maxLength="16" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/moon_seed_hint" />
+    </LinearLayout>
+
 </LinearLayout>

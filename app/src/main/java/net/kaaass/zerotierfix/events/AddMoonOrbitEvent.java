@@ -10,4 +10,6 @@ public class AddMoonOrbitEvent {
     private Long moonWorldId;
 
     private Long moonSeed;
+
+    private boolean fromFile;
 }
