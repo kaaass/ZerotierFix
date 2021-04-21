@@ -25,7 +25,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 
-import net.kaaass.zerotierfix.AnalyticsApplication;
+import net.kaaass.zerotierfix.ZerotierFixApplication;
 import net.kaaass.zerotierfix.R;
 import net.kaaass.zerotierfix.events.AddMoonOrbitEvent;
 import net.kaaass.zerotierfix.events.OrbitMoonEvent;
@@ -148,7 +148,7 @@ public class MoonOrbitFragment extends Fragment {
      * 获得 Moon 入轨配置列表
      */
     private List<MoonOrbit> getMoonOrbitList() {
-        DaoSession daoSession = ((AnalyticsApplication) getActivity().getApplication()).getDaoSession();
+        DaoSession daoSession = ((ZerotierFixApplication) getActivity().getApplication()).getDaoSession();
         return daoSession.getMoonOrbitDao().loadAll();
     }
 
@@ -297,7 +297,7 @@ public class MoonOrbitFragment extends Fragment {
         boolean fromFile = event.isFromFile();
         Log.i(TAG, "add orbit info " + Long.toHexString(moonWorldId));
         // 数据库修改
-        DaoSession daoSession = ((AnalyticsApplication) getActivity().getApplication()).getDaoSession();
+        DaoSession daoSession = ((ZerotierFixApplication) getActivity().getApplication()).getDaoSession();
         long existCount = daoSession.getMoonOrbitDao().queryBuilder()
                 .where(MoonOrbitDao.Properties.MoonWorldId.eq(moonWorldId))
                 .buildCount()
@@ -336,7 +336,7 @@ public class MoonOrbitFragment extends Fragment {
         long moonSeed = event.getMoonSeed();
         Log.i(TAG, "remove orbit info " + Long.toHexString(moonWorldId));
         // 查询待删除项目
-        DaoSession daoSession = ((AnalyticsApplication) getActivity().getApplication()).getDaoSession();
+        DaoSession daoSession = ((ZerotierFixApplication) getActivity().getApplication()).getDaoSession();
         MoonOrbit moonOrbit = daoSession.getMoonOrbitDao().queryBuilder()
                 .where(MoonOrbitDao.Properties.MoonWorldId.eq(moonWorldId),
                         MoonOrbitDao.Properties.MoonSeed.eq(moonSeed))
@@ -407,9 +407,9 @@ public class MoonOrbitFragment extends Fragment {
             public ViewHolder(View view) {
                 super(view);
                 mView = view;
-                mMoonWorldId = (TextView) view.findViewById(R.id.moon_world_id);
-                mMoonSeed = (TextView) view.findViewById(R.id.moon_seed);
-                mMoonConfig = (TextView) view.findViewById(R.id.moon_config);
+                mMoonWorldId = view.findViewById(R.id.moon_world_id);
+                mMoonSeed = view.findViewById(R.id.moon_seed);
+                mMoonConfig = view.findViewById(R.id.moon_config);
             }
 
             /**

@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
+// TODO: clear up
 public class StartupReceiver extends BroadcastReceiver {
     private static final String TAG = "StartupReceiver";
 

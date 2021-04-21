@@ -19,7 +19,7 @@ import androidx.viewpager.widget.ViewPager;
 
 import com.google.android.material.tabs.TabLayout;
 
-import net.kaaass.zerotierfix.AnalyticsApplication;
+import net.kaaass.zerotierfix.ZerotierFixApplication;
 import net.kaaass.zerotierfix.R;
 import net.kaaass.zerotierfix.model.DaoSession;
 import net.kaaass.zerotierfix.model.DnsServer;
@@ -36,6 +36,7 @@ import org.greenrobot.greendao.query.WhereCondition;
 import java.util.HashSet;
 import java.util.Set;
 
+// TODO: clear up
 public class JoinNetworkFragment extends Fragment implements CustomDNSListener {
     public static final String TAG = "JoinNetwork";
     EventBus eventBus = EventBus.getDefault();
@@ -149,7 +150,7 @@ public class JoinNetworkFragment extends Fragment implements CustomDNSListener {
                     String obj = JoinNetworkFragment.this.mNetworkIdTextView.getText().toString();
                     long hexStringToLong = NetworkIdUtils.hexStringToLong(obj);
                     boolean isChecked = JoinNetworkFragment.this.mDefaultRouteCheckBox.isChecked();
-                    DaoSession daoSession = ((AnalyticsApplication) JoinNetworkFragment.this.getActivity().getApplication()).getDaoSession();
+                    DaoSession daoSession = ((ZerotierFixApplication) JoinNetworkFragment.this.getActivity().getApplication()).getDaoSession();
                     NetworkDao networkDao = daoSession.getNetworkDao();
                     if (!networkDao.queryBuilder().where(NetworkDao.Properties.NetworkId.eq(Long.valueOf(hexStringToLong)), new WhereCondition[0]).build().forCurrentThread().list().isEmpty()) {
                         Log.e(JoinNetworkFragment.TAG, "Network already present");

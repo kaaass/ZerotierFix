@@ -4,6 +4,7 @@ import net.kaaass.zerotierfix.util.InetAddressUtils;
 
 import java.net.InetAddress;
 
+// TODO: clear up
 public class Route {
     InetAddress address;
     InetAddress gateway = null;

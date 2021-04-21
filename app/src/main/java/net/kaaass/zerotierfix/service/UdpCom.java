@@ -11,6 +11,7 @@ import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
 import java.net.SocketTimeoutException;
 
+// TODO: clear up
 public class UdpCom implements PacketSender, Runnable {
     private static final String TAG = "UdpCom";
     Node node;

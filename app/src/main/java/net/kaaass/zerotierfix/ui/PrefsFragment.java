@@ -44,14 +44,10 @@ import java.util.Objects;
  */
 public class PrefsFragment extends PreferenceFragmentCompat implements SharedPreferences.OnSharedPreferenceChangeListener {
 
-    private static final int REQUEST_PLANET_FILE = 42;
-
-    private static final String TAG = "PreferencesFragment";
-
     public static final int PLANET_DOWNLOAD_CONN_TIMEOUT = 5 * 1000;
-
     public static final int PLANET_DOWNLOAD_TIMEOUT = 10 * 1000;
-
+    private static final int REQUEST_PLANET_FILE = 42;
+    private static final String TAG = "PreferencesFragment";
     /**
      * Plant 文件固定头
      */

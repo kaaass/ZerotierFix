@@ -10,14 +10,15 @@ import androidx.fragment.app.FragmentManager;
 
 import net.kaaass.zerotierfix.R;
 
+/**
+ * 单片段 Activity
+ */
 public abstract class SingleFragmentActivity extends AppCompatActivity {
     private static final String TAG = "SingleFragmentActivity";
 
-    /* access modifiers changed from: protected */
     public abstract Fragment createFragment();
 
     @Override
-    // androidx.activity.ComponentActivity, androidx.core.app.ComponentActivity, androidx.appcompat.app.AppCompatActivity, androidx.fragment.app.FragmentActivity
     public void onCreate(Bundle bundle) {
         super.onCreate(bundle);
         setContentView(R.layout.activity_fragment);

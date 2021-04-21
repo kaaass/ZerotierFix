@@ -17,7 +17,7 @@ import androidx.annotation.NonNull;
 import androidx.core.os.EnvironmentCompat;
 import androidx.fragment.app.Fragment;
 
-import net.kaaass.zerotierfix.AnalyticsApplication;
+import net.kaaass.zerotierfix.ZerotierFixApplication;
 import net.kaaass.zerotierfix.R;
 import net.kaaass.zerotierfix.events.DefaultRouteChangedEvent;
 import net.kaaass.zerotierfix.model.AssignedAddress;
@@ -33,6 +33,7 @@ import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.util.List;
 
+// TODO: clean up
 public class NetworkDetailFragment extends Fragment {
     private static final String TAG = "NetworkDetailView";
     private long mNetworkId = -1;
@@ -53,7 +54,7 @@ public class NetworkDetailFragment extends Fragment {
         super.onCreateView(layoutInflater, viewGroup, bundle);
         View inflate = layoutInflater.inflate(R.layout.fragment_network_detail, viewGroup, false);
         if (this.mNetworkId != -1) {
-            List<Network> list = ((AnalyticsApplication) getActivity().getApplication()).getDaoSession().getNetworkDao().queryBuilder().where(NetworkDao.Properties.NetworkId.eq(Long.valueOf(this.mNetworkId)), new WhereCondition[0]).build().forCurrentThread().list();
+            List<Network> list = ((ZerotierFixApplication) getActivity().getApplication()).getDaoSession().getNetworkDao().queryBuilder().where(NetworkDao.Properties.NetworkId.eq(Long.valueOf(this.mNetworkId)), new WhereCondition[0]).build().forCurrentThread().list();
             if (list.size() > 1) {
                 Log.e(TAG, "Data inconsistency error.  More than one network with a single ID!");
                 return inflate;

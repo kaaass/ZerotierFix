@@ -24,6 +24,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.HashMap;
 
+// TODO: clear up
 public class TunTapAdapter implements VirtualNetworkFrameListener {
     public static final long BROADCAST_MAC = 281474976710655L;
     public static final String TAG = "TunTapAdapter";

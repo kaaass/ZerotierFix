@@ -31,7 +31,7 @@ import com.zerotier.sdk.VirtualNetworkConfigListener;
 import com.zerotier.sdk.VirtualNetworkConfigOperation;
 import com.zerotier.sdk.VirtualNetworkRoute;
 
-import net.kaaass.zerotierfix.AnalyticsApplication;
+import net.kaaass.zerotierfix.ZerotierFixApplication;
 import net.kaaass.zerotierfix.R;
 import net.kaaass.zerotierfix.events.AfterJoinNetworkEvent;
 import net.kaaass.zerotierfix.events.DefaultRouteChangedEvent;
@@ -62,7 +62,6 @@ import net.kaaass.zerotierfix.model.NetworkConfig;
 import net.kaaass.zerotierfix.model.NetworkConfigDao;
 import net.kaaass.zerotierfix.model.NetworkDao;
 import net.kaaass.zerotierfix.ui.NetworkListActivity;
-import net.kaaass.zerotierfix.ui.NetworkListFragment;
 import net.kaaass.zerotierfix.util.Constants;
 import net.kaaass.zerotierfix.util.InetAddressUtils;
 
@@ -84,6 +83,7 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
+// TODO: clear up
 public class ZeroTierOneService extends VpnService implements Runnable, EventListener, VirtualNetworkConfigListener {
     public static final int MSG_JOIN_NETWORK = 1;
     public static final int MSG_LEAVE_NETWORK = 2;
@@ -281,7 +281,7 @@ public class ZeroTierOneService extends VpnService implements Runnable, EventLis
                 longValue = intent.getLongExtra(ZT1_NETWORK_ID, 0);
                 this.useDefaultRoute = intent.getBooleanExtra(ZT1_USE_DEFAULT_ROUTE, false);
             } else {
-                DaoSession daoSession = ((AnalyticsApplication) getApplication()).getDaoSession();
+                DaoSession daoSession = ((ZerotierFixApplication) getApplication()).getDaoSession();
                 daoSession.clear();
                 List<Network> list = daoSession.getNetworkDao().queryBuilder().where(NetworkDao.Properties.LastActivated.eq(true), new WhereCondition[0]).list();
                 if (list == null || list.isEmpty()) {
@@ -347,7 +347,7 @@ public class ZeroTierOneService extends VpnService implements Runnable, EventLis
                                 this.node = node2;
                                 NodeStatus status = node2.status();
                                 long addres = status.getAddres();
-                                AppNodeDao appNodeDao = ((AnalyticsApplication) getApplication()).getDaoSession().getAppNodeDao();
+                                AppNodeDao appNodeDao = ((ZerotierFixApplication) getApplication()).getDaoSession().getAppNodeDao();
                                 List<AppNode> list2 = appNodeDao.queryBuilder().build().forCurrentThread().list();
                                 if (list2.isEmpty()) {
                                     AppNode appNode = new AppNode();
@@ -834,7 +834,7 @@ public class ZeroTierOneService extends VpnService implements Runnable, EventLis
                     }
                 }
                 builder1.addRoute(InetAddress.getByName("224.0.0.0"), 4);
-                List<NetworkConfig> list = ((AnalyticsApplication) getApplication()).getDaoSession()
+                List<NetworkConfig> list = ((ZerotierFixApplication) getApplication()).getDaoSession()
                         .getNetworkConfigDao().queryBuilder()
                         .where(NetworkConfigDao.Properties.Id.eq(networkId), new WhereCondition[0])
                         .build().forCurrentThread().list();
@@ -846,7 +846,7 @@ public class ZeroTierOneService extends VpnService implements Runnable, EventLis
                     j = list.get(0).getDnsMode();
                     if (j != 1) {
                         if (j == 2) {
-                            for (DnsServer dnsServer : ((AnalyticsApplication) getApplication()).getDaoSession().getDnsServerDao().queryBuilder().where(DnsServerDao.Properties.NetworkId.eq(Long.valueOf(networkId)), new WhereCondition[0]).build().forCurrentThread().list()) {
+                            for (DnsServer dnsServer : ((ZerotierFixApplication) getApplication()).getDaoSession().getDnsServerDao().queryBuilder().where(DnsServerDao.Properties.NetworkId.eq(Long.valueOf(networkId)), new WhereCondition[0]).build().forCurrentThread().list()) {
                                 String str = dnsServer.getNameserver();
                                 try {
                                     InetAddress inetAddress = InetAddress.getByName(str);

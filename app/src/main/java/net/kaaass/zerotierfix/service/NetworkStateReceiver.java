@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 
+// TODO: clear up
 public class NetworkStateReceiver extends BroadcastReceiver {
     private static final String TAG = "NetworkStateReceiver";
 

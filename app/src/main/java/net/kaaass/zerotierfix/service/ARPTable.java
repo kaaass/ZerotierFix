@@ -6,6 +6,7 @@ import java.net.InetAddress;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 
+// TODO: clear up
 public class ARPTable {
     public static final String TAG = "ARPTable";
     private static final long ENTRY_TIMEOUT = 120000;

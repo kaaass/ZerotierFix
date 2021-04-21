@@ -14,6 +14,9 @@ import net.kaaass.zerotierfix.R;
 
 import org.apache.commons.validator.routines.InetAddressValidator;
 
+/**
+ * 自定义 DNS 片段
+ */
 public class CustomDNSFragment extends Fragment {
     private EditText mDNSv4_1;
     private EditText mDNSv4_2;
@@ -29,20 +32,20 @@ public class CustomDNSFragment extends Fragment {
         this.mListener = customDNSListener;
     }
 
-    @Override // androidx.fragment.app.Fragment
-    public void onCreate(Bundle bundle) {
-        super.onCreate(bundle);
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
     }
 
-    @Override // androidx.fragment.app.Fragment
-    public View onCreateView(LayoutInflater layoutInflater, ViewGroup viewGroup, Bundle bundle) {
-        View inflate = layoutInflater.inflate(R.layout.fragment_custom_d_n_s, viewGroup, false);
-        EditText editText = inflate.findViewById(R.id.join_network_dns4_1);
-        this.mDNSv4_1 = editText;
-        editText.addTextChangedListener(new TextValidator(this.mDNSv4_1) {
-            /* class com.zerotier.one.ui.CustomDNSFragment.AnonymousClass1 */
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View inflate = inflater.inflate(R.layout.fragment_custom_d_n_s, container, false);
+        // 设置 IPv4 DNS
+        EditText textDns4_1 = inflate.findViewById(R.id.join_network_dns4_1);
+        this.mDNSv4_1 = textDns4_1;
+        textDns4_1.addTextChangedListener(new TextValidator(this.mDNSv4_1) {
 
-            @Override // com.zerotier.one.ui.CustomDNSFragment.TextValidator
+            @Override
             public void validate(EditText editText, String str) {
                 if (InetAddressValidator.getInstance().isValid(str)) {
                     editText.setError(null);
@@ -53,12 +56,11 @@ public class CustomDNSFragment extends Fragment {
                 CustomDNSFragment.this.mListener.setDNSv4_1("");
             }
         });
-        EditText editText2 = inflate.findViewById(R.id.join_network_dns4_2);
-        this.mDNSv4_2 = editText2;
-        editText2.addTextChangedListener(new TextValidator(this.mDNSv4_2) {
-            /* class com.zerotier.one.ui.CustomDNSFragment.AnonymousClass2 */
+        EditText textDns4_2 = inflate.findViewById(R.id.join_network_dns4_2);
+        this.mDNSv4_2 = textDns4_2;
+        textDns4_2.addTextChangedListener(new TextValidator(this.mDNSv4_2) {
 
-            @Override // com.zerotier.one.ui.CustomDNSFragment.TextValidator
+            @Override
             public void validate(EditText editText, String str) {
                 if (InetAddressValidator.getInstance().isValid(str)) {
                     editText.setError(null);
@@ -69,12 +71,12 @@ public class CustomDNSFragment extends Fragment {
                 CustomDNSFragment.this.mListener.setDNSv4_2("");
             }
         });
-        EditText editText3 = inflate.findViewById(R.id.join_network_dns6_1);
-        this.mDNSv6_1 = editText3;
-        editText3.addTextChangedListener(new TextValidator(this.mDNSv6_1) {
-            /* class com.zerotier.one.ui.CustomDNSFragment.AnonymousClass3 */
+        // 设置 DNS IPv6
+        EditText textDns6_1 = inflate.findViewById(R.id.join_network_dns6_1);
+        this.mDNSv6_1 = textDns6_1;
+        textDns6_1.addTextChangedListener(new TextValidator(this.mDNSv6_1) {
 
-            @Override // com.zerotier.one.ui.CustomDNSFragment.TextValidator
+            @Override
             public void validate(EditText editText, String str) {
                 if (InetAddressValidator.getInstance().isValid(str)) {
                     editText.setError(null);
@@ -85,12 +87,11 @@ public class CustomDNSFragment extends Fragment {
                 CustomDNSFragment.this.mListener.setDNSv6_1("");
             }
         });
-        EditText editText4 = inflate.findViewById(R.id.join_network_dns6_2);
-        this.mDNSv6_2 = editText4;
-        editText4.addTextChangedListener(new TextValidator(this.mDNSv6_2) {
-            /* class com.zerotier.one.ui.CustomDNSFragment.AnonymousClass4 */
+        EditText textDns6_2 = inflate.findViewById(R.id.join_network_dns6_2);
+        this.mDNSv6_2 = textDns6_2;
+        textDns6_2.addTextChangedListener(new TextValidator(this.mDNSv6_2) {
 
-            @Override // com.zerotier.one.ui.CustomDNSFragment.TextValidator
+            @Override
             public void validate(EditText editText, String str) {
                 if (InetAddressValidator.getInstance().isValid(str)) {
                     editText.setError(null);
@@ -104,22 +105,22 @@ public class CustomDNSFragment extends Fragment {
         return inflate;
     }
 
-    abstract class TextValidator implements TextWatcher {
+    abstract static class TextValidator implements TextWatcher {
         private final EditText editText;
 
-        public TextValidator(EditText editText2) {
-            this.editText = editText2;
+        public TextValidator(EditText editText) {
+            this.editText = editText;
         }
 
-        public final void beforeTextChanged(CharSequence charSequence, int i, int i2, int i3) {
+        public final void beforeTextChanged(CharSequence s, int start, int count, int after) {
         }
 
-        public final void onTextChanged(CharSequence charSequence, int i, int i2, int i3) {
+        public final void onTextChanged(CharSequence s, int start, int before, int count) {
         }
 
-        public abstract void validate(EditText editText2, String str);
+        public abstract void validate(EditText editText, String str);
 
-        public final void afterTextChanged(Editable editable) {
+        public final void afterTextChanged(Editable s) {
             validate(this.editText, this.editText.getText().toString());
         }
     }

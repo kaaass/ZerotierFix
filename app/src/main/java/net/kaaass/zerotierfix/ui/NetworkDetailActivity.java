@@ -20,7 +20,7 @@ public class NetworkDetailActivity extends SingleFragmentActivity {
         super.onCreate(bundle);
         // 添加返回按钮
         ActionBar actionBar = getSupportActionBar();
-        if(actionBar != null){
+        if (actionBar != null) {
             actionBar.setHomeButtonEnabled(true);
             actionBar.setDisplayHomeAsUpEnabled(true);
         }

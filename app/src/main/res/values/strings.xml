@@ -53,7 +53,6 @@
     <string name="preferences_network_disable_ipv6">Disable IPv6</string>
     <string name="preferences_network_disable_ipv6_summary">You will need to disconnect &amp; reconnect for this setting to take effect.</string>
     <string name="preferences_network_use_cell_data">Use Cellular Data</string>
-    <string name="recent_networks">Recent Networks:</string>
     <string name="reset_planet">Reset Planet</string>
     <string name="settings">Settings</string>
     <string name="status_label">Status:</string>
@@ -120,7 +119,7 @@
     <string name="planet_wrong_format">Wrong planet file format</string>
     <string name="downloading">Downloading</string>
     <string name="planet_download_timeout">Timeout when downloading planet file</string>
-    <string name="planet_use_custom_summary"><![CDATA[Allows you to bypass Zerotier official network. Reconnect for this setting to take effect.]]></string>
+    <string name="planet_use_custom_summary">Allows you to bypass Zerotier official network. Reconnect for this setting to take effect.</string>
     <string name="import_via_orbit">Import via Orbit</string>
     <string name="import_moon_node">Import Moon node</string>
     <string name="wait_to_fetch">Wait to fetch</string>

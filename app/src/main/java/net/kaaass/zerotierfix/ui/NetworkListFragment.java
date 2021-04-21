@@ -35,7 +35,7 @@ import com.zerotier.sdk.VirtualNetworkConfig;
 import com.zerotier.sdk.VirtualNetworkStatus;
 import com.zerotier.sdk.VirtualNetworkType;
 
-import net.kaaass.zerotierfix.AnalyticsApplication;
+import net.kaaass.zerotierfix.ZerotierFixApplication;
 import net.kaaass.zerotierfix.R;
 import net.kaaass.zerotierfix.events.AfterJoinNetworkEvent;
 import net.kaaass.zerotierfix.events.IsServiceRunningEvent;
@@ -73,6 +73,7 @@ import java.util.List;
 
 import lombok.ToString;
 
+// TODO: clear up
 public class NetworkListFragment extends Fragment {
     public static final int AUTH_VPN = 3;
     public static final String NETWORK_ID_MESSAGE = "com.zerotier.one.network-id";
@@ -315,13 +316,13 @@ public class NetworkListFragment extends Fragment {
     }
 
     private List<Network> getNetworkList() {
-        DaoSession daoSession = ((AnalyticsApplication) getActivity().getApplication()).getDaoSession();
+        DaoSession daoSession = ((ZerotierFixApplication) getActivity().getApplication()).getDaoSession();
         daoSession.clear();
         return daoSession.getNetworkDao().queryBuilder().orderAsc(NetworkDao.Properties.NetworkId).build().forCurrentThread().list();
     }
 
     private void setNodeIdText() {
-        List<AppNode> list = ((AnalyticsApplication) getActivity().getApplication()).getDaoSession().getAppNodeDao().queryBuilder().build().forCurrentThread().list();
+        List<AppNode> list = ((ZerotierFixApplication) getActivity().getApplication()).getDaoSession().getAppNodeDao().queryBuilder().build().forCurrentThread().list();
         if (!list.isEmpty()) {
             this.nodeIdView.setText(list.get(0).getNodeIdStr());
         }
@@ -352,8 +353,8 @@ public class NetworkListFragment extends Fragment {
                 if (!networkInfo.name().isEmpty()) {
                     network.setNetworkName(networkInfo.name());
                 }
-                NetworkDao networkDao = ((AnalyticsApplication) getActivity().getApplication()).getDaoSession().getNetworkDao();
-                NetworkConfigDao networkConfigDao = ((AnalyticsApplication) getActivity().getApplication()).getDaoSession().getNetworkConfigDao();
+                NetworkDao networkDao = ((ZerotierFixApplication) getActivity().getApplication()).getDaoSession().getNetworkDao();
+                NetworkConfigDao networkConfigDao = ((ZerotierFixApplication) getActivity().getApplication()).getDaoSession().getNetworkConfigDao();
                 NetworkConfig networkConfig = network.getNetworkConfig();
                 if (networkConfig == null) {
                     networkConfig = new NetworkConfig();
@@ -422,9 +423,9 @@ public class NetworkListFragment extends Fragment {
                 network.setNetworkConfig(networkConfig);
                 networkDao.save(network);
                 networkConfigDao.save(networkConfig);
-                ((AnalyticsApplication) getActivity().getApplication()).getDaoSession().getAssignedAddressDao().queryBuilder().where(AssignedAddressDao.Properties.NetworkId.eq(networkInfo.networkId()), new WhereCondition[0]).buildDelete().forCurrentThread().forCurrentThread().executeDeleteWithoutDetachingEntities();
-                ((AnalyticsApplication) getActivity().getApplication()).getDaoSession().clear();
-                AssignedAddressDao assignedAddressDao = ((AnalyticsApplication) getActivity().getApplication()).getDaoSession().getAssignedAddressDao();
+                ((ZerotierFixApplication) getActivity().getApplication()).getDaoSession().getAssignedAddressDao().queryBuilder().where(AssignedAddressDao.Properties.NetworkId.eq(networkInfo.networkId()), new WhereCondition[0]).buildDelete().forCurrentThread().forCurrentThread().executeDeleteWithoutDetachingEntities();
+                ((ZerotierFixApplication) getActivity().getApplication()).getDaoSession().clear();
+                AssignedAddressDao assignedAddressDao = ((ZerotierFixApplication) getActivity().getApplication()).getDaoSession().getAssignedAddressDao();
                 InetSocketAddress[] assignedAddresses = networkInfo.assignedAddresses();
                 for (InetSocketAddress inetSocketAddress : assignedAddresses) {
                     InetAddress address = inetSocketAddress.getAddress();
@@ -450,7 +451,7 @@ public class NetworkListFragment extends Fragment {
                 network.update();
             }
         }
-        ((AnalyticsApplication) getActivity().getApplication()).getDaoSession().clear();
+        ((ZerotierFixApplication) getActivity().getApplication()).getDaoSession().clear();
         updateNetworkListAndNotify();
     }
 
@@ -553,7 +554,7 @@ public class NetworkListFragment extends Fragment {
      * 获得 Moon 入轨配置列表
      */
     private List<MoonOrbit> getMoonOrbitList() {
-        DaoSession daoSession = ((AnalyticsApplication) getActivity().getApplication()).getDaoSession();
+        DaoSession daoSession = ((ZerotierFixApplication) getActivity().getApplication()).getDaoSession();
         return daoSession.getMoonOrbitDao().loadAll();
     }
 
@@ -676,7 +677,7 @@ public class NetworkListFragment extends Fragment {
                 popupMenu.setOnMenuItemClickListener(menuItem -> {
                     if (menuItem.getItemId() == R.id.menu_item_delete_network) {
                         // 删除对应网络
-                        DaoSession daoSession = ((AnalyticsApplication) NetworkListFragment.this.getActivity().getApplication()).getDaoSession();
+                        DaoSession daoSession = ((ZerotierFixApplication) NetworkListFragment.this.getActivity().getApplication()).getDaoSession();
                         AssignedAddressDao assignedAddressDao = daoSession.getAssignedAddressDao();
                         NetworkConfigDao networkConfigDao = daoSession.getNetworkConfigDao();
                         NetworkDao networkDao = daoSession.getNetworkDao();
@@ -717,7 +718,7 @@ public class NetworkListFragment extends Fragment {
              * 点击开启网络开关
              */
             public void onSwitchCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                NetworkDao networkDao = ((AnalyticsApplication) NetworkListFragment.this.getActivity().getApplication()).getDaoSession().getNetworkDao();
+                NetworkDao networkDao = ((ZerotierFixApplication) NetworkListFragment.this.getActivity().getApplication()).getDaoSession().getNetworkDao();
                 if (isChecked) {
                     // 启动网络
                     Context context = NetworkListFragment.this.getContext();

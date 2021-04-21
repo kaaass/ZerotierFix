@@ -85,6 +85,21 @@ public class PeerListFragment extends Fragment {
         this.eventBus.register(this);
     }
 
+    /**
+     * Peer 类型转为文本
+     */
+    public static int peerRoleToString(PeerRole peerRole) {
+        switch (peerRole) {
+            case PEER_ROLE_PLANET:
+                return R.string.peer_role_planet;
+            case PEER_ROLE_LEAF:
+                return R.string.peer_role_leaf;
+            case PEER_ROLE_MOON:
+                return R.string.peer_role_moon;
+        }
+        return 0;
+    }
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -148,21 +163,6 @@ public class PeerListFragment extends Fragment {
         Collections.addAll(this.peerList, peers);
         this.recyclerViewAdapter.notifyDataSetChanged();
         this.swipeRefreshLayout.setRefreshing(false);
-    }
-
-    /**
-     * Peer 类型转为文本
-     */
-    public static int peerRoleToString(PeerRole peerRole) {
-        switch (peerRole) {
-            case PEER_ROLE_PLANET:
-                return R.string.peer_role_planet;
-            case PEER_ROLE_LEAF:
-                return R.string.peer_role_leaf;
-            case PEER_ROLE_MOON:
-                return R.string.peer_role_moon;
-        }
-        return 0;
     }
 
     /**
@@ -233,11 +233,11 @@ public class PeerListFragment extends Fragment {
             public ViewHolder(View view) {
                 super(view);
                 mView = view;
-                mAddress = (TextView) view.findViewById(R.id.list_peer_addr);
-                mRole = (TextView) view.findViewById(R.id.list_peer_role);
-                mVersion = (TextView) view.findViewById(R.id.list_peer_ver);
-                mLatency = (TextView) view.findViewById(R.id.list_peer_lat);
-                mPath = (TextView) view.findViewById(R.id.list_peer_path);
+                mAddress = view.findViewById(R.id.list_peer_addr);
+                mRole = view.findViewById(R.id.list_peer_role);
+                mVersion = view.findViewById(R.id.list_peer_ver);
+                mLatency = view.findViewById(R.id.list_peer_lat);
+                mPath = view.findViewById(R.id.list_peer_path);
             }
         }
     }

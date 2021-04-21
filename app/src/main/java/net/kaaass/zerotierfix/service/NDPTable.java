@@ -8,6 +8,7 @@ import java.net.InetAddress;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 
+// TODO: clear up
 public class NDPTable {
     public static final String TAG = "NDPTable";
     private static final long ENTRY_TIMEOUT = 120000;

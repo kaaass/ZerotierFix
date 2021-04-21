@@ -52,7 +52,6 @@
     <string name="preferences_network_disable_ipv6">禁用 IPv6</string>
     <string name="preferences_network_disable_ipv6_summary">需要手动断开、重连使配置生效</string>
     <string name="preferences_network_use_cell_data">允许移动网络下使用</string>
-    <string name="recent_networks">最近连接的网络:</string>
     <string name="reset_planet">重置 Planet</string>
     <string name="settings">设置</string>
     <string name="status_label">状态:</string>
@@ -117,7 +116,7 @@
     <string name="planet_wrong_format">Planet 文件格式错误</string>
     <string name="downloading">下载中</string>
     <string name="planet_download_timeout">下载 Planet 文件超时</string>
-    <string name="planet_use_custom_summary"><![CDATA[可以让客户端完全隔离 Zerotier 官方服务器。需手动重连使配置生效。]]></string>
+    <string name="planet_use_custom_summary">可以让客户端完全隔离 Zerotier 官方服务器。需手动重连使配置生效。</string>
     <string name="import_via_orbit">通过入轨导入</string>
     <string name="import_moon_node">导入 Moon 结点</string>
     <string name="wait_to_fetch">等待获取</string>
