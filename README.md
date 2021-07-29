@@ -35,9 +35,9 @@ original author is Grant Limberg (glimberg@gmail.com). See [AUTHORS.md](https://
 
 ## Roadmap
 
-- [ ] Add moon config persistent & file config
+- [X] Add moon config persistent & file config
 - [x] Add peer list view
 - [x] Support planet config
-- [ ] Rewrite & update UI to fit Material Design
+- [ ] *WIP* Rewrite & update UI to fit Material Design
 - [ ] Replace pre-built JNI library
-- [ ] Clear up code (remove decompiler tag and refine)
+- [ ] *WIP* Clear up code (remove decompiler tag and refine)
