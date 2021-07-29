@@ -9,6 +9,8 @@ import net.kaaass.zerotierfix.model.ZTOpenHelper;
 
 /**
  * 主程序入口
+ *
+ * @author kaaass
  */
 public class ZerotierFixApplication extends Application {
     private DaoSession mDaoSession;

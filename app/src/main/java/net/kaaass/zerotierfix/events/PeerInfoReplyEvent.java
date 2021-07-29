@@ -3,9 +3,14 @@ package net.kaaass.zerotierfix.events;
 import com.zerotier.sdk.Peer;
 
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
 
-@Getter
+/**
+ * 应答结点信息事件
+ *
+ * @author kaaass
+ */
+@Data
 @AllArgsConstructor
 public class PeerInfoReplyEvent {
 

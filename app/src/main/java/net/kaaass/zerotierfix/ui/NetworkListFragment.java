@@ -570,6 +570,10 @@ public class NetworkListFragment extends Fragment {
         return daoSession.getMoonOrbitDao().loadAll();
     }
 
+    /**
+     * 加入网络后事件回调
+     * @param event 事件
+     */
     @Subscribe
     public void onAfterJoinNetworkEvent(AfterJoinNetworkEvent event) {
         Log.d(TAG, "Event on: AfterJoinNetworkEvent");

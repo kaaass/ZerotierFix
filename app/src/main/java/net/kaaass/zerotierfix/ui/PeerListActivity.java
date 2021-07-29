@@ -8,6 +8,8 @@ import androidx.fragment.app.Fragment;
 
 /**
  * 节点列表 fragment 容器 activity
+ *
+ * @author kaaass
  */
 public class PeerListActivity extends SingleFragmentActivity {
     @Override

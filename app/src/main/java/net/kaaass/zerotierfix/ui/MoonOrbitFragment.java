@@ -25,8 +25,8 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 
-import net.kaaass.zerotierfix.ZerotierFixApplication;
 import net.kaaass.zerotierfix.R;
+import net.kaaass.zerotierfix.ZerotierFixApplication;
 import net.kaaass.zerotierfix.events.AddMoonOrbitEvent;
 import net.kaaass.zerotierfix.events.OrbitMoonEvent;
 import net.kaaass.zerotierfix.events.RemoveMoonOrbitEvent;
@@ -51,6 +51,8 @@ import lombok.ToString;
 
 /**
  * 入轨配置片段
+ *
+ * @author kaaass
  */
 public class MoonOrbitFragment extends Fragment {
 
@@ -290,6 +292,11 @@ public class MoonOrbitFragment extends Fragment {
         }
     }
 
+    /**
+     * 增加 Moon 入轨信息事件回调
+     *
+     * @param event 事件
+     */
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onAddMoonOrbitEvent(AddMoonOrbitEvent event) {
         long moonWorldId = event.getMoonWorldId();
@@ -330,6 +337,10 @@ public class MoonOrbitFragment extends Fragment {
         updateOrbitList();
     }
 
+    /**
+     * 删除 Moon 入轨信息事件回调
+     * @param event 事件
+     */
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onRemoveMoonOrbitEvent(RemoveMoonOrbitEvent event) {
         long moonWorldId = event.getMoonWorldId();

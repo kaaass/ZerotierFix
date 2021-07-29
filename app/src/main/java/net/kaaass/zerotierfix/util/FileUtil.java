@@ -6,6 +6,8 @@ import java.io.File;
 
 /**
  * 文件工具类
+ *
+ * @author kaaass
  */
 public class FileUtil {
 

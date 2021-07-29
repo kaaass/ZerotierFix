@@ -8,6 +8,8 @@ import androidx.fragment.app.Fragment;
 
 /**
  * 入轨配置 fragment 的容器 activity
+ *
+ * @author kaaass
  */
 public class MoonOrbitActivity extends SingleFragmentActivity {
     @Override

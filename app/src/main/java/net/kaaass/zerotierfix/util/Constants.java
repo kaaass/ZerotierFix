@@ -2,6 +2,8 @@ package net.kaaass.zerotierfix.util;
 
 /**
  * 维护程序中公共的常量
+ *
+ * @author kaaass
  */
 public class Constants {
 

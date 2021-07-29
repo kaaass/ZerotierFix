@@ -36,6 +36,8 @@ import lombok.ToString;
 
 /**
  * Peer 信息展示 fragment
+ *
+ * @author kaaass
  */
 public class PeerListFragment extends Fragment {
 

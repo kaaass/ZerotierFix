@@ -10,14 +10,38 @@ import java.io.File;
 
 import lombok.Getter;
 
+/**
+ * Moon 入轨信息实体
+ *
+ * @author kaaass
+ */
 @Entity
 public class MoonOrbit {
 
+    /**
+     * Moon 文件相对路径格式
+     */
     public static final String MOON_FILE_PATH = "moons.d/%016x.moon";
+
+    /**
+     * Moon 地址
+     */
     @Id
     private Long moonWorldId;
+
+    /**
+     * Moon 种子
+     */
     private Long moonSeed;
+
+    /**
+     * Moon 是否从文件导入
+     */
     private boolean fromFile = false;
+
+    /**
+     * Moon 文件是否已缓存
+     */
     @Getter
     private transient boolean cacheFile = false;
 

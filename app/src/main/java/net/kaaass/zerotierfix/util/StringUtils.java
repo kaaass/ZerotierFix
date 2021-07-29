@@ -7,6 +7,8 @@ import java.util.Locale;
 
 /**
  * 字符串处理工具类
+ *
+ * @author kaaass
  */
 public class StringUtils {
 
@@ -14,6 +16,7 @@ public class StringUtils {
 
     /**
      * 将版本号转为可读字符串
+     *
      * @param version 版本号
      * @return 可读字符串
      */
@@ -24,6 +27,7 @@ public class StringUtils {
 
     /**
      * 获得结点版本的可读字符串
+     *
      * @param peer 结点
      * @return 可读字符串
      */
