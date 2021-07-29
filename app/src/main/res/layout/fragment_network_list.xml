@@ -69,13 +69,13 @@
                 android:textColor="?attr/lightGreyText" />
 
             <TextView
-                android:id="@+id/zt_version"
+                android:id="@+id/client_version"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerVertical="true"
                 android:layout_toRightOf="@+id/node_status"
                 android:padding="5dp"
-                android:text="@string/core_version"
+                android:text="@string/unknown_version"
                 android:textColor="?attr/lightGreyText" />
         </RelativeLayout>
 

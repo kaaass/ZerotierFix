@@ -22,6 +22,7 @@ import com.zerotier.sdk.PeerRole;
 import net.kaaass.zerotierfix.R;
 import net.kaaass.zerotierfix.events.PeerInfoReplyEvent;
 import net.kaaass.zerotierfix.events.RequestPeerInfoEvent;
+import net.kaaass.zerotierfix.util.StringUtils;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -191,9 +192,9 @@ public class PeerListFragment extends Fragment {
             holder.mAddress.setText(Long.toHexString(peer.address()));
             holder.mRole.setText(peerRoleToString(peer.role()));
             // 客户端版本
-            String clientVersion = "-";
+            String clientVersion = getString(R.string.unknown_version);
             if (peer.versionMajor() > 0) {
-                clientVersion = String.format(getString(R.string.ver_maj_min_rev), peer.versionMajor(), peer.versionMinor(), peer.versionRev());
+                clientVersion = StringUtils.peerVersionString(peer);
             }
             holder.mVersion.setText(clientVersion);
             // 延迟

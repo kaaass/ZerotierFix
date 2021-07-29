@@ -80,7 +80,7 @@
     <string name="moon_orbit_exist">Moon Orbit information exists!</string>
     <string name="moon_orbit_add_success">Moon orbit added successfully.</string>
     <string name="moon_orbit_delete_success">Moon orbit deleted successfully. Disconnect &amp; reconnect for this setting to take effect.</string>
-    <string name="core_version" translatable="false">1.6.4</string>
+    <string name="unknown_version" translatable="false">-</string>
     <string name="network_connected">Connected</string>
     <string name="connected_to_network">Connected to %s</string>
     <string name="network_detail">Network Detail</string>
@@ -96,7 +96,6 @@
     <string name="peer_role_planet">Planet</string>
     <string name="peer_role_leaf">Leaf</string>
     <string name="peer_role_moon">Moon</string>
-    <string name="ver_maj_min_rev" translatable="false">%d.%d.%d</string>
     <string name="peer_lat" translatable="false">%d ms</string>
     <string name="fail_retrieve_peer_list">Failed to retrieve peer info. Please check your network connection.</string>
     <string name="peer_relay">Relay</string>

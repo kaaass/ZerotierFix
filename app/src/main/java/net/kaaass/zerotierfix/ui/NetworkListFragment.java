@@ -31,6 +31,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.zerotier.sdk.NodeStatus;
+import com.zerotier.sdk.Version;
 import com.zerotier.sdk.VirtualNetworkConfig;
 import com.zerotier.sdk.VirtualNetworkStatus;
 import com.zerotier.sdk.VirtualNetworkType;
@@ -59,6 +60,7 @@ import net.kaaass.zerotierfix.model.NetworkConfigDao;
 import net.kaaass.zerotierfix.model.NetworkDao;
 import net.kaaass.zerotierfix.service.ZeroTierOneService;
 import net.kaaass.zerotierfix.util.Constants;
+import net.kaaass.zerotierfix.util.StringUtils;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -101,6 +103,7 @@ public class NetworkListFragment extends Fragment {
     private VirtualNetworkConfig[] mVNC;
     private TextView nodeIdView;
     private TextView nodeStatusView;
+    private TextView nodeClientVersionView;
 
     private View emptyView = null;
 
@@ -216,6 +219,7 @@ public class NetworkListFragment extends Fragment {
         // 网络状态栏设置
         this.nodeIdView = view.findViewById(R.id.node_id);
         this.nodeStatusView = view.findViewById(R.id.node_status);
+        this.nodeClientVersionView = view.findViewById(R.id.client_version);
         setNodeIdText();
 
         // 加载网络数据
@@ -460,19 +464,27 @@ public class NetworkListFragment extends Fragment {
         setNodeIdText();
     }
 
+    /**
+     * 节点状态事件回调
+     * @param event 事件
+     */
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onNodeStatus(NodeStatusEvent nodeStatusEvent) {
-        NodeStatus status = nodeStatusEvent.getStatus();
+    public void onNodeStatus(NodeStatusEvent event) {
+        NodeStatus status = event.getStatus();
+        Version clientVersion = event.getClientVersion();
+        // 更新在线状态
         if (status.isOnline()) {
             this.nodeStatusView.setText(R.string.status_online);
-            TextView textView = this.nodeIdView;
-            if (textView != null) {
-                textView.setText(Long.toHexString(status.getAddres()));
-                return;
+            if (this.nodeIdView != null) {
+                this.nodeIdView.setText(Long.toHexString(status.getAddres()));
             }
-            return;
+        } else {
+            setOfflineState();
         }
-        setOfflineState();
+        // 更新客户端版本
+        if (this.nodeClientVersionView != null) {
+            this.nodeClientVersionView.setText(StringUtils.toString(clientVersion));
+        }
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)

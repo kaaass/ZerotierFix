@@ -263,7 +263,7 @@ public class ZeroTierOneService extends VpnService implements Runnable, EventLis
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        long longValue;
+        long networkId;
         long j;
         Log.d(TAG, "onStartCommand");
         if (startId == 3) {
@@ -278,7 +278,7 @@ public class ZeroTierOneService extends VpnService implements Runnable, EventLis
                 this.eventBus.register(this);
             }
             if (intent.hasExtra(ZT1_NETWORK_ID)) {
-                longValue = intent.getLongExtra(ZT1_NETWORK_ID, 0);
+                networkId = intent.getLongExtra(ZT1_NETWORK_ID, 0);
                 this.useDefaultRoute = intent.getBooleanExtra(ZT1_USE_DEFAULT_ROUTE, false);
             } else {
                 DaoSession daoSession = ((ZerotierFixApplication) getApplication()).getDaoSession();
@@ -294,17 +294,17 @@ public class ZeroTierOneService extends VpnService implements Runnable, EventLis
                     }
                     return START_NOT_STICKY;
                 } else {
-                    longValue = list.get(0).getNetworkId();
+                    networkId = list.get(0).getNetworkId();
                     this.useDefaultRoute = list.get(0).getUseDefaultRoute();
                     Log.i(TAG, "Got Always On request for ZeroTier");
                 }
             }
-            if (longValue == 0) {
+            if (networkId == 0) {
                 Log.e(TAG, "Network ID not provided to service");
                 stopSelf(startId);
                 return START_NOT_STICKY;
             }
-            this.networkId = longValue;
+            this.networkId = networkId;
             SharedPreferences defaultSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
             boolean useCellularData = defaultSharedPreferences.getBoolean(Constants.PREF_NETWORK_USE_CELLULAR_DATA, false);
             this.disableIPv6 = defaultSharedPreferences.getBoolean("network_disable_ipv6", false);
@@ -339,25 +339,26 @@ public class ZeroTierOneService extends VpnService implements Runnable, EventLis
                         if (this.node == null) {
                             try {
                                 this.udpCom = new UdpCom(this, this.svrSocket);
-                                this.tunTapAdapter = new TunTapAdapter(this, longValue);
+                                this.tunTapAdapter = new TunTapAdapter(this, networkId);
                                 long currentTimeMillis = System.currentTimeMillis();
                                 DataStore dataStore2 = this.dataStore;
-                                j = longValue;
-                                Node node2 = new Node(currentTimeMillis, dataStore2, dataStore2, this.udpCom, this, this.tunTapAdapter, this, null);
-                                this.node = node2;
-                                NodeStatus status = node2.status();
-                                long addres = status.getAddres();
+                                // 创建 ZT 节点
+                                this.node = new Node(currentTimeMillis, dataStore2, dataStore2, this.udpCom, this, this.tunTapAdapter, this, null);
+                                this.onNodeStatusRequest(null);
+                                // 持久化节点信息
+                                NodeStatus status = this.node.status();
+                                long address = status.getAddres();
                                 AppNodeDao appNodeDao = ((ZerotierFixApplication) getApplication()).getDaoSession().getAppNodeDao();
                                 List<AppNode> list2 = appNodeDao.queryBuilder().build().forCurrentThread().list();
                                 if (list2.isEmpty()) {
                                     AppNode appNode = new AppNode();
-                                    appNode.setNodeId(addres);
-                                    appNode.setNodeIdStr(String.format("%10x", addres));
+                                    appNode.setNodeId(address);
+                                    appNode.setNodeIdStr(String.format("%10x", address));
                                     appNodeDao.insert(appNode);
                                 } else {
                                     AppNode appNode2 = list2.get(0);
-                                    appNode2.setNodeId(addres);
-                                    appNode2.setNodeIdStr(String.format("%10x", addres));
+                                    appNode2.setNodeId(address);
+                                    appNode2.setNodeIdStr(String.format("%10x", address));
                                     appNodeDao.save(appNode2);
                                 }
                                 this.eventBus.post(new NodeIDEvent(status.getAddres()));
@@ -370,8 +371,6 @@ public class ZeroTierOneService extends VpnService implements Runnable, EventLis
                                 Log.e(TAG, "Error starting ZT1 Node", e);
                                 return START_NOT_STICKY;
                             }
-                        } else {
-                            j = longValue;
                         }
                         if (this.vpnThread == null) {
                             Thread thread2 = new Thread(this, "ZeroTier Service Thread");
@@ -386,7 +385,7 @@ public class ZeroTierOneService extends VpnService implements Runnable, EventLis
                         return START_NOT_STICKY;
                     }
                 }
-                joinNetwork(j, this.useDefaultRoute);
+                joinNetwork(networkId, this.useDefaultRoute);
                 return START_STICKY;
             } else {
                 Toast.makeText(this, R.string.toast_mobile_data, Toast.LENGTH_SHORT).show();
@@ -619,11 +618,15 @@ public class ZeroTierOneService extends VpnService implements Runnable, EventLis
         }
     }
 
+    /**
+     * 请求节点状态事件回调
+     * @param event 事件
+     */
     @Subscribe(threadMode = ThreadMode.BACKGROUND)
-    public void onNodeStatusRequest(RequestNodeStatusEvent requestNodeStatusEvent) {
-        Node node2 = this.node;
-        if (node2 != null) {
-            this.eventBus.post(new NodeStatusEvent(node2.status()));
+    public void onNodeStatusRequest(RequestNodeStatusEvent event) {
+        // 返回节点状态
+        if (this.node != null) {
+            this.eventBus.post(new NodeStatusEvent(this.node.status(), this.node.getVersion()));
         }
     }
 
@@ -647,12 +650,16 @@ public class ZeroTierOneService extends VpnService implements Runnable, EventLis
         updateTunnelConfig();
     }
 
-    @Override // com.zerotier.sdk.EventListener
+    /**
+     * Zerotier 事件回调
+     * @param event {@link Event} enum
+     */
+    @Override
     public void onEvent(Event event) {
         Log.d(TAG, "Event: " + event.toString());
-        Node node2 = this.node;
-        if (node2 != null) {
-            this.eventBus.post(new NodeStatusEvent(node2.status()));
+        // 更新节点状态
+        if (this.node != null) {
+            this.eventBus.post(new NodeStatusEvent(this.node.status(), this.node.getVersion()));
         }
     }
 
