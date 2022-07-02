@@ -1,5 +1,6 @@
 package net.kaaass.zerotierfix.ui;
 
+import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -145,9 +146,10 @@ public class PeerListFragment extends Fragment {
                 Thread.sleep(1000);
             } catch (InterruptedException ignored) {
             }
-            getActivity().runOnUiThread(() -> {
-                this.swipeRefreshLayout.setRefreshing(false);
-            });
+            Activity activity = getActivity();
+            if (activity != null) {
+                activity.runOnUiThread(() -> this.swipeRefreshLayout.setRefreshing(false));
+            }
         }).start();
     }
 
