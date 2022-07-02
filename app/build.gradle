@@ -16,8 +16,8 @@ android {
         applicationId "net.kaaass.zerotierfix"
         minSdkVersion 19
         targetSdkVersion 31
-        versionCode 8
-        versionName "1.0.4"
+        versionCode 9
+        versionName "1.0.5_189"
         multiDexEnabled true
 
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
