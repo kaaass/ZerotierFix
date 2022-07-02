@@ -1,7 +1,8 @@
 package net.kaaass.zerotierfix;
 
-import android.app.Application;
 import android.util.Log;
+
+import androidx.multidex.MultiDexApplication;
 
 import net.kaaass.zerotierfix.model.DaoMaster;
 import net.kaaass.zerotierfix.model.DaoSession;
@@ -12,7 +13,7 @@ import net.kaaass.zerotierfix.model.ZTOpenHelper;
  *
  * @author kaaass
  */
-public class ZerotierFixApplication extends Application {
+public class ZerotierFixApplication extends MultiDexApplication {
     private DaoSession mDaoSession;
 
     public void onCreate() {
