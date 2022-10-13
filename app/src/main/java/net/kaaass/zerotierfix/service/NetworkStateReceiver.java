@@ -11,7 +11,7 @@ public class NetworkStateReceiver extends BroadcastReceiver {
     private static final String TAG = "NetworkStateReceiver";
 
     public void onReceive(Context context, Intent intent) {
-        NetworkInfo activeNetworkInfo = ((ConnectivityManager) context.getSystemService("connectivity")).getActiveNetworkInfo();
+        NetworkInfo activeNetworkInfo = ((ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE)).getActiveNetworkInfo();
         if (activeNetworkInfo != null) {
             activeNetworkInfo.isConnectedOrConnecting();
         }
