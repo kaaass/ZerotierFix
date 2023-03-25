@@ -24,6 +24,7 @@ import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.SwitchCompat;
 import androidx.fragment.app.Fragment;
@@ -33,21 +34,21 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.zerotier.sdk.NodeStatus;
 import com.zerotier.sdk.Version;
 import com.zerotier.sdk.VirtualNetworkConfig;
-import com.zerotier.sdk.VirtualNetworkStatus;
 import com.zerotier.sdk.VirtualNetworkType;
 
-import net.kaaass.zerotierfix.ZerotierFixApplication;
 import net.kaaass.zerotierfix.R;
+import net.kaaass.zerotierfix.ZerotierFixApplication;
 import net.kaaass.zerotierfix.events.AfterJoinNetworkEvent;
 import net.kaaass.zerotierfix.events.IsServiceRunningEvent;
 import net.kaaass.zerotierfix.events.NetworkInfoReplyEvent;
+import net.kaaass.zerotierfix.events.NetworkListCheckedChangeEvent;
 import net.kaaass.zerotierfix.events.NetworkListReplyEvent;
 import net.kaaass.zerotierfix.events.NodeDestroyedEvent;
 import net.kaaass.zerotierfix.events.NodeIDEvent;
 import net.kaaass.zerotierfix.events.NodeStatusEvent;
+import net.kaaass.zerotierfix.events.NodeStatusRequestEvent;
 import net.kaaass.zerotierfix.events.OrbitMoonEvent;
-import net.kaaass.zerotierfix.events.RequestNetworkListEvent;
-import net.kaaass.zerotierfix.events.RequestNodeStatusEvent;
+import net.kaaass.zerotierfix.events.NetworkListRequestEvent;
 import net.kaaass.zerotierfix.events.StopEvent;
 import net.kaaass.zerotierfix.model.AppNode;
 import net.kaaass.zerotierfix.model.AssignedAddress;
@@ -58,6 +59,8 @@ import net.kaaass.zerotierfix.model.Network;
 import net.kaaass.zerotierfix.model.NetworkConfig;
 import net.kaaass.zerotierfix.model.NetworkConfigDao;
 import net.kaaass.zerotierfix.model.NetworkDao;
+import net.kaaass.zerotierfix.model.type.NetworkStatus;
+import net.kaaass.zerotierfix.model.type.NetworkType;
 import net.kaaass.zerotierfix.service.ZeroTierOneService;
 import net.kaaass.zerotierfix.util.Constants;
 import net.kaaass.zerotierfix.util.StringUtils;
@@ -77,14 +80,11 @@ import lombok.ToString;
 
 // TODO: clear up
 public class NetworkListFragment extends Fragment {
-    public static final int AUTH_VPN = 3;
     public static final String NETWORK_ID_MESSAGE = "com.zerotier.one.network-id";
-    public static final int START_VPN = 2;
     public static final String TAG = "NetworkListFragment";
     private final EventBus eventBus;
     private final List<Network> mNetworks = new ArrayList<>();
     boolean mIsBound = false;
-    private JoinAfterAuth joinAfterAuth;
     private RecyclerViewAdapter recyclerViewAdapter;
     private RecyclerView recyclerView;
     private ZeroTierOneService mBoundService;
@@ -106,7 +106,6 @@ public class NetworkListFragment extends Fragment {
     private TextView nodeClientVersionView;
 
     private View emptyView = null;
-
     final private RecyclerView.AdapterDataObserver checkIfEmptyObserver = new RecyclerView.AdapterDataObserver() {
         @Override
         public void onChanged() {
@@ -177,28 +176,21 @@ public class NetworkListFragment extends Fragment {
     @Override // androidx.fragment.app.Fragment
     public void onStart() {
         super.onStart();
-        this.eventBus.register(this);
-        this.eventBus.post(new RequestNetworkListEvent());
-        this.eventBus.post(new RequestNodeStatusEvent());
+        this.eventBus.post(new NetworkListRequestEvent());
+        this.eventBus.post(new NodeStatusRequestEvent());
         this.eventBus.post(IsServiceRunningEvent.NewRequest());
     }
 
-    @Override // androidx.fragment.app.Fragment
+    @Override
     public void onStop() {
         super.onStop();
         doUnbindService();
-        this.eventBus.unregister(this);
     }
 
-    @Override // androidx.fragment.app.Fragment
+    @Override
     public void onPause() {
         super.onPause();
         this.eventBus.unregister(this);
-    }
-
-    @Override // androidx.fragment.app.Fragment
-    public void onActivityCreated(Bundle bundle) {
-        super.onActivityCreated(bundle);
     }
 
     @Override
@@ -235,20 +227,33 @@ public class NetworkListFragment extends Fragment {
         return view;
     }
 
-    /* access modifiers changed from: private */
-    /* access modifiers changed from: public */
-    private void sendStartServiceIntent(long networkId, boolean useDefaultRoute) {
-        Intent prepare = VpnService.prepare(getActivity());
+    /**
+     * 发送连接至指定网络的 Intent。将请求 VPN 权限后启动 ZT 服务
+     *
+     * @param networkId 网络号
+     */
+    private void sendStartServiceIntent(long networkId) {
+        var prepare = VpnService.prepare(getActivity());
         if (prepare != null) {
-            this.joinAfterAuth = new JoinAfterAuth(networkId, useDefaultRoute);
-            startActivityForResult(prepare, 3);
+            // 等待 VPN 授权后连接网络
+            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), (activityResult) -> {
+                var result = activityResult.getResultCode();
+                Log.d(TAG, "Returned from AUTH_VPN");
+                if (result == -1) {
+                    // 授权
+                    startService(networkId);
+                } else if (result == 0) {
+                    // 未授权
+                    updateNetworkListAndNotify();
+                }
+            }).launch(prepare);
             return;
         }
         Log.d(TAG, "Intent is NULL.  Already approved.");
-        startService(networkId, useDefaultRoute);
+        startService(networkId);
     }
 
-    @Override // androidx.fragment.app.Fragment
+    @Override
     public void onCreate(Bundle bundle) {
         Log.d(TAG, "NetworkListFragment.onCreate");
         super.onCreate(bundle);
@@ -256,25 +261,26 @@ public class NetworkListFragment extends Fragment {
         setHasOptionsMenu(true);
     }
 
-    @Override // androidx.fragment.app.Fragment
+    @Override
     public void onResume() {
         super.onResume();
         this.nodeStatusView.setText(R.string.status_offline);
+        this.eventBus.register(this);
         this.eventBus.post(IsServiceRunningEvent.NewRequest());
         updateNetworkListAndNotify();
-        this.eventBus.post(new RequestNetworkListEvent());
-        this.eventBus.post(new RequestNodeStatusEvent());
+        this.eventBus.post(new NetworkListRequestEvent());
+        this.eventBus.post(new NodeStatusRequestEvent());
     }
 
-    @Override // androidx.fragment.app.Fragment
-    public void onCreateOptionsMenu(Menu menu, MenuInflater menuInflater) {
+    @Override
+    public void onCreateOptionsMenu(@NonNull Menu menu, MenuInflater menuInflater) {
         Log.d(TAG, "NetworkListFragment.onCreateOptionsMenu");
         menuInflater.inflate(R.menu.menu_network_list, menu);
         super.onCreateOptionsMenu(menu, menuInflater);
-        this.eventBus.post(new RequestNodeStatusEvent());
+        this.eventBus.post(new NodeStatusRequestEvent());
     }
 
-    @Override // androidx.fragment.app.Fragment
+    @Override
     public boolean onOptionsItemSelected(MenuItem menuItem) {
         int menuId = menuItem.getItemId();
         if (menuId == R.id.menu_item_settings) {
@@ -293,27 +299,7 @@ public class NetworkListFragment extends Fragment {
         return super.onOptionsItemSelected(menuItem);
     }
 
-    @Override // androidx.fragment.app.Fragment
-    public void onActivityResult(int i, int i2, Intent intent) {
-        JoinAfterAuth joinAfterAuth2;
-        if (i == 2) {
-            long longExtra = intent.getLongExtra(ZeroTierOneService.ZT1_NETWORK_ID, 0);
-            boolean booleanExtra = intent.getBooleanExtra(ZeroTierOneService.ZT1_USE_DEFAULT_ROUTE, false);
-            if (longExtra != 0) {
-                startService(longExtra, booleanExtra);
-            } else {
-                Log.e(TAG, "Network ID not provided.  Cannot start network without an ID");
-            }
-        } else if (i == 3) {
-            Log.d(TAG, "Returned from AUTH_VPN");
-            if (i2 == -1 && (joinAfterAuth2 = this.joinAfterAuth) != null) {
-                startService(joinAfterAuth2.networkId, this.joinAfterAuth.useDefaultRoute);
-            }
-            this.joinAfterAuth = null;
-        }
-    }
-
-    @Override // androidx.fragment.app.Fragment
+    @Override
     public void onDestroy() {
         super.onDestroy();
         doUnbindService();
@@ -348,14 +334,14 @@ public class NetworkListFragment extends Fragment {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onNetworkInfoReply(NetworkInfoReplyEvent networkInfoReplyEvent) {
-        NetworkConfig.NetworkStatus networkStatus;
+        NetworkStatus networkStatus;
         Log.d(TAG, "Got Network Info");
         VirtualNetworkConfig networkInfo = networkInfoReplyEvent.getNetworkInfo();
         for (Network network : getNetworkList()) {
-            if (network.getNetworkId() == networkInfo.networkId()) {
+            if (network.getNetworkId() == networkInfo.getNwid()) {
                 network.setConnected(true);
-                if (!networkInfo.name().isEmpty()) {
-                    network.setNetworkName(networkInfo.name());
+                if (!networkInfo.getName().isEmpty()) {
+                    network.setNetworkName(networkInfo.getName());
                 }
                 NetworkDao networkDao = ((ZerotierFixApplication) getActivity().getApplication()).getDaoSession().getNetworkDao();
                 NetworkConfigDao networkConfigDao = ((ZerotierFixApplication) getActivity().getApplication()).getDaoSession().getNetworkConfigDao();
@@ -368,38 +354,38 @@ public class NetworkListFragment extends Fragment {
                 network.setNetworkConfig(networkConfig);
                 network.setNetworkConfigId(network.getNetworkId());
                 networkDao.save(network);
-                networkConfig.setBridging(networkInfo.isBridgeEnabled());
-                if (networkInfo.networkType() == VirtualNetworkType.NETWORK_TYPE_PRIVATE) {
-                    networkConfig.setType(NetworkConfig.NetworkType.PRIVATE);
-                } else if (networkInfo.networkType() == VirtualNetworkType.NETWORK_TYPE_PUBLIC) {
-                    networkConfig.setType(NetworkConfig.NetworkType.PUBLIC);
+                networkConfig.setBridging(networkInfo.isBridge());
+                if (networkInfo.getType() == VirtualNetworkType.NETWORK_TYPE_PRIVATE) {
+                    networkConfig.setType(NetworkType.PRIVATE);
+                } else if (networkInfo.getType() == VirtualNetworkType.NETWORK_TYPE_PUBLIC) {
+                    networkConfig.setType(NetworkType.PUBLIC);
                 }
-                switch (AnonymousClass2.$SwitchMap$com$zerotier$sdk$VirtualNetworkStatus[networkInfo.networkStatus().ordinal()]) {
-                    case 1:
-                        networkStatus = NetworkConfig.NetworkStatus.OK;
+                switch (networkInfo.getStatus()) {
+                    case NETWORK_STATUS_OK:
+                        networkStatus = NetworkStatus.OK;
                         break;
-                    case 2:
-                        networkStatus = NetworkConfig.NetworkStatus.ACCESS_DENIED;
+                    case NETWORK_STATUS_ACCESS_DENIED:
+                        networkStatus = NetworkStatus.ACCESS_DENIED;
                         Toast.makeText(getActivity(), R.string.toast_not_authorized, Toast.LENGTH_SHORT).show();
                         break;
-                    case 3:
-                        networkStatus = NetworkConfig.NetworkStatus.CLIENT_TOO_OLD;
+                    case NETWORK_STATUS_NOT_FOUND:
+                        networkStatus = NetworkStatus.NOT_FOUND;
                         break;
-                    case 4:
-                        networkStatus = NetworkConfig.NetworkStatus.NOT_FOUND;
+                    case NETWORK_STATUS_PORT_ERROR:
+                        networkStatus = NetworkStatus.PORT_ERROR;
                         break;
-                    case 5:
-                        networkStatus = NetworkConfig.NetworkStatus.PORT_ERROR;
+                    case NETWORK_STATUS_CLIENT_TOO_OLD:
+                        networkStatus = NetworkStatus.CLIENT_TOO_OLD;
                         break;
-                    case 6:
-                        networkStatus = NetworkConfig.NetworkStatus.REQUESTING_CONFIGURATION;
-                        break;
+                    case NETWORK_STATUS_AUTHENTICATION_REQUIRED:
+                        networkStatus = NetworkStatus.AUTHENTICATION_REQUIRED;
                     default:
-                        networkStatus = NetworkConfig.NetworkStatus.UNKNOWN;
+                    case NETWORK_STATUS_REQUESTING_CONFIGURATION:
+                        networkStatus = NetworkStatus.REQUESTING_CONFIGURATION;
                         break;
                 }
                 networkConfig.setStatus(networkStatus);
-                String macAddress = Long.toHexString(networkInfo.macAddress());
+                String macAddress = Long.toHexString(networkInfo.getMac());
                 while (macAddress.length() < 12) {
                     macAddress = "0" + macAddress;
                 }
@@ -421,16 +407,16 @@ public class NetworkListFragment extends Fragment {
                         macAddress.charAt(10) +
                         macAddress.charAt(11);
                 networkConfig.setMac(sb);
-                networkConfig.setMtu(Integer.toString(networkInfo.mtu()));
-                networkConfig.setBroadcast(networkInfo.broadcastEnabled());
-                network.setNetworkConfigId(networkInfo.networkId());
+                networkConfig.setMtu(Integer.toString(networkInfo.getMtu()));
+                networkConfig.setBroadcast(networkInfo.isBroadcastEnabled());
+                network.setNetworkConfigId(networkInfo.getNwid());
                 network.setNetworkConfig(networkConfig);
                 networkDao.save(network);
                 networkConfigDao.save(networkConfig);
-                ((ZerotierFixApplication) getActivity().getApplication()).getDaoSession().getAssignedAddressDao().queryBuilder().where(AssignedAddressDao.Properties.NetworkId.eq(networkInfo.networkId()), new WhereCondition[0]).buildDelete().forCurrentThread().forCurrentThread().executeDeleteWithoutDetachingEntities();
+                ((ZerotierFixApplication) getActivity().getApplication()).getDaoSession().getAssignedAddressDao().queryBuilder().where(AssignedAddressDao.Properties.NetworkId.eq(networkInfo.getNwid()), new WhereCondition[0]).buildDelete().forCurrentThread().forCurrentThread().executeDeleteWithoutDetachingEntities();
                 ((ZerotierFixApplication) getActivity().getApplication()).getDaoSession().clear();
                 AssignedAddressDao assignedAddressDao = ((ZerotierFixApplication) getActivity().getApplication()).getDaoSession().getAssignedAddressDao();
-                InetSocketAddress[] assignedAddresses = networkInfo.assignedAddresses();
+                InetSocketAddress[] assignedAddresses = networkInfo.getAssignedAddresses();
                 for (InetSocketAddress inetSocketAddress : assignedAddresses) {
                     InetAddress address = inetSocketAddress.getAddress();
                     short port = (short) inetSocketAddress.getPort();
@@ -466,6 +452,7 @@ public class NetworkListFragment extends Fragment {
 
     /**
      * 节点状态事件回调
+     *
      * @param event 事件
      */
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -476,7 +463,7 @@ public class NetworkListFragment extends Fragment {
         if (status.isOnline()) {
             this.nodeStatusView.setText(R.string.status_online);
             if (this.nodeIdView != null) {
-                this.nodeIdView.setText(Long.toHexString(status.getAddres()));
+                this.nodeIdView.setText(Long.toHexString(status.getAddress()));
             }
         } else {
             setOfflineState();
@@ -488,7 +475,7 @@ public class NetworkListFragment extends Fragment {
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onNodeDestroyed(NodeDestroyedEvent nodeDestroyedEvent) {
+    public void onNodeDestroyed(NodeDestroyedEvent event) {
         setOfflineState();
     }
 
@@ -516,7 +503,7 @@ public class NetworkListFragment extends Fragment {
             if (this.mVNC != null) {
                 for (Network network : networkList) {
                     for (VirtualNetworkConfig virtualNetworkConfig : this.mVNC) {
-                        network.setConnected(network.getNetworkId() == virtualNetworkConfig.networkId());
+                        network.setConnected(network.getNetworkId() == virtualNetworkConfig.getNwid());
                     }
                 }
             }
@@ -538,24 +525,28 @@ public class NetworkListFragment extends Fragment {
         }
     }
 
-    private void startService(long networkId, boolean useDefaultRoute) {
-        Intent intent = new Intent(getActivity(), ZeroTierOneService.class);
+    /**
+     * 启动 ZT 服务连接至指定网络
+     *
+     * @param networkId 网络号
+     */
+    private void startService(long networkId) {
+        var intent = new Intent(getActivity(), ZeroTierOneService.class);
         intent.putExtra(ZeroTierOneService.ZT1_NETWORK_ID, networkId);
-        intent.putExtra(ZeroTierOneService.ZT1_USE_DEFAULT_ROUTE, useDefaultRoute);
         doBindService();
-        getActivity().startService(intent);
+        requireActivity().startService(intent);
     }
 
-    /* access modifiers changed from: private */
-    /* access modifiers changed from: public */
+    /**
+     * 停止 ZT 服务
+     */
     private void stopService() {
-        ZeroTierOneService zeroTierOneService = this.mBoundService;
-        if (zeroTierOneService != null) {
-            zeroTierOneService.stopZeroTier();
+        if (this.mBoundService != null) {
+            this.mBoundService.stopZeroTier();
         }
-        Intent intent = new Intent(getActivity(), ZeroTierOneService.class);
+        var intent = new Intent(requireActivity(), ZeroTierOneService.class);
         this.eventBus.post(new StopEvent());
-        if (!getActivity().stopService(intent)) {
+        if (!requireActivity().stopService(intent)) {
             Log.e(TAG, "stopService() returned false");
         }
         doUnbindService();
@@ -572,6 +563,7 @@ public class NetworkListFragment extends Fragment {
 
     /**
      * 加入网络后事件回调
+     *
      * @param event 事件
      */
     @Subscribe
@@ -582,29 +574,67 @@ public class NetworkListFragment extends Fragment {
         this.eventBus.post(new OrbitMoonEvent(moonOrbits));
     }
 
-    /* renamed from: com.zerotier.one.ui.NetworkListFragment$2  reason: invalid class name */
-    static /* synthetic */ class AnonymousClass2 {
-        static final /* synthetic */ int[] $SwitchMap$com$zerotier$sdk$VirtualNetworkStatus;
-
-        static {
-            $SwitchMap$com$zerotier$sdk$VirtualNetworkStatus = new int[VirtualNetworkStatus.values().length];
-            $SwitchMap$com$zerotier$sdk$VirtualNetworkStatus[com.zerotier.sdk.VirtualNetworkStatus.NETWORK_STATUS_OK.ordinal()] = 1;
-            $SwitchMap$com$zerotier$sdk$VirtualNetworkStatus[com.zerotier.sdk.VirtualNetworkStatus.NETWORK_STATUS_ACCESS_DENIED.ordinal()] = 2;
-            $SwitchMap$com$zerotier$sdk$VirtualNetworkStatus[com.zerotier.sdk.VirtualNetworkStatus.NETWORK_STATUS_CLIENT_TOO_OLD.ordinal()] = 3;
-            $SwitchMap$com$zerotier$sdk$VirtualNetworkStatus[com.zerotier.sdk.VirtualNetworkStatus.NETWORK_STATUS_NOT_FOUND.ordinal()] = 4;
-            $SwitchMap$com$zerotier$sdk$VirtualNetworkStatus[com.zerotier.sdk.VirtualNetworkStatus.NETWORK_STATUS_PORT_ERROR.ordinal()] = 5;
-            $SwitchMap$com$zerotier$sdk$VirtualNetworkStatus[com.zerotier.sdk.VirtualNetworkStatus.NETWORK_STATUS_REQUESTING_CONFIGURATION.ordinal()] = 6;
-        }
-    }
-
-    /* access modifiers changed from: private */
-    public static class JoinAfterAuth {
-        long networkId;
-        boolean useDefaultRoute;
-
-        JoinAfterAuth(long j, boolean z) {
-            this.networkId = j;
-            this.useDefaultRoute = z;
+    @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    public void onNetworkListCheckedChangeEvent(NetworkListCheckedChangeEvent event) {
+        var switchHandle = event.getSwitchHandle();
+        var checked = event.isChecked();
+        var selectedNetwork = event.getSelectedNetwork();
+        var networkDao = ((ZerotierFixApplication) requireActivity().getApplication())
+                .getDaoSession().getNetworkDao();
+        if (checked) {
+            // 启动网络
+            var context = NetworkListFragment.this.getContext();
+            boolean useCellularData = PreferenceManager
+                    .getDefaultSharedPreferences(context)
+                    .getBoolean(Constants.PREF_NETWORK_USE_CELLULAR_DATA, false);
+            var activeNetworkInfo = ((ConnectivityManager) context
+                    .getSystemService(Context.CONNECTIVITY_SERVICE))
+                    .getActiveNetworkInfo();
+            if (activeNetworkInfo == null || !activeNetworkInfo.isConnectedOrConnecting()) {
+                // 设备无网络
+                requireActivity().runOnUiThread(() -> {
+                    Toast.makeText(NetworkListFragment.this.getContext(), R.string.toast_no_network, Toast.LENGTH_SHORT).show();
+                    switchHandle.setChecked(false);
+                });
+            } else if (useCellularData || !(activeNetworkInfo.getType() == 0)) {
+                // 可以连接至网络
+                // 先关闭所有现有网络连接
+                for (var network : this.mNetworks) {
+                    if (network.getConnected()) {
+                        network.setConnected(false);
+                    }
+                    network.setLastActivated(false);
+                    network.update();
+                }
+                this.stopService();
+                // 连接目标网络
+                if (!this.isBound()) {
+                    this.sendStartServiceIntent(selectedNetwork.getNetworkId());
+                } else {
+                    this.mBoundService.joinNetwork(selectedNetwork.getNetworkId());
+                }
+                Log.d(TAG, "Joining Network: " + selectedNetwork.getNetworkIdStr());
+                selectedNetwork.setConnected(true);
+                selectedNetwork.setLastActivated(true);
+                networkDao.save(selectedNetwork);
+            } else {
+                // 移动数据且未确认
+                requireActivity().runOnUiThread(() -> {
+                    Toast.makeText(this.getContext(), R.string.toast_mobile_data, Toast.LENGTH_SHORT).show();
+                    switchHandle.setChecked(false);
+                });
+            }
+        } else {
+            // 关闭网络
+            Log.d(TAG, "Leaving Leaving Network: " + selectedNetwork.getNetworkIdStr());
+            if (this.isBound() && this.mBoundService != null) {
+                this.mBoundService.leaveNetwork(selectedNetwork.getNetworkId());
+                this.doUnbindService();
+            }
+            this.stopService();
+            selectedNetwork.setConnected(false);
+            networkDao.save(selectedNetwork);
+            this.mVNC = null;
         }
     }
 
@@ -734,58 +764,11 @@ public class NetworkListFragment extends Fragment {
              * 点击开启网络开关
              */
             public void onSwitchCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                NetworkDao networkDao = ((ZerotierFixApplication) NetworkListFragment.this.getActivity().getApplication()).getDaoSession().getNetworkDao();
-                if (isChecked) {
-                    // 启动网络
-                    Context context = NetworkListFragment.this.getContext();
-                    boolean useCellularData = PreferenceManager
-                            .getDefaultSharedPreferences(context)
-                            .getBoolean(Constants.PREF_NETWORK_USE_CELLULAR_DATA, false);
-                    NetworkInfo activeNetworkInfo = ((ConnectivityManager) context
-                            .getSystemService(Context.CONNECTIVITY_SERVICE))
-                            .getActiveNetworkInfo();
-                    if (activeNetworkInfo == null || !activeNetworkInfo.isConnectedOrConnecting()) {
-                        // 设备无网络
-                        Toast.makeText(NetworkListFragment.this.getContext(), R.string.toast_no_network, Toast.LENGTH_SHORT).show();
-                        this.mSwitch.setChecked(false);
-                    } else if (useCellularData || !(activeNetworkInfo == null || activeNetworkInfo.getType() == 0)) {
-                        // 可以连接至网络
-                        // 先关闭所有现有网络连接
-                        for (Network network : NetworkListFragment.this.mNetworks) {
-                            if (network.getConnected()) {
-                                network.setConnected(false);
-                            }
-                            network.setLastActivated(false);
-                            network.update();
-                        }
-                        NetworkListFragment.this.stopService();
-                        // 连接目标网络
-                        if (!NetworkListFragment.this.isBound()) {
-                            NetworkListFragment.this.sendStartServiceIntent(this.mItem.getNetworkId(), this.mItem.getUseDefaultRoute());
-                        } else {
-                            NetworkListFragment.this.mBoundService.joinNetwork(this.mItem.getNetworkId(), this.mItem.getUseDefaultRoute());
-                        }
-                        Log.d(NetworkListFragment.TAG, "Joining Network: " + this.mItem.getNetworkIdStr());
-                        this.mItem.setConnected(true);
-                        this.mItem.setLastActivated(true);
-                        networkDao.save(this.mItem);
-                    } else {
-                        // 移动数据且未确认
-                        Toast.makeText(NetworkListFragment.this.getContext(), R.string.toast_mobile_data, Toast.LENGTH_SHORT).show();
-                        this.mSwitch.setChecked(false);
-                    }
-                } else {
-                    // 关闭网络
-                    Log.d(NetworkListFragment.TAG, "Leaving Leaving Network: " + this.mItem.getNetworkIdStr());
-                    if (!(!NetworkListFragment.this.isBound() || NetworkListFragment.this.mBoundService == null || this.mItem == null)) {
-                        NetworkListFragment.this.mBoundService.leaveNetwork(this.mItem.getNetworkId());
-                        NetworkListFragment.this.doUnbindService();
-                    }
-                    NetworkListFragment.this.stopService();
-                    this.mItem.setConnected(false);
-                    networkDao.save(this.mItem);
-                    NetworkListFragment.this.mVNC = null;
-                }
+                NetworkListFragment.this.eventBus.post(new NetworkListCheckedChangeEvent(
+                        this.mSwitch,
+                        isChecked,
+                        this.mItem
+                ));
             }
         }
     }

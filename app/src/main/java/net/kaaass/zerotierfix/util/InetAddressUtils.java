@@ -12,6 +12,8 @@ import java.nio.ByteBuffer;
 public class InetAddressUtils {
     public static final String TAG = "InetAddressUtils";
 
+    public static final long BROADCAST_MAC_ADDRESS = 0xffffffffffffL;
+
     public static byte[] addressToNetmask(InetAddress inetAddress, int i) {
         int length = inetAddress.getAddress().length;
         int i2 = length * 8;

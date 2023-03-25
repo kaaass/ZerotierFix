@@ -19,6 +19,7 @@ public class Network {
 
     private String networkName;
 
+    @Deprecated
     private boolean useDefaultRoute;
 
     private boolean lastActivated;

@@ -1,6 +1,8 @@
 package net.kaaass.zerotierfix.model;
 
 import net.kaaass.zerotierfix.R;
+import net.kaaass.zerotierfix.model.type.NetworkStatus;
+import net.kaaass.zerotierfix.model.type.NetworkType;
 
 import org.greenrobot.greendao.DaoException;
 import org.greenrobot.greendao.annotation.Convert;
@@ -10,6 +12,7 @@ import org.greenrobot.greendao.annotation.ToMany;
 import org.greenrobot.greendao.converter.PropertyConverter;
 
 import java.util.List;
+
 import org.greenrobot.greendao.annotation.Generated;
 
 @Entity
@@ -43,18 +46,22 @@ public class NetworkConfig {
     @ToMany(referencedJoinProperty = "networkId")
     private List<DnsServer> dnsServers;
 
-    /** Used to resolve relations */
+    /**
+     * Used to resolve relations
+     */
     @Generated(hash = 2040040024)
     private transient DaoSession daoSession;
 
-    /** Used for active entity operations. */
+    /**
+     * Used for active entity operations.
+     */
     @Generated(hash = 1627972760)
     private transient NetworkConfigDao myDao;
 
     @Generated(hash = 1535887363)
     public NetworkConfig(Long id, NetworkType type, NetworkStatus status, String mac, String mtu,
-            boolean broadcast, boolean bridging, boolean routeViaZeroTier, boolean useCustomDNS,
-            int dnsMode) {
+                         boolean broadcast, boolean bridging, boolean routeViaZeroTier, boolean useCustomDNS,
+                         int dnsMode) {
         this.id = id;
         this.type = type;
         this.status = status;
@@ -174,7 +181,9 @@ public class NetworkConfig {
         return assignedAddresses;
     }
 
-    /** Resets a to-many relationship, making the next get call to query for a fresh result. */
+    /**
+     * Resets a to-many relationship, making the next get call to query for a fresh result.
+     */
     @Generated(hash = 1705851723)
     public synchronized void resetAssignedAddresses() {
         assignedAddresses = null;
@@ -202,7 +211,9 @@ public class NetworkConfig {
         return dnsServers;
     }
 
-    /** Resets a to-many relationship, making the next get call to query for a fresh result. */
+    /**
+     * Resets a to-many relationship, making the next get call to query for a fresh result.
+     */
     @Generated(hash = 980018091)
     public synchronized void resetDnsServers() {
         dnsServers = null;
@@ -251,130 +262,19 @@ public class NetworkConfig {
         myDao = daoSession != null ? daoSession.getNetworkConfigDao() : null;
     }
 
-    public enum NetworkType {
-        UNKNOWN(0),
-        PRIVATE(1),
-        PUBLIC(2);
-
-        final int id;
-
-        NetworkType(int i) {
-            this.id = i;
-        }
-
-        public String toString() {
-            int i = this.id;
-            if (i != 1) {
-                return i != 2 ? "Unknown" : "Public";
-            }
-            return "Private";
-        }
-
-        public int toStringId() {
-            int i = this.id;
-            if (i != 1) {
-                return i != 2 ? R.string.network_type_unknown : R.string.network_type_public;
-            }
-            return R.string.network_type_private;
-        }
-    }
-
-    public enum DNSMode {
-        NO_DNS(0),
-        NETWORK_DNS(1),
-        CUSTOM_DNS(2);
-
-        final int id;
-
-        DNSMode(int i) {
-            this.id = i;
-        }
-
-        public String toString() {
-            int i = this.id;
-            if (i == 0) {
-                return "No DNS";
-            }
-            if (i != 1) {
-                return i != 2 ? "Unknown" : "Custom DNS";
-            }
-            return "Network DNS";
-        }
-    }
-
-    public enum NetworkStatus {
-        UNKNOWN(0),
-        OK(1),
-        ACCESS_DENIED(2),
-        CLIENT_TOO_OLD(3),
-        NOT_FOUND(4),
-        PORT_ERROR(5),
-        REQUESTING_CONFIGURATION(6);
-
-        final int id;
-
-        NetworkStatus(int i) {
-            this.id = i;
-        }
-
-        public String toString() {
-            switch (this.id) {
-                case 1:
-                    return "OK";
-                case 2:
-                    return "ACCESS DENIED";
-                case 3:
-                    return "CLIENT TOO OLD";
-                case 4:
-                    return "NETWORK NOT FOUND";
-                case 5:
-                    return "PORT ERROR";
-                case 6:
-                    return "REQUESTING CONFIGURATION";
-                default:
-                    return "UNKNOWN";
-            }
-        }
-
-        public int toStringId() {
-            switch (this.id) {
-                case 1:
-                    return R.string.network_status_ok;
-                case 2:
-                    return R.string.network_status_access_denied;
-                case 3:
-                    return R.string.network_status_client_too_old;
-                case 4:
-                    return R.string.network_status_not_found;
-                case 5:
-                    return R.string.network_status_port_error;
-                case 6:
-                    return R.string.network_status_requesting_configuration;
-                default:
-                    return R.string.network_status_unknown;
-            }
-        }
-    }
-
     public static class NetworkTypeConverter implements PropertyConverter<NetworkType, Integer> {
         public NetworkType convertToEntityProperty(Integer num) {
             if (num == null) {
                 return null;
             }
-            NetworkType[] values = NetworkType.values();
-            for (NetworkType networkType : values) {
-                if (networkType.id == num) {
-                    return networkType;
-                }
-            }
-            return NetworkType.PRIVATE;
+            return NetworkType.fromInt(num);
         }
 
         public Integer convertToDatabaseValue(NetworkType networkType) {
             if (networkType == null) {
                 return null;
             }
-            return networkType.id;
+            return networkType.toInt();
         }
     }
 
@@ -383,20 +283,14 @@ public class NetworkConfig {
             if (num == null) {
                 return null;
             }
-            NetworkStatus[] values = NetworkStatus.values();
-            for (NetworkStatus networkStatus : values) {
-                if (networkStatus.id == num) {
-                    return networkStatus;
-                }
-            }
-            return NetworkStatus.UNKNOWN;
+            return NetworkStatus.fromInt(num);
         }
 
         public Integer convertToDatabaseValue(NetworkStatus networkStatus) {
             if (networkStatus == null) {
                 return null;
             }
-            return networkStatus.id;
+            return networkStatus.toInt();
         }
     }
 }

@@ -12,9 +12,9 @@ public class ARPTable {
     private static final long ENTRY_TIMEOUT = 120000;
     private static final int REPLY = 2;
     private static final int REQUEST = 1;
-    private final HashMap<Long, ArpEntry> entriesMap = new HashMap<>();
+    private final HashMap<Long, ARPEntry> entriesMap = new HashMap<>();
     private final HashMap<InetAddress, Long> inetAddressToMacAddress = new HashMap<>();
-    private final HashMap<InetAddress, ArpEntry> ipEntriesMap = new HashMap<>();
+    private final HashMap<InetAddress, ARPEntry> ipEntriesMap = new HashMap<>();
     private final HashMap<Long, InetAddress> macAddressToInetAdddress = new HashMap<>();
     private final Thread timeoutThread = new Thread("ARP Timeout Thread") {
         /* class com.zerotier.one.service.ARPTable.AnonymousClass1 */
@@ -22,14 +22,14 @@ public class ARPTable {
         public void run() {
             while (!isInterrupted()) {
                 try {
-                    for (ArpEntry arpEntry : new HashMap<>(ARPTable.this.entriesMap).values()) {
-                        if (arpEntry.time + ARPTable.ENTRY_TIMEOUT < System.currentTimeMillis()) {
+                    for (ARPEntry arpEntry : new HashMap<>(ARPTable.this.entriesMap).values()) {
+                        if (arpEntry.getTime() + ARPTable.ENTRY_TIMEOUT < System.currentTimeMillis()) {
                             Log.d(ARPTable.TAG, "Removing " + arpEntry.getAddress().toString() + " from ARP cache");
                             synchronized (ARPTable.this.macAddressToInetAdddress) {
-                                ARPTable.this.macAddressToInetAdddress.remove(arpEntry.mac);
+                                ARPTable.this.macAddressToInetAdddress.remove(arpEntry.getMac());
                             }
                             synchronized (ARPTable.this.inetAddressToMacAddress) {
-                                ARPTable.this.inetAddressToMacAddress.remove(arpEntry.address);
+                                ARPTable.this.inetAddressToMacAddress.remove(arpEntry.getAddress());
                             }
                             synchronized (ARPTable.this.entriesMap) {
                                 ARPTable.this.entriesMap.remove(arpEntry.getMac());
@@ -61,13 +61,6 @@ public class ARPTable {
         return allocate.array();
     }
 
-    /* access modifiers changed from: protected */
-    public void finalize() throws Throwable {
-        stop();
-        super.finalize();
-    }
-
-    /* access modifiers changed from: protected */
     public void stop() {
         try {
             this.timeoutThread.interrupt();
@@ -84,7 +77,7 @@ public class ARPTable {
         synchronized (this.macAddressToInetAdddress) {
             this.macAddressToInetAdddress.put(j, inetAddress);
         }
-        ArpEntry arpEntry = new ArpEntry(j, inetAddress);
+        ARPEntry arpEntry = new ARPEntry(j, inetAddress);
         synchronized (this.entriesMap) {
             this.entriesMap.put(j, arpEntry);
         }
@@ -95,7 +88,7 @@ public class ARPTable {
 
     private void updateArpEntryTime(long j) {
         synchronized (this.entriesMap) {
-            ArpEntry arpEntry = this.entriesMap.get(j);
+            ARPEntry arpEntry = this.entriesMap.get(j);
             if (arpEntry != null) {
                 arpEntry.updateTime();
             }
@@ -104,7 +97,7 @@ public class ARPTable {
 
     private void updateArpEntryTime(InetAddress inetAddress) {
         synchronized (this.ipEntriesMap) {
-            ArpEntry arpEntry = this.ipEntriesMap.get(inetAddress);
+            ARPEntry arpEntry = this.ipEntriesMap.get(inetAddress);
             if (arpEntry != null) {
                 arpEntry.updateTime();
             }
@@ -118,10 +111,13 @@ public class ARPTable {
                 return -1;
             }
             Log.d(TAG, "Returning MAC for " + inetAddress.toString());
-            long longValue = this.inetAddressToMacAddress.get(inetAddress);
-            updateArpEntryTime(longValue);
-            return longValue;
+            var longValue = this.inetAddressToMacAddress.get(inetAddress);
+            if (longValue != null) {
+                updateArpEntryTime(longValue);
+                return longValue;
+            }
         }
+        return -1;
     }
 
     /* access modifiers changed from: package-private */
@@ -177,82 +173,49 @@ public class ARPTable {
         return bArr;
     }
 
-    public ARPReplyData processARPPacket(byte[] bArr) {
-        InetAddress inetAddress;
-        InetAddress inetAddress2;
+    public ARPReplyData processARPPacket(byte[] packetData) {
+        InetAddress srcAddress;
+        InetAddress dstAddress;
         Log.d(TAG, "Processing ARP packet");
-        byte[] bArr2 = new byte[8];
-        System.arraycopy(bArr, 8, bArr2, 2, 6);
-        byte[] bArr3 = new byte[4];
-        System.arraycopy(bArr, 14, bArr3, 0, 4);
-        byte[] bArr4 = new byte[8];
-        System.arraycopy(bArr, 18, bArr4, 2, 6);
-        byte[] bArr5 = new byte[4];
-        System.arraycopy(bArr, 24, bArr5, 0, 4);
+
+        // 解析包内 IP、MAC 地址
+        byte[] rawSrcMac = new byte[8];
+        System.arraycopy(packetData, 8, rawSrcMac, 2, 6);
+        byte[] rawSrcAddress = new byte[4];
+        System.arraycopy(packetData, 14, rawSrcAddress, 0, 4);
+        byte[] rawDstMac = new byte[8];
+        System.arraycopy(packetData, 18, rawDstMac, 2, 6);
+        byte[] rawDstAddress = new byte[4];
+        System.arraycopy(packetData, 24, rawDstAddress, 0, 4);
         try {
-            inetAddress = InetAddress.getByAddress(bArr3);
+            srcAddress = InetAddress.getByAddress(rawSrcAddress);
         } catch (Exception unused) {
-            inetAddress = null;
+            srcAddress = null;
         }
         try {
-            inetAddress2 = InetAddress.getByAddress(bArr5);
-        } catch (Exception unused2) {
-            inetAddress2 = null;
+            dstAddress = InetAddress.getByAddress(rawDstAddress);
+        } catch (Exception unused) {
+            dstAddress = null;
         }
-        long j = ByteBuffer.wrap(bArr2).getLong();
-        long j2 = ByteBuffer.wrap(bArr4).getLong();
-        if (!(j == 0 || inetAddress == null)) {
-            setAddress(inetAddress, j);
+        long srcMac = ByteBuffer.wrap(rawSrcMac).getLong();
+        long dstMac = ByteBuffer.wrap(rawDstMac).getLong();
+
+        // 更新 ARP 表项
+        if (srcMac != 0 && srcAddress != null) {
+            setAddress(srcAddress, srcMac);
         }
-        if (!(j2 == 0 || inetAddress2 == null)) {
-            setAddress(inetAddress2, j2);
+        if (dstMac != 0 && dstAddress != null) {
+            setAddress(dstAddress, dstMac);
         }
-        if (bArr[7] != 1) {
+
+        // 处理响应行为
+        var packetType = packetData[7];
+        if (packetType == REQUEST) {
+            // ARP 请求，返回应答数据
+            Log.d(TAG, "Reply needed");
+            return new ARPReplyData(srcMac, srcAddress);
+        } else {
             return null;
-        }
-        Log.d(TAG, "Reply needed");
-        ARPReplyData aRPReplyData = new ARPReplyData();
-        aRPReplyData.destMac = j;
-        aRPReplyData.destAddress = inetAddress;
-        return aRPReplyData;
-    }
-
-    public static class ARPReplyData {
-        public InetAddress destAddress;
-        public long destMac;
-        public InetAddress senderAddress;
-        public long senderMac;
-
-        public ARPReplyData() {
-        }
-    }
-
-    /* access modifiers changed from: private */
-    public static class ArpEntry {
-        private final InetAddress address;
-        private final long mac;
-        private long time;
-
-        ArpEntry(long j, InetAddress inetAddress) {
-            this.mac = j;
-            this.address = inetAddress;
-            updateTime();
-        }
-
-        public long getMac() {
-            return this.mac;
-        }
-
-        public InetAddress getAddress() {
-            return this.address;
-        }
-
-        public void updateTime() {
-            this.time = System.currentTimeMillis();
-        }
-
-        public boolean equals(ArpEntry arpEntry) {
-            return this.mac == arpEntry.mac && this.address.equals(arpEntry.address);
         }
     }
 }

@@ -8,5 +8,5 @@ import lombok.Data;
  * @author kaaass
  */
 @Data
-public class RequestPeerInfoEvent {
+public class PeerInfoRequestEvent {
 }

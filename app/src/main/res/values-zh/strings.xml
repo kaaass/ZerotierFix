@@ -37,6 +37,7 @@
     <string name="network_status_port_error">端口错误</string>
     <string name="network_status_requesting_configuration">正在请求配置</string>
     <string name="network_status_unknown">未知</string>
+    <string name="network_status_authentication_required">需要授权</string>
     <string name="network_type">网络类型</string>
     <string name="network_type_label">网络类型:</string>
     <string name="network_type_private">私有</string>
@@ -127,4 +128,9 @@
     <string name="moon_wrong_file_format">Moon 文件格式错误</string>
     <string name="moon_world_id_hint">Moon 结点的 Zerotier 地址。即 Moon 文件的文件名（不包含扩展名）。</string>
     <string name="cached_moon_file_delete">已删除缓存的 Moon 文件。需手动重连使配置生效。</string>
+    <string name="channel_name">ZeroTier Fix</string>
+    <string name="channel_description">连接状态</string>
+    <string name="notification_title_connected">已连接</string>
+    <string name="notification_text_connected">已连接至网络: %1$s</string>
+    <string name="toast_vpn_application_not_prepared" >VPN 服务还未准备好或已经失效。</string>
 </resources>

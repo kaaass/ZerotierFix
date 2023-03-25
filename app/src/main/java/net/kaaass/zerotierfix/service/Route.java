@@ -4,32 +4,18 @@ import net.kaaass.zerotierfix.util.InetAddressUtils;
 
 import java.net.InetAddress;
 
-// TODO: clear up
+import lombok.Data;
+
+/**
+ * 路由记录数据类
+ */
+@Data
 public class Route {
-    InetAddress address;
-    InetAddress gateway = null;
-    int prefix;
-
-    public Route(InetAddress inetAddress, int i) {
-        this.address = inetAddress;
-        this.prefix = i;
-    }
-
-    /* access modifiers changed from: package-private */
-    public InetAddress getGateway() {
-        return this.gateway;
-    }
-
-    /* access modifiers changed from: package-private */
-    public void setGateway(InetAddress inetAddress) {
-        this.gateway = inetAddress;
-    }
+    private final InetAddress address;
+    private final int prefix;
+    private InetAddress gateway = null;
 
     public boolean belongsToRoute(InetAddress inetAddress) {
         return this.address.equals(InetAddressUtils.addressToRoute(inetAddress, this.prefix));
-    }
-
-    public boolean equals(Route route) {
-        return this.address.equals(route.address) && this.prefix == route.prefix && this.gateway.equals(route.gateway);
     }
 }

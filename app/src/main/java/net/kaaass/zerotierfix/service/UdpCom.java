@@ -9,14 +9,15 @@ import com.zerotier.sdk.ResultCode;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
+import java.net.SocketException;
 import java.net.SocketTimeoutException;
 
 // TODO: clear up
 public class UdpCom implements PacketSender, Runnable {
     private static final String TAG = "UdpCom";
-    Node node;
-    DatagramSocket svrSocket;
-    ZeroTierOneService ztService;
+    private Node node;
+    private final DatagramSocket svrSocket;
+    private final ZeroTierOneService ztService;
 
     UdpCom(ZeroTierOneService zeroTierOneService, DatagramSocket datagramSocket) {
         this.svrSocket = datagramSocket;
@@ -59,7 +60,7 @@ public class UdpCom implements PacketSender, Runnable {
                         Log.d(TAG, "Got " + datagramPacket.getLength() + " Bytes From: " + datagramPacket.getAddress().toString() + ":" + datagramPacket.getPort());
                         ResultCode processWirePacket = this.node.processWirePacket(System.currentTimeMillis(), -1, new InetSocketAddress(datagramPacket.getAddress(), datagramPacket.getPort()), bArr2, jArr);
                         if (processWirePacket != ResultCode.RESULT_OK) {
-                            Log.e(TAG, "procesWirePacket returned: " + processWirePacket.toString());
+                            Log.e(TAG, "processWirePacket returned: " + processWirePacket.toString());
                             this.ztService.shutdown();
                         }
                         this.ztService.setNextBackgroundTaskDeadline(jArr[0]);
