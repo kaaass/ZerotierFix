@@ -195,18 +195,18 @@ public class TunTapAdapter implements VirtualNetworkFrameListener {
         // 查找当前节点的 v4 地址
         var ztAddresses = virtualNetworkConfig.getAssignedAddresses();
         InetAddress localV4Address = null;
-        int localPort = 0;
+        int cidr = 0;
 
         for (var address : ztAddresses) {
             if (address.getAddress() instanceof Inet4Address) {
                 localV4Address = address.getAddress();
-                localPort = address.getPort();
+                cidr = address.getPort();
                 break;
             }
         }
 
-        var destRoute = InetAddressUtils.addressToRouteNo0Route(destIP, localPort);
-        var sourceRoute = InetAddressUtils.addressToRouteNo0Route(sourceIP, localPort);
+        var destRoute = InetAddressUtils.addressToRouteNo0Route(destIP, cidr);
+        var sourceRoute = InetAddressUtils.addressToRouteNo0Route(sourceIP, cidr);
         if (gateway != null && !Objects.equals(destRoute, sourceRoute)) {
             destIP = gateway;
         }
@@ -273,18 +273,18 @@ public class TunTapAdapter implements VirtualNetworkFrameListener {
         // 查找当前节点的 v6 地址
         var ztAddresses = virtualNetworkConfig.getAssignedAddresses();
         InetAddress localV4Address = null;
-        int localPort = 0;
+        int cidr = 0;
 
         for (var address : ztAddresses) {
             if (address.getAddress() instanceof Inet6Address) {
                 localV4Address = address.getAddress();
-                localPort = address.getPort();
+                cidr = address.getPort();
                 break;
             }
         }
 
-        var destRoute = InetAddressUtils.addressToRouteNo0Route(destIP, localPort);
-        var sourceRoute = InetAddressUtils.addressToRouteNo0Route(sourceIP, localPort);
+        var destRoute = InetAddressUtils.addressToRouteNo0Route(destIP, cidr);
+        var sourceRoute = InetAddressUtils.addressToRouteNo0Route(sourceIP, cidr);
         if (gateway != null && !Objects.equals(destRoute, sourceRoute)) {
             destIP = gateway;
         }
