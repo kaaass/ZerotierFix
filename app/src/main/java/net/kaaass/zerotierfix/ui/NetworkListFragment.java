@@ -7,7 +7,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.net.VpnService;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -39,7 +38,8 @@ import com.zerotier.sdk.VirtualNetworkType;
 import net.kaaass.zerotierfix.R;
 import net.kaaass.zerotierfix.ZerotierFixApplication;
 import net.kaaass.zerotierfix.events.AfterJoinNetworkEvent;
-import net.kaaass.zerotierfix.events.IsServiceRunningEvent;
+import net.kaaass.zerotierfix.events.IsServiceRunningReplyEvent;
+import net.kaaass.zerotierfix.events.IsServiceRunningRequestEvent;
 import net.kaaass.zerotierfix.events.NetworkInfoReplyEvent;
 import net.kaaass.zerotierfix.events.NetworkListCheckedChangeEvent;
 import net.kaaass.zerotierfix.events.NetworkListReplyEvent;
@@ -173,12 +173,13 @@ public class NetworkListFragment extends Fragment {
         }
     }
 
-    @Override // androidx.fragment.app.Fragment
+    @Override
     public void onStart() {
         super.onStart();
         this.eventBus.post(new NetworkListRequestEvent());
+        // 初始化节点及服务状态
         this.eventBus.post(new NodeStatusRequestEvent());
-        this.eventBus.post(IsServiceRunningEvent.NewRequest());
+        this.eventBus.post(new IsServiceRunningRequestEvent());
     }
 
     @Override
@@ -266,7 +267,7 @@ public class NetworkListFragment extends Fragment {
         super.onResume();
         this.nodeStatusView.setText(R.string.status_offline);
         this.eventBus.register(this);
-        this.eventBus.post(IsServiceRunningEvent.NewRequest());
+        this.eventBus.post(new IsServiceRunningRequestEvent());
         updateNetworkListAndNotify();
         this.eventBus.post(new NetworkListRequestEvent());
         this.eventBus.post(new NodeStatusRequestEvent());
@@ -319,8 +320,8 @@ public class NetworkListFragment extends Fragment {
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onIsServicerunning(IsServiceRunningEvent isServiceRunningEvent) {
-        if (isServiceRunningEvent.type == IsServiceRunningEvent.Type.REPLY && isServiceRunningEvent.isRunning) {
+    public void onIsServiceRunningReply(IsServiceRunningReplyEvent event) {
+        if (event.isRunning()) {
             doBindService();
         }
     }

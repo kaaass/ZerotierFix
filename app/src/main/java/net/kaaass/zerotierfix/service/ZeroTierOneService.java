@@ -31,7 +31,8 @@ import net.kaaass.zerotierfix.ZerotierFixApplication;
 import net.kaaass.zerotierfix.R;
 import net.kaaass.zerotierfix.events.AfterJoinNetworkEvent;
 import net.kaaass.zerotierfix.events.ErrorEvent;
-import net.kaaass.zerotierfix.events.IsServiceRunningEvent;
+import net.kaaass.zerotierfix.events.IsServiceRunningReplyEvent;
+import net.kaaass.zerotierfix.events.IsServiceRunningRequestEvent;
 import net.kaaass.zerotierfix.events.ManualDisconnectEvent;
 import net.kaaass.zerotierfix.events.NetworkConfigChangedByUserEvent;
 import net.kaaass.zerotierfix.events.NetworkInfoReplyEvent;
@@ -607,10 +608,8 @@ public class ZeroTierOneService extends VpnService implements Runnable, EventLis
     }
 
     @Subscribe(threadMode = ThreadMode.POSTING)
-    public void onIsServiceRunning(IsServiceRunningEvent isServiceRunningEvent) {
-        if (isServiceRunningEvent.type == IsServiceRunningEvent.Type.REQUEST) {
-            this.eventBus.post(IsServiceRunningEvent.NewReply(true));
-        }
+    public void onIsServiceRunningRequest(IsServiceRunningRequestEvent event) {
+        this.eventBus.post(new IsServiceRunningReplyEvent(true));
     }
 
     /**
