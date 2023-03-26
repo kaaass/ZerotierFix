@@ -440,9 +440,9 @@ public class ZeroTierOneService extends VpnService implements Runnable, EventLis
 
                 // 创建并启动 VPN 服务线程
                 if (this.vpnThread == null) {
-                    Thread thread2 = new Thread(this, "ZeroTier Service Thread");
-                    this.vpnThread = thread2;
-                    thread2.start();
+                    var thread = new Thread(this, "ZeroTier Service Thread");
+                    this.vpnThread = thread;
+                    thread.start();
                 }
 
                 // 启动 UDP 消息处理线程
@@ -588,6 +588,7 @@ public class ZeroTierOneService extends VpnService implements Runnable, EventLis
                 }
                 Thread.sleep(cmp > 0 ? taskDeadline - currentTime : 100);
             } catch (InterruptedException ignored) {
+                break;
             } catch (Exception e) {
                 Log.e(TAG, e.toString(), e);
             }
