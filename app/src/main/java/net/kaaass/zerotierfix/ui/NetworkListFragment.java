@@ -50,6 +50,7 @@ import net.kaaass.zerotierfix.events.NodeStatusRequestEvent;
 import net.kaaass.zerotierfix.events.OrbitMoonEvent;
 import net.kaaass.zerotierfix.events.NetworkListRequestEvent;
 import net.kaaass.zerotierfix.events.StopEvent;
+import net.kaaass.zerotierfix.events.VPNErrorEvent;
 import net.kaaass.zerotierfix.model.AppNode;
 import net.kaaass.zerotierfix.model.AssignedAddress;
 import net.kaaass.zerotierfix.model.AssignedAddressDao;
@@ -478,6 +479,13 @@ public class NetworkListFragment extends Fragment {
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onNodeDestroyed(NodeDestroyedEvent event) {
         setOfflineState();
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onVPNError(VPNErrorEvent event) {
+        var message = event.getMessage();
+        updateNetworkListAndNotify();
+        Toast.makeText(getContext(), message, Toast.LENGTH_LONG).show();
     }
 
     private void setOfflineState() {
