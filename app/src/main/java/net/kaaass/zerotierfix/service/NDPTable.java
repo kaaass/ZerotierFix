@@ -19,16 +19,17 @@ public class NDPTable {
     private final Thread timeoutThread = new Thread("NDP Timeout Thread") {
         /* class com.zerotier.one.service.NDPTable.AnonymousClass1 */
 
+        @Override
         public void run() {
             while (!isInterrupted()) {
                 try {
                     for (NDPEntry nDPEntry : new HashMap<>(NDPTable.this.entriesMap).values()) {
-                        if (nDPEntry.time + NDPTable.ENTRY_TIMEOUT < System.currentTimeMillis()) {
+                        if (nDPEntry.getTime() + NDPTable.ENTRY_TIMEOUT < System.currentTimeMillis()) {
                             synchronized (NDPTable.this.macAddressToInetAddress) {
-                                NDPTable.this.macAddressToInetAddress.remove(nDPEntry.mac);
+                                NDPTable.this.macAddressToInetAddress.remove(nDPEntry.getMac());
                             }
                             synchronized (NDPTable.this.inetAddressToMacAddress) {
-                                NDPTable.this.inetAddressToMacAddress.remove(nDPEntry.address);
+                                NDPTable.this.inetAddressToMacAddress.remove(nDPEntry.getAddress());
                             }
                             synchronized (NDPTable.this.entriesMap) {
                                 NDPTable.this.entriesMap.remove(nDPEntry.getMac());
@@ -49,12 +50,6 @@ public class NDPTable {
 
     public NDPTable() {
         this.timeoutThread.start();
-    }
-
-    /* access modifiers changed from: protected */
-    public void finalize() throws Throwable {
-        stop();
-        super.finalize();
     }
 
     /* access modifiers changed from: protected */
@@ -169,33 +164,4 @@ public class NDPTable {
         return bArr;
     }
 
-    /* access modifiers changed from: private */
-    public class NDPEntry {
-        private final InetAddress address;
-        private final long mac;
-        private long time;
-
-        NDPEntry(long j, InetAddress inetAddress) {
-            this.mac = j;
-            this.address = inetAddress;
-            updateTime();
-        }
-
-        public long getMac() {
-            return this.mac;
-        }
-
-        public InetAddress getAddress() {
-            return this.address;
-        }
-
-        /* access modifiers changed from: package-private */
-        public void updateTime() {
-            this.time = System.currentTimeMillis();
-        }
-
-        public boolean equals(NDPEntry nDPEntry) {
-            return this.mac == nDPEntry.mac && this.address.equals(nDPEntry.address);
-        }
-    }
 }

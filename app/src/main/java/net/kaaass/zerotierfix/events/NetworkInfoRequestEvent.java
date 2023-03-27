@@ -1,9 +1,9 @@
 package net.kaaass.zerotierfix.events;
 
-public class RequestNetworkInfoEvent {
+public class NetworkInfoRequestEvent {
     private final long networkId;
 
-    public RequestNetworkInfoEvent(long j) {
+    public NetworkInfoRequestEvent(long j) {
         this.networkId = j;
     }
 

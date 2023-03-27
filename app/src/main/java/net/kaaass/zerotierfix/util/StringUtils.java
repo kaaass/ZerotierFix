@@ -22,7 +22,7 @@ public class StringUtils {
      */
     public static String toString(Version version) {
         return String.format(Locale.ROOT, VERSION_FORMAT,
-                version.major, version.minor, version.revision);
+                version.getMajor(), version.getMinor(), version.getRevision());
     }
 
     /**
@@ -33,6 +33,26 @@ public class StringUtils {
      */
     public static String peerVersionString(Peer peer) {
         return String.format(Locale.ROOT, VERSION_FORMAT,
-                peer.versionMajor(), peer.versionMinor(), peer.versionRev());
+                peer.getVersionMajor(), peer.getVersionMinor(), peer.getVersionRev());
+    }
+
+    /**
+     * 将 16 进制字符串转换为字符数组
+     *
+     * @param hex 16 进制字符串
+     * @return 字符数组
+     */
+    public static byte[] hexStringToBytes(String hex) {
+        int length = hex.length();
+        if (length % 2 != 0) {
+            throw new RuntimeException("String length must be even");
+        }
+        var result = new byte[length / 2];
+        for (int i = 0; i < length; i += 2) {
+            var highDigit = Character.digit(hex.charAt(i), 16);
+            var lowDigit = Character.digit(hex.charAt(i + 1), 16);
+            result[i / 2] = (byte) ((highDigit << 4) + lowDigit);
+        }
+        return result;
     }
 }

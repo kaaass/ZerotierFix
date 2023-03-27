@@ -22,4 +22,6 @@
     <color name="table_row_grey_night">#555555</color>
 
     <color name="logo_bkg">#FAC073</color>
+
+    <color name="zerotier_orange">#fac073</color>
 </resources>

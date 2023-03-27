@@ -12,29 +12,45 @@ import java.nio.ByteBuffer;
 public class InetAddressUtils {
     public static final String TAG = "InetAddressUtils";
 
-    public static byte[] addressToNetmask(InetAddress inetAddress, int i) {
-        int length = inetAddress.getAddress().length;
-        int i2 = length * 8;
-        byte[] bArr = new byte[length];
-        for (int i3 = 0; i3 < length; i3++) {
-            bArr[i3] = -1;
+    public static final long BROADCAST_MAC_ADDRESS = 0xffffffffffffL;
+
+    /**
+     * 获得地址指定 CIDR 的子网掩码
+     */
+    public static byte[] addressToNetmask(InetAddress address, int cidr) {
+        int length = address.getAddress().length;
+        int subnetLength = length * 8 - cidr;
+        byte[] fullMasked = new byte[length];
+        for (int i = 0; i < length; i++) {
+            fullMasked[i] = -1;
         }
         if (length == 4) {
-            int i4 = i2 - i;
-            return ByteBuffer.allocate(4).putInt((ByteBuffer.wrap(bArr).getInt() >> i4) << i4).array();
+            // IPv4 地址
+            return ByteBuffer.allocate(4)
+                    .putInt((ByteBuffer.wrap(fullMasked).getInt() >> subnetLength) << subnetLength)
+                    .array();
+        } else {
+            // IPv6 地址
+            if (cidr == 0) {
+                // 若 CIDR 为 0 则返回空子网掩码
+                return new byte[length];
+            }
+            byte[] shiftedAddress = new BigInteger(fullMasked)
+                    .shiftRight(subnetLength)
+                    .shiftLeft(subnetLength)
+                    .toByteArray();
+            if (shiftedAddress.length == length) {
+                return shiftedAddress;
+            }
+            // 高位为 0 时需要在前补 0
+            byte[] netmask = new byte[length];
+            int offset = Math.abs(length - shiftedAddress.length);
+            for (int i = 0; i < offset; i++) {
+                netmask[i] = shiftedAddress[0];
+            }
+            System.arraycopy(shiftedAddress, 0, netmask, offset, shiftedAddress.length);
+            return netmask;
         }
-        int i5 = i2 - i;
-        byte[] byteArray = new BigInteger(bArr).shiftRight(i5).shiftLeft(i5).toByteArray();
-        if (byteArray.length == length) {
-            return byteArray;
-        }
-        byte[] bArr2 = new byte[length];
-        int abs = Math.abs(length - byteArray.length);
-        for (int i6 = 0; i6 < abs; i6++) {
-            bArr2[i6] = byteArray[0];
-        }
-        System.arraycopy(byteArray, 0, bArr2, abs, byteArray.length);
-        return bArr2;
     }
 
     public static InetAddress addressToRoute(InetAddress inetAddress, int i) {
@@ -60,16 +76,19 @@ public class InetAddressUtils {
         return addressToRouteNo0Route(inetAddress, i);
     }
 
-    public static InetAddress addressToRouteNo0Route(InetAddress inetAddress, int i) {
-        byte[] addressToNetmask = addressToNetmask(inetAddress, i);
-        byte[] bArr = new byte[addressToNetmask.length];
-        for (int i2 = 0; i2 < addressToNetmask.length; i2++) {
-            bArr[i2] = (byte) (inetAddress.getAddress()[i2] & addressToNetmask[i2]);
+    /**
+     * 获得地址对应的网络前缀
+     */
+    public static InetAddress addressToRouteNo0Route(InetAddress address, int cidr) {
+        byte[] netmask = addressToNetmask(address, cidr);
+        byte[] rawAddress = new byte[netmask.length];
+        for (int i = 0; i < netmask.length; i++) {
+            rawAddress[i] = (byte) (address.getAddress()[i] & netmask[i]);
         }
         try {
-            return InetAddress.getByAddress(bArr);
+            return InetAddress.getByAddress(rawAddress);
         } catch (UnknownHostException unused) {
-            Log.e(TAG, "Uknown Host Exception calculating route");
+            Log.e(TAG, "Unknown Host Exception calculating route");
             return null;
         }
     }

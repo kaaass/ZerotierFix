@@ -9,7 +9,7 @@ import lombok.Data;
 /**
  * 节点状态事件
  *
- * 在遇到 {@link RequestNodeStatusEvent} 或 Zerotier 事件时触发
+ * 在遇到 {@link NodeStatusRequestEvent} 或 Zerotier 事件时触发
  */
 @Data
 @AllArgsConstructor

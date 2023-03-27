@@ -22,7 +22,7 @@ import com.zerotier.sdk.PeerRole;
 
 import net.kaaass.zerotierfix.R;
 import net.kaaass.zerotierfix.events.PeerInfoReplyEvent;
-import net.kaaass.zerotierfix.events.RequestPeerInfoEvent;
+import net.kaaass.zerotierfix.events.PeerInfoRequestEvent;
 import net.kaaass.zerotierfix.util.StringUtils;
 
 import org.greenrobot.eventbus.EventBus;
@@ -130,7 +130,7 @@ public class PeerListFragment extends Fragment {
         this.swipeRefreshLayout.setOnRefreshListener(this::onRefresh);
 
         // 更新入轨数据
-        this.eventBus.post(new RequestPeerInfoEvent());
+        this.eventBus.post(new PeerInfoRequestEvent());
 
         return view;
     }
@@ -139,7 +139,7 @@ public class PeerListFragment extends Fragment {
      * 刷新列表
      */
     public void onRefresh() {
-        this.eventBus.post(new RequestPeerInfoEvent());
+        this.eventBus.post(new PeerInfoRequestEvent());
         // 超时自动重置刷新状态
         new Thread(() -> {
             try {
@@ -193,20 +193,20 @@ public class PeerListFragment extends Fragment {
         public void onBindViewHolder(final RecyclerViewAdapter.ViewHolder holder, int position) {
             Peer peer = mValues.get(position);
             holder.mItem = peer;
-            holder.mAddress.setText(Long.toHexString(peer.address()));
-            holder.mRole.setText(peerRoleToString(peer.role()));
+            holder.mAddress.setText(Long.toHexString(peer.getAddress()));
+            holder.mRole.setText(peerRoleToString(peer.getRole()));
             // 客户端版本
             String clientVersion = getString(R.string.unknown_version);
-            if (peer.versionMajor() > 0) {
+            if (peer.getVersionMajor() > 0) {
                 clientVersion = StringUtils.peerVersionString(peer);
             }
             holder.mVersion.setText(clientVersion);
             // 延迟
-            holder.mLatency.setText(String.format(getString(R.string.peer_lat), peer.latency()));
+            holder.mLatency.setText(String.format(getString(R.string.peer_lat), peer.getLatency()));
             // 当前路径
             PeerPhysicalPath preferred = null;
-            if (peer.paths() != null) {
-                for (PeerPhysicalPath path : peer.paths()) {
+            if (peer.getPaths() != null) {
+                for (PeerPhysicalPath path : peer.getPaths()) {
                     if (path.isPreferred()) {
                         preferred = path;
                         break;
@@ -215,7 +215,7 @@ public class PeerListFragment extends Fragment {
             }
             String strPreferred = getString(R.string.peer_relay);
             if (preferred != null) {
-                strPreferred = preferred.address().toString();
+                strPreferred = preferred.getAddress().toString();
             }
             holder.mPath.setText(strPreferred);
         }
