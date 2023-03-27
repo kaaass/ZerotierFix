@@ -141,4 +141,5 @@
     <string name="toast_network_status_client_too_old">Cannot connect to network %1$s: Client version too low</string>
     <string name="toast_network_status_authentication_required">Cannot connect to network %1$s: Authorization required</string>
     <string name="toast_vpn_error">A VPN service error has occurred! %1$s</string>
+    <string name="empty_network_name">Unknown</string>
 </resources>

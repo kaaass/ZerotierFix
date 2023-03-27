@@ -789,7 +789,10 @@ public class ZeroTierOneService extends VpnService implements Runnable, EventLis
         }
         VirtualNetworkConfig virtualNetworkConfig2 = getVirtualNetworkConfig(network.getNetworkId());
         setVirtualNetworkConfig(network.getNetworkId(), virtualNetworkConfig);
-        network.setNetworkName(virtualNetworkConfig.getName());
+        var networkName = virtualNetworkConfig.getName();
+        if (networkName != null && !networkName.isEmpty()) {
+            network.setNetworkName(networkName);
+        }
         network.update();
         return !virtualNetworkConfig.equals(virtualNetworkConfig2);
     }

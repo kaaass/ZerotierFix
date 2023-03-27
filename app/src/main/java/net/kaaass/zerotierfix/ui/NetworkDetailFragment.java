@@ -66,10 +66,10 @@ public class NetworkDetailFragment extends Fragment {
                 if (network != null) {
                     ((TextView) inflate.findViewById(R.id.network_detail_network_id)).setText(network.getNetworkIdStr());
                     TextView textView = inflate.findViewById(R.id.network_detail_network_name);
-                    if (network.getNetworkName() != null) {
+                    if (network.getNetworkName() != null && !network.getNetworkName().isEmpty()) {
                         textView.setText(network.getNetworkName());
                     } else {
-                        textView.setText(EnvironmentCompat.MEDIA_UNKNOWN);
+                        textView.setText(getString(R.string.empty_network_name));
                     }
                     NetworkConfig networkConfig = network.getNetworkConfig();
                     CheckBox checkBox = inflate.findViewById(R.id.network_default_route);

@@ -718,10 +718,10 @@ public class NetworkListFragment extends Fragment {
             // 设置文本信息
             holder.mNetworkId.setText(network.getNetworkIdStr());
             String networkName = network.getNetworkName();
-            if (networkName != null) {
+            if (networkName != null && !networkName.isEmpty()) {
                 holder.mNetworkName.setText(networkName);
             } else {
-                holder.mNetworkName.setText(R.string.network_status_unknown);
+                holder.mNetworkName.setText(R.string.empty_network_name);
             }
             // 设置点击事件
             holder.mView.setOnClickListener(holder::onClick);
