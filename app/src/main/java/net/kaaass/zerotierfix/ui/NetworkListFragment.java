@@ -72,6 +72,7 @@ import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 import org.greenrobot.greendao.query.WhereCondition;
 
+import java.net.Inet4Address;
 import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -429,8 +430,8 @@ public class NetworkListFragment extends Fragment {
                     }
                     if (address instanceof Inet6Address) {
                         assignedAddress.setType(AssignedAddress.AddressType.IPV6);
-                    } else if (address instanceof InetAddress) {
-                        assignedAddress.setType(AssignedAddress.AddressType.IPV6);
+                    } else if (address instanceof Inet4Address) {
+                        assignedAddress.setType(AssignedAddress.AddressType.IPV4);
                     }
                     assignedAddress.setAddressBytes(address.getAddress());
                     assignedAddress.setAddressString(inetAddress);
