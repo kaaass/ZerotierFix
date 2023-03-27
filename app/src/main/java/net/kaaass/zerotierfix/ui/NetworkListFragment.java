@@ -51,6 +51,7 @@ import net.kaaass.zerotierfix.events.OrbitMoonEvent;
 import net.kaaass.zerotierfix.events.NetworkListRequestEvent;
 import net.kaaass.zerotierfix.events.StopEvent;
 import net.kaaass.zerotierfix.events.VPNErrorEvent;
+import net.kaaass.zerotierfix.events.VirtualNetworkConfigChangedEvent;
 import net.kaaass.zerotierfix.model.AppNode;
 import net.kaaass.zerotierfix.model.AssignedAddress;
 import net.kaaass.zerotierfix.model.AssignedAddressDao;
@@ -445,6 +446,14 @@ public class NetworkListFragment extends Fragment {
         }
         ((ZerotierFixApplication) getActivity().getApplication()).getDaoSession().clear();
         updateNetworkListAndNotify();
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onVirtualNetworkConfigChanged(VirtualNetworkConfigChangedEvent event) {
+        Log.d(TAG, "Got Network Info");
+        var config = event.getVirtualNetworkConfig();
+        // 触发网络信息更新
+        this.onNetworkInfoReply(new NetworkInfoReplyEvent(config));
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
