@@ -369,7 +369,6 @@ public class NetworkListFragment extends Fragment {
                         break;
                     case NETWORK_STATUS_ACCESS_DENIED:
                         networkStatus = NetworkStatus.ACCESS_DENIED;
-                        Toast.makeText(getActivity(), R.string.toast_not_authorized, Toast.LENGTH_SHORT).show();
                         break;
                     case NETWORK_STATUS_NOT_FOUND:
                         networkStatus = NetworkStatus.NOT_FOUND;
@@ -452,6 +451,38 @@ public class NetworkListFragment extends Fragment {
     public void onVirtualNetworkConfigChanged(VirtualNetworkConfigChangedEvent event) {
         Log.d(TAG, "Got Network Info");
         var config = event.getVirtualNetworkConfig();
+
+        // Toast 提示网络状态
+        var status = NetworkStatus.fromVirtualNetworkStatus(config.getStatus());
+        var networkId = com.zerotier.sdk.util.StringUtils.networkIdToString(config.getNwid());
+        String message = null;
+        switch (status) {
+            case OK:
+                message = getString(R.string.toast_network_status_ok, networkId);
+                break;
+            case ACCESS_DENIED:
+                message = getString(R.string.toast_network_status_access_denied, networkId);
+                break;
+            case NOT_FOUND:
+                message = getString(R.string.toast_network_status_not_found, networkId);
+                break;
+            case PORT_ERROR:
+                message = getString(R.string.toast_network_status_port_error, networkId);
+                break;
+            case CLIENT_TOO_OLD:
+                message = getString(R.string.toast_network_status_client_too_old, networkId);
+                break;
+            case AUTHENTICATION_REQUIRED:
+                message = getString(R.string.toast_network_status_authentication_required, networkId);
+                break;
+            case REQUESTING_CONFIGURATION:
+            default:
+                break;
+        }
+        if (message != null) {
+            Toast.makeText(requireActivity(), message, Toast.LENGTH_SHORT).show();
+        }
+
         // 触发网络信息更新
         this.onNetworkInfoReply(new NetworkInfoReplyEvent(config));
     }
@@ -492,9 +523,10 @@ public class NetworkListFragment extends Fragment {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onVPNError(VPNErrorEvent event) {
-        var message = event.getMessage();
-        updateNetworkListAndNotify();
+        var errorMessage = event.getMessage();
+        var message = getString(R.string.toast_vpn_error, errorMessage);
         Toast.makeText(getContext(), message, Toast.LENGTH_LONG).show();
+        updateNetworkListAndNotify();
     }
 
     private void setOfflineState() {

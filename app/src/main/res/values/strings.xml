@@ -63,7 +63,6 @@
     <string name="status_online">ONLINE</string>
     <string name="toast_no_network">No Network Connectivity.  ZeroTier cannot start.</string>
     <string name="toast_mobile_data">Currently using mobile data.  Enable \"Use Cellular Data\" in order to start ZeroTier.</string>
-    <string name="toast_not_authorized">Not Authorized for network</string>
     <string name="menu_peers">Peers</string>
     <string name="menu_orbit">Orbit</string>
     <string name="enabled">Enabled</string>
@@ -135,4 +134,11 @@
     <string name="notification_title_connected">Connected</string>
     <string name="notification_text_connected">Connected to: %1$s</string>
     <string name="toast_vpn_application_not_prepared">VPN application is not prepared or is revoked.</string>
+    <string name="toast_network_status_ok">Successfully connected to network %1$s</string>
+    <string name="toast_network_status_access_denied">Cannot connect to network %1$s: Access denied</string>
+    <string name="toast_network_status_not_found">Cannot connect to network %1$s: Network does not exist</string>
+    <string name="toast_network_status_port_error">Cannot connect to network %1$s: Port error</string>
+    <string name="toast_network_status_client_too_old">Cannot connect to network %1$s: Client version too low</string>
+    <string name="toast_network_status_authentication_required">Cannot connect to network %1$s: Authorization required</string>
+    <string name="toast_vpn_error">A VPN service error has occurred! %1$s</string>
 </resources>
