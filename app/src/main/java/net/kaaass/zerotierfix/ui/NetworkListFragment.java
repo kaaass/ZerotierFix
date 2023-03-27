@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.VpnService;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -155,7 +156,7 @@ public class NetworkListFragment extends Fragment {
     /* access modifiers changed from: package-private */
     public void doBindService() {
         if (!isBound()) {
-            if (getActivity().bindService(new Intent(getActivity(), ZeroTierOneService.class), this.mConnection, Context.BIND_NOT_FOREGROUND | Context.BIND_DEBUG_UNBIND)) {
+            if (requireActivity().bindService(new Intent(getActivity(), ZeroTierOneService.class), this.mConnection, Context.BIND_NOT_FOREGROUND | Context.BIND_DEBUG_UNBIND)) {
                 setIsBound(true);
             }
         }
@@ -165,7 +166,7 @@ public class NetworkListFragment extends Fragment {
     public void doUnbindService() {
         if (isBound()) {
             try {
-                getActivity().unbindService(this.mConnection);
+                requireActivity().unbindService(this.mConnection);
             } catch (Exception e) {
                 Log.e(TAG, "", e);
             } catch (Throwable th) {
@@ -310,13 +311,13 @@ public class NetworkListFragment extends Fragment {
     }
 
     private List<Network> getNetworkList() {
-        DaoSession daoSession = ((ZerotierFixApplication) getActivity().getApplication()).getDaoSession();
+        DaoSession daoSession = ((ZerotierFixApplication) requireActivity().getApplication()).getDaoSession();
         daoSession.clear();
         return daoSession.getNetworkDao().queryBuilder().orderAsc(NetworkDao.Properties.NetworkId).build().forCurrentThread().list();
     }
 
     private void setNodeIdText() {
-        List<AppNode> list = ((ZerotierFixApplication) getActivity().getApplication()).getDaoSession().getAppNodeDao().queryBuilder().build().forCurrentThread().list();
+        List<AppNode> list = ((ZerotierFixApplication) requireActivity().getApplication()).getDaoSession().getAppNodeDao().queryBuilder().build().forCurrentThread().list();
         if (!list.isEmpty()) {
             this.nodeIdView.setText(list.get(0).getNodeIdStr());
         }
@@ -347,8 +348,8 @@ public class NetworkListFragment extends Fragment {
                 if (!networkInfo.getName().isEmpty()) {
                     network.setNetworkName(networkInfo.getName());
                 }
-                NetworkDao networkDao = ((ZerotierFixApplication) getActivity().getApplication()).getDaoSession().getNetworkDao();
-                NetworkConfigDao networkConfigDao = ((ZerotierFixApplication) getActivity().getApplication()).getDaoSession().getNetworkConfigDao();
+                NetworkDao networkDao = ((ZerotierFixApplication) requireActivity().getApplication()).getDaoSession().getNetworkDao();
+                NetworkConfigDao networkConfigDao = ((ZerotierFixApplication) requireActivity().getApplication()).getDaoSession().getNetworkConfigDao();
                 NetworkConfig networkConfig = network.getNetworkConfig();
                 if (networkConfig == null) {
                     networkConfig = new NetworkConfig();
@@ -382,15 +383,16 @@ public class NetworkListFragment extends Fragment {
                         break;
                     case NETWORK_STATUS_AUTHENTICATION_REQUIRED:
                         networkStatus = NetworkStatus.AUTHENTICATION_REQUIRED;
+                        break;
                     default:
                     case NETWORK_STATUS_REQUESTING_CONFIGURATION:
                         networkStatus = NetworkStatus.REQUESTING_CONFIGURATION;
                         break;
                 }
                 networkConfig.setStatus(networkStatus);
-                String macAddress = Long.toHexString(networkInfo.getMac());
+                StringBuilder macAddress = new StringBuilder(Long.toHexString(networkInfo.getMac()));
                 while (macAddress.length() < 12) {
-                    macAddress = "0" + macAddress;
+                    macAddress.insert(0, "0");
                 }
                 String sb = String.valueOf(macAddress.charAt(0)) +
                         macAddress.charAt(1) +
@@ -416,9 +418,9 @@ public class NetworkListFragment extends Fragment {
                 network.setNetworkConfig(networkConfig);
                 networkDao.save(network);
                 networkConfigDao.save(networkConfig);
-                ((ZerotierFixApplication) getActivity().getApplication()).getDaoSession().getAssignedAddressDao().queryBuilder().where(AssignedAddressDao.Properties.NetworkId.eq(networkInfo.getNwid()), new WhereCondition[0]).buildDelete().forCurrentThread().forCurrentThread().executeDeleteWithoutDetachingEntities();
-                ((ZerotierFixApplication) getActivity().getApplication()).getDaoSession().clear();
-                AssignedAddressDao assignedAddressDao = ((ZerotierFixApplication) getActivity().getApplication()).getDaoSession().getAssignedAddressDao();
+                ((ZerotierFixApplication) requireActivity().getApplication()).getDaoSession().getAssignedAddressDao().queryBuilder().where(AssignedAddressDao.Properties.NetworkId.eq(networkInfo.getNwid()), new WhereCondition[0]).buildDelete().forCurrentThread().forCurrentThread().executeDeleteWithoutDetachingEntities();
+                ((ZerotierFixApplication) requireActivity().getApplication()).getDaoSession().clear();
+                AssignedAddressDao assignedAddressDao = ((ZerotierFixApplication) requireActivity().getApplication()).getDaoSession().getAssignedAddressDao();
                 InetSocketAddress[] assignedAddresses = networkInfo.getAssignedAddresses();
                 for (InetSocketAddress inetSocketAddress : assignedAddresses) {
                     InetAddress address = inetSocketAddress.getAddress();
@@ -444,7 +446,7 @@ public class NetworkListFragment extends Fragment {
                 network.update();
             }
         }
-        ((ZerotierFixApplication) getActivity().getApplication()).getDaoSession().clear();
+        ((ZerotierFixApplication) requireActivity().getApplication()).getDaoSession().clear();
         updateNetworkListAndNotify();
     }
 
@@ -608,7 +610,7 @@ public class NetworkListFragment extends Fragment {
      * 获得 Moon 入轨配置列表
      */
     private List<MoonOrbit> getMoonOrbitList() {
-        DaoSession daoSession = ((ZerotierFixApplication) getActivity().getApplication()).getDaoSession();
+        DaoSession daoSession = ((ZerotierFixApplication) requireActivity().getApplication()).getDaoSession();
         return daoSession.getMoonOrbitDao().loadAll();
     }
 
@@ -634,7 +636,7 @@ public class NetworkListFragment extends Fragment {
                 .getDaoSession().getNetworkDao();
         if (checked) {
             // 启动网络
-            var context = NetworkListFragment.this.getContext();
+            var context = requireContext();
             boolean useCellularData = PreferenceManager
                     .getDefaultSharedPreferences(context)
                     .getBoolean(Constants.PREF_NETWORK_USE_CELLULAR_DATA, false);
@@ -747,20 +749,19 @@ public class NetworkListFragment extends Fragment {
             public ViewHolder(View view) {
                 super(view);
                 mView = view;
-                mNetworkId = (TextView) view.findViewById(R.id.network_list_network_id);
-                mNetworkName = (TextView) view.findViewById(R.id.network_list_network_name);
-                mSwitch = (SwitchCompat) view.findViewById(R.id.network_start_network_switch);
+                mNetworkId = view.findViewById(R.id.network_list_network_id);
+                mNetworkName = view.findViewById(R.id.network_list_network_name);
+                mSwitch = view.findViewById(R.id.network_start_network_switch);
             }
 
             /**
              * 单击列表项打开网络详细页面
              */
-            public boolean onClick(View view) {
+            public void onClick(View view) {
                 Log.d(NetworkListFragment.TAG, "ConvertView OnClickListener");
                 Intent intent = new Intent(NetworkListFragment.this.getActivity(), NetworkDetailActivity.class);
                 intent.putExtra(NetworkListFragment.NETWORK_ID_MESSAGE, this.mItem.getNetworkId());
                 NetworkListFragment.this.startActivity(intent);
-                return true;
             }
 
             /**
@@ -774,7 +775,7 @@ public class NetworkListFragment extends Fragment {
                 popupMenu.setOnMenuItemClickListener(menuItem -> {
                     if (menuItem.getItemId() == R.id.menu_item_delete_network) {
                         // 删除对应网络
-                        DaoSession daoSession = ((ZerotierFixApplication) NetworkListFragment.this.getActivity().getApplication()).getDaoSession();
+                        DaoSession daoSession = ((ZerotierFixApplication) NetworkListFragment.this.requireActivity().getApplication()).getDaoSession();
                         AssignedAddressDao assignedAddressDao = daoSession.getAssignedAddressDao();
                         NetworkConfigDao networkConfigDao = daoSession.getNetworkConfigDao();
                         NetworkDao networkDao = daoSession.getNetworkDao();
@@ -800,7 +801,7 @@ public class NetworkListFragment extends Fragment {
                         return true;
                     } else if (menuItem.getItemId() == R.id.menu_item_copy_network_id) {
                         // 复制网络 ID
-                        ClipboardManager clipboard = (ClipboardManager) getContext().getSystemService(Context.CLIPBOARD_SERVICE);
+                        ClipboardManager clipboard = (ClipboardManager) requireContext().getSystemService(Context.CLIPBOARD_SERVICE);
                         ClipData clip = ClipData.newPlainText(getString(R.string.network_id), this.mItem.getNetworkIdStr());
                         clipboard.setPrimaryClip(clip);
                         Toast.makeText(getContext(), R.string.text_copied, Toast.LENGTH_SHORT).show();
