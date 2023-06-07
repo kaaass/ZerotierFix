@@ -24,6 +24,7 @@ import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.SwitchCompat;
@@ -110,6 +111,10 @@ public class NetworkListFragment extends Fragment {
     private TextView nodeClientVersionView;
 
     private View emptyView = null;
+
+    private ActivityResultLauncher mLauncher;
+    private long mNetworkId;
+
     final private RecyclerView.AdapterDataObserver checkIfEmptyObserver = new RecyclerView.AdapterDataObserver() {
         @Override
         public void onChanged() {
@@ -178,6 +183,23 @@ public class NetworkListFragment extends Fragment {
     }
 
     @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+        // 等待 VPN 授权后连接网络
+        mLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), (activityResult) -> {
+            var result = activityResult.getResultCode();
+            Log.d(TAG, "Returned from AUTH_VPN");
+            if (result == -1) {
+                // 授权
+                startService(mNetworkId);
+            } else if (result == 0) {
+                // 未授权
+                updateNetworkListAndNotify();
+            }
+        });
+    }
+
+    @Override
     public void onStart() {
         super.onStart();
         this.eventBus.post(new NetworkListRequestEvent());
@@ -240,18 +262,8 @@ public class NetworkListFragment extends Fragment {
     private void sendStartServiceIntent(long networkId) {
         var prepare = VpnService.prepare(getActivity());
         if (prepare != null) {
-            // 等待 VPN 授权后连接网络
-            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), (activityResult) -> {
-                var result = activityResult.getResultCode();
-                Log.d(TAG, "Returned from AUTH_VPN");
-                if (result == -1) {
-                    // 授权
-                    startService(networkId);
-                } else if (result == 0) {
-                    // 未授权
-                    updateNetworkListAndNotify();
-                }
-            }).launch(prepare);
+            mNetworkId = networkId;
+            mLauncher.launch(prepare);
             return;
         }
         Log.d(TAG, "Intent is NULL.  Already approved.");
