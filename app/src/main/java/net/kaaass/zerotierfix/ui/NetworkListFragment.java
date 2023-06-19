@@ -7,7 +7,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.net.VpnService;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -24,10 +23,13 @@ import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.SwitchCompat;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModel;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -80,6 +82,8 @@ import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
 
+import lombok.Getter;
+import lombok.Setter;
 import lombok.ToString;
 
 // TODO: clear up
@@ -110,6 +114,11 @@ public class NetworkListFragment extends Fragment {
     private TextView nodeClientVersionView;
 
     private View emptyView = null;
+
+    private ActivityResultLauncher<Intent> vpnAuthLauncher;
+
+    private ViewModelState state;
+
     final private RecyclerView.AdapterDataObserver checkIfEmptyObserver = new RecyclerView.AdapterDataObserver() {
         @Override
         public void onChanged() {
@@ -178,6 +187,23 @@ public class NetworkListFragment extends Fragment {
     }
 
     @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+        // 初始化 VPN 授权结果回调
+        vpnAuthLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), (activityResult) -> {
+            var result = activityResult.getResultCode();
+            Log.d(TAG, "Returned from AUTH_VPN");
+            if (result == -1) {
+                // 得到授权，连接网络
+                startService(this.state.getNetworkId());
+            } else if (result == 0) {
+                // 未授权
+                updateNetworkListAndNotify();
+            }
+        });
+    }
+
+    @Override
     public void onStart() {
         super.onStart();
         this.eventBus.post(new NetworkListRequestEvent());
@@ -241,17 +267,8 @@ public class NetworkListFragment extends Fragment {
         var prepare = VpnService.prepare(getActivity());
         if (prepare != null) {
             // 等待 VPN 授权后连接网络
-            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), (activityResult) -> {
-                var result = activityResult.getResultCode();
-                Log.d(TAG, "Returned from AUTH_VPN");
-                if (result == -1) {
-                    // 授权
-                    startService(networkId);
-                } else if (result == 0) {
-                    // 未授权
-                    updateNetworkListAndNotify();
-                }
-            }).launch(prepare);
+            this.state.setNetworkId(networkId);
+            vpnAuthLauncher.launch(prepare);
             return;
         }
         Log.d(TAG, "Intent is NULL.  Already approved.");
@@ -264,6 +281,7 @@ public class NetworkListFragment extends Fragment {
         super.onCreate(bundle);
         PreferenceManager.setDefaultValues(getActivity(), R.xml.preferences, false);
         setHasOptionsMenu(true);
+        this.state = new ViewModelProvider(requireActivity()).get(ViewModelState.class);
     }
 
     @Override
@@ -823,5 +841,14 @@ public class NetworkListFragment extends Fragment {
                 ));
             }
         }
+    }
+
+    /**
+     * 维护当前 ViewModel 的状态
+     */
+    @Getter
+    @Setter
+    public static class ViewModelState extends ViewModel {
+        private long networkId;
     }
 }
