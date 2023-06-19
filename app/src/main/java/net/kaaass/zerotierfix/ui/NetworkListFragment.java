@@ -7,7 +7,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.net.VpnService;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -112,7 +111,7 @@ public class NetworkListFragment extends Fragment {
 
     private View emptyView = null;
 
-    private ActivityResultLauncher mLauncher;
+    private ActivityResultLauncher<Intent> vpnAuthLauncher;
     private long mNetworkId;
 
     final private RecyclerView.AdapterDataObserver checkIfEmptyObserver = new RecyclerView.AdapterDataObserver() {
@@ -185,12 +184,12 @@ public class NetworkListFragment extends Fragment {
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
-        // 等待 VPN 授权后连接网络
-        mLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), (activityResult) -> {
+        // 初始化 VPN 授权结果回调
+        vpnAuthLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), (activityResult) -> {
             var result = activityResult.getResultCode();
             Log.d(TAG, "Returned from AUTH_VPN");
             if (result == -1) {
-                // 授权
+                // 得到授权，连接网络
                 startService(mNetworkId);
             } else if (result == 0) {
                 // 未授权
@@ -262,8 +261,9 @@ public class NetworkListFragment extends Fragment {
     private void sendStartServiceIntent(long networkId) {
         var prepare = VpnService.prepare(getActivity());
         if (prepare != null) {
+            // 等待 VPN 授权后连接网络
             mNetworkId = networkId;
-            mLauncher.launch(prepare);
+            vpnAuthLauncher.launch(prepare);
             return;
         }
         Log.d(TAG, "Intent is NULL.  Already approved.");
