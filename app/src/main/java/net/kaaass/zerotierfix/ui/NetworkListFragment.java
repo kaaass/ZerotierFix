@@ -28,6 +28,8 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.SwitchCompat;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModel;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -80,6 +82,8 @@ import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
 
+import lombok.Getter;
+import lombok.Setter;
 import lombok.ToString;
 
 // TODO: clear up
@@ -112,7 +116,8 @@ public class NetworkListFragment extends Fragment {
     private View emptyView = null;
 
     private ActivityResultLauncher<Intent> vpnAuthLauncher;
-    private long mNetworkId;
+
+    private ViewModelState state;
 
     final private RecyclerView.AdapterDataObserver checkIfEmptyObserver = new RecyclerView.AdapterDataObserver() {
         @Override
@@ -190,7 +195,7 @@ public class NetworkListFragment extends Fragment {
             Log.d(TAG, "Returned from AUTH_VPN");
             if (result == -1) {
                 // 得到授权，连接网络
-                startService(mNetworkId);
+                startService(this.state.getNetworkId());
             } else if (result == 0) {
                 // 未授权
                 updateNetworkListAndNotify();
@@ -262,7 +267,7 @@ public class NetworkListFragment extends Fragment {
         var prepare = VpnService.prepare(getActivity());
         if (prepare != null) {
             // 等待 VPN 授权后连接网络
-            mNetworkId = networkId;
+            this.state.setNetworkId(networkId);
             vpnAuthLauncher.launch(prepare);
             return;
         }
@@ -276,6 +281,7 @@ public class NetworkListFragment extends Fragment {
         super.onCreate(bundle);
         PreferenceManager.setDefaultValues(getActivity(), R.xml.preferences, false);
         setHasOptionsMenu(true);
+        this.state = new ViewModelProvider(requireActivity()).get(ViewModelState.class);
     }
 
     @Override
@@ -835,5 +841,14 @@ public class NetworkListFragment extends Fragment {
                 ));
             }
         }
+    }
+
+    /**
+     * 维护当前 ViewModel 的状态
+     */
+    @Getter
+    @Setter
+    public static class ViewModelState extends ViewModel {
+        private long networkId;
     }
 }
