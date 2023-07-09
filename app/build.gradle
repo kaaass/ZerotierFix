@@ -39,6 +39,7 @@ android {
             exclude module: 'commons-logging'
         }
     }
+    namespace 'net.kaaass.zerotierfix'
 }
 
 dependencies {
