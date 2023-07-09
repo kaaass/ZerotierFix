@@ -2,6 +2,7 @@ package net.kaaass.zerotierfix.events;
 
 import com.zerotier.sdk.VirtualNetworkConfig;
 
+@Deprecated
 public class NetworkInfoReplyEvent {
     private final VirtualNetworkConfig vnc;
 

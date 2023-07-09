@@ -27,9 +27,14 @@
     <string name="network_ips">分配 IP</string>
     <string name="network_mac">MAC</string>
     <string name="network_mtu">MTU</string>
+    <string name="network_dns_mode">DNS 模式</string>
+    <string name="network_dns_mode_no_dns">无 DNS</string>
+    <string name="network_dns_mode_network_dns">网络 DNS</string>
+    <string name="network_dns_mode_custom_dns">自定义 DNS</string>
     <string name="network_name">网络名:</string>
     <string name="network_name_string">网络名:</string>
     <string name="network_status">状态</string>
+    <string name="network_status_not_connected">尚未连接</string>
     <string name="network_status_access_denied">访问拒绝</string>
     <string name="network_status_client_too_old">客户端版本过低</string>
     <string name="network_status_not_found">网络不存在</string>

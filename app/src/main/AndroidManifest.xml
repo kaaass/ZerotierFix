@@ -42,7 +42,7 @@
             android:name=".ui.PrefsActivity"
             android:label="@string/app_name" />
         <activity
-            android:name=".ui.NetworkDetailActivity"
+            android:name=".ui.view.NetworkDetailActivity"
             android:label="@string/network_detail" />
         <activity
             android:name=".ui.MoonOrbitActivity"

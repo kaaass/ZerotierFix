@@ -1,10 +1,12 @@
-package net.kaaass.zerotierfix.ui;
+package net.kaaass.zerotierfix.ui.view;
 
 import android.os.Bundle;
 import android.view.MenuItem;
 
 import androidx.appcompat.app.ActionBar;
 import androidx.fragment.app.Fragment;
+
+import net.kaaass.zerotierfix.ui.SingleFragmentActivity;
 
 /**
  * 网络信息 fragment 的容器 activity

@@ -27,6 +27,7 @@ public class Network {
     private long networkConfigId;
 
     @Transient
+    @Deprecated
     private boolean connected;
 
     @ToOne(joinProperty = "networkConfigId")
@@ -77,10 +78,12 @@ public class Network {
         this.networkName = networkName;
     }
 
+    @Deprecated
     public boolean getUseDefaultRoute() {
         return this.useDefaultRoute;
     }
 
+    @Deprecated
     public void setUseDefaultRoute(boolean useDefaultRoute) {
         this.useDefaultRoute = useDefaultRoute;
     }
@@ -101,10 +104,12 @@ public class Network {
         this.networkConfigId = networkConfigId;
     }
 
+    @Deprecated
     public boolean getConnected() {
         return this.connected;
     }
 
+    @Deprecated
     public void setConnected(boolean connected) {
         this.connected = connected;
     }

@@ -1,5 +1,6 @@
 package net.kaaass.zerotierfix.events;
 
+@Deprecated
 public class NetworkInfoRequestEvent {
     private final long networkId;
 

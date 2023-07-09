@@ -50,6 +50,8 @@ import net.kaaass.zerotierfix.events.PeerInfoRequestEvent;
 import net.kaaass.zerotierfix.events.StopEvent;
 import net.kaaass.zerotierfix.events.VPNErrorEvent;
 import net.kaaass.zerotierfix.events.VirtualNetworkConfigChangedEvent;
+import net.kaaass.zerotierfix.events.VirtualNetworkConfigReplyEvent;
+import net.kaaass.zerotierfix.events.VirtualNetworkConfigRequestEvent;
 import net.kaaass.zerotierfix.model.AppNode;
 import net.kaaass.zerotierfix.model.MoonOrbit;
 import net.kaaass.zerotierfix.model.Network;
@@ -690,6 +692,9 @@ public class ZeroTierOneService extends VpnService implements Runnable, EventLis
         }
     }
 
+    /**
+     * 请求 Peer 信息事件回调
+     */
     @Subscribe(threadMode = ThreadMode.BACKGROUND)
     public void onRequestPeerInfo(PeerInfoRequestEvent event) {
         if (this.node == null) {
@@ -697,6 +702,19 @@ public class ZeroTierOneService extends VpnService implements Runnable, EventLis
             return;
         }
         this.eventBus.post(new PeerInfoReplyEvent(this.node.peers()));
+    }
+
+    /**
+     * 请求网络配置事件回调
+     */
+    @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    public void onVirtualNetworkConfigRequest(VirtualNetworkConfigRequestEvent event) {
+        if (this.node == null) {
+            this.eventBus.post(new VirtualNetworkConfigReplyEvent(null));
+            return;
+        }
+        var config = this.node.networkConfig(event.getNetworkId());
+        this.eventBus.post(new VirtualNetworkConfigReplyEvent(config));
     }
 
     @Subscribe(threadMode = ThreadMode.ASYNC)

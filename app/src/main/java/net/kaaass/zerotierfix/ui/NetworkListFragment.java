@@ -67,6 +67,7 @@ import net.kaaass.zerotierfix.model.NetworkDao;
 import net.kaaass.zerotierfix.model.type.NetworkStatus;
 import net.kaaass.zerotierfix.model.type.NetworkType;
 import net.kaaass.zerotierfix.service.ZeroTierOneService;
+import net.kaaass.zerotierfix.ui.view.NetworkDetailActivity;
 import net.kaaass.zerotierfix.util.Constants;
 import net.kaaass.zerotierfix.util.StringUtils;
 
@@ -359,6 +360,7 @@ public class NetworkListFragment extends Fragment {
     public void onNetworkInfoReply(NetworkInfoReplyEvent networkInfoReplyEvent) {
         NetworkStatus networkStatus;
         Log.d(TAG, "Got Network Info");
+        // TODO 转移写数据库到 Service 中
         VirtualNetworkConfig networkInfo = networkInfoReplyEvent.getNetworkInfo();
         for (Network network : getNetworkList()) {
             if (network.getNetworkId() == networkInfo.getNwid()) {
