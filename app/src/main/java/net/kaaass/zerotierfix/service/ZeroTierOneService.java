@@ -35,7 +35,6 @@ import net.kaaass.zerotierfix.events.IsServiceRunningReplyEvent;
 import net.kaaass.zerotierfix.events.IsServiceRunningRequestEvent;
 import net.kaaass.zerotierfix.events.ManualDisconnectEvent;
 import net.kaaass.zerotierfix.events.NetworkConfigChangedByUserEvent;
-import net.kaaass.zerotierfix.events.NetworkInfoReplyEvent;
 import net.kaaass.zerotierfix.events.NetworkListReplyEvent;
 import net.kaaass.zerotierfix.events.NetworkReconfigureEvent;
 import net.kaaass.zerotierfix.events.NodeDestroyedEvent;
@@ -43,13 +42,14 @@ import net.kaaass.zerotierfix.events.NodeIDEvent;
 import net.kaaass.zerotierfix.events.NodeStatusEvent;
 import net.kaaass.zerotierfix.events.OrbitMoonEvent;
 import net.kaaass.zerotierfix.events.PeerInfoReplyEvent;
-import net.kaaass.zerotierfix.events.NetworkInfoRequestEvent;
 import net.kaaass.zerotierfix.events.NetworkListRequestEvent;
 import net.kaaass.zerotierfix.events.NodeStatusRequestEvent;
 import net.kaaass.zerotierfix.events.PeerInfoRequestEvent;
 import net.kaaass.zerotierfix.events.StopEvent;
 import net.kaaass.zerotierfix.events.VPNErrorEvent;
 import net.kaaass.zerotierfix.events.VirtualNetworkConfigChangedEvent;
+import net.kaaass.zerotierfix.events.VirtualNetworkConfigReplyEvent;
+import net.kaaass.zerotierfix.events.VirtualNetworkConfigRequestEvent;
 import net.kaaass.zerotierfix.model.AppNode;
 import net.kaaass.zerotierfix.model.MoonOrbit;
 import net.kaaass.zerotierfix.model.Network;
@@ -660,15 +660,6 @@ public class ZeroTierOneService extends VpnService implements Runnable, EventLis
     }
 
     @Subscribe(threadMode = ThreadMode.BACKGROUND)
-    public void onNetworkInfoRequest(NetworkInfoRequestEvent networkInfoRequestEvent) {
-        VirtualNetworkConfig networkConfig;
-        Node node2 = this.node;
-        if (node2 != null && (networkConfig = node2.networkConfig(networkInfoRequestEvent.getNetworkId())) != null) {
-            this.eventBus.post(new NetworkInfoReplyEvent(networkConfig));
-        }
-    }
-
-    @Subscribe(threadMode = ThreadMode.BACKGROUND)
     public void onNetworkListRequest(NetworkListRequestEvent requestNetworkListEvent) {
         VirtualNetworkConfig[] networks;
         Node node2 = this.node;
@@ -690,6 +681,9 @@ public class ZeroTierOneService extends VpnService implements Runnable, EventLis
         }
     }
 
+    /**
+     * 请求 Peer 信息事件回调
+     */
     @Subscribe(threadMode = ThreadMode.BACKGROUND)
     public void onRequestPeerInfo(PeerInfoRequestEvent event) {
         if (this.node == null) {
@@ -697,6 +691,19 @@ public class ZeroTierOneService extends VpnService implements Runnable, EventLis
             return;
         }
         this.eventBus.post(new PeerInfoReplyEvent(this.node.peers()));
+    }
+
+    /**
+     * 请求网络配置事件回调
+     */
+    @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    public void onVirtualNetworkConfigRequest(VirtualNetworkConfigRequestEvent event) {
+        if (this.node == null) {
+            this.eventBus.post(new VirtualNetworkConfigReplyEvent(null));
+            return;
+        }
+        var config = this.node.networkConfig(event.getNetworkId());
+        this.eventBus.post(new VirtualNetworkConfigReplyEvent(config));
     }
 
     @Subscribe(threadMode = ThreadMode.ASYNC)

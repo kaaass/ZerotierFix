@@ -1,45 +1,51 @@
 package net.kaaass.zerotierfix.model;
 
-import net.kaaass.zerotierfix.R;
 import net.kaaass.zerotierfix.model.type.NetworkStatus;
 import net.kaaass.zerotierfix.model.type.NetworkType;
 
 import org.greenrobot.greendao.DaoException;
 import org.greenrobot.greendao.annotation.Convert;
 import org.greenrobot.greendao.annotation.Entity;
+import org.greenrobot.greendao.annotation.Generated;
 import org.greenrobot.greendao.annotation.Id;
 import org.greenrobot.greendao.annotation.ToMany;
 import org.greenrobot.greendao.converter.PropertyConverter;
 
 import java.util.List;
 
-import org.greenrobot.greendao.annotation.Generated;
-
 @Entity
 public class NetworkConfig {
     @Id
     private Long id;
 
+    @Deprecated
     @Convert(converter = NetworkTypeConverter.class, columnType = Integer.class)
     private NetworkType type;
 
+    @Deprecated
     @Convert(converter = NetworkStatusConverter.class, columnType = Integer.class)
     private NetworkStatus status;
 
+    @Deprecated
     private String mac;
 
+    @Deprecated
     private String mtu;
 
+    @Deprecated
     private boolean broadcast;
 
+    @Deprecated
     private boolean bridging;
 
     private boolean routeViaZeroTier;
 
+    @Deprecated
     private boolean useCustomDNS;
 
     private int dnsMode;
 
+    @Deprecated
     @ToMany(referencedJoinProperty = "networkId")
     private List<AssignedAddress> assignedAddresses;
 
@@ -60,8 +66,7 @@ public class NetworkConfig {
 
     @Generated(hash = 1535887363)
     public NetworkConfig(Long id, NetworkType type, NetworkStatus status, String mac, String mtu,
-                         boolean broadcast, boolean bridging, boolean routeViaZeroTier, boolean useCustomDNS,
-                         int dnsMode) {
+            boolean broadcast, boolean bridging, boolean routeViaZeroTier, boolean useCustomDNS, int dnsMode) {
         this.id = id;
         this.type = type;
         this.status = status;
@@ -71,6 +76,12 @@ public class NetworkConfig {
         this.bridging = bridging;
         this.routeViaZeroTier = routeViaZeroTier;
         this.useCustomDNS = useCustomDNS;
+        this.dnsMode = dnsMode;
+    }
+
+    public NetworkConfig(Long id, boolean routeViaZeroTier, int dnsMode) {
+        this.id = id;
+        this.routeViaZeroTier = routeViaZeroTier;
         this.dnsMode = dnsMode;
     }
 
@@ -86,50 +97,62 @@ public class NetworkConfig {
         this.id = id;
     }
 
+    @Deprecated
     public NetworkType getType() {
         return this.type;
     }
 
+    @Deprecated
     public void setType(NetworkType type) {
         this.type = type;
     }
 
+    @Deprecated
     public NetworkStatus getStatus() {
         return this.status;
     }
 
+    @Deprecated
     public void setStatus(NetworkStatus status) {
         this.status = status;
     }
 
+    @Deprecated
     public String getMac() {
         return this.mac;
     }
 
+    @Deprecated
     public void setMac(String mac) {
         this.mac = mac;
     }
 
+    @Deprecated
     public String getMtu() {
         return this.mtu;
     }
 
+    @Deprecated
     public void setMtu(String mtu) {
         this.mtu = mtu;
     }
 
+    @Deprecated
     public boolean getBroadcast() {
         return this.broadcast;
     }
 
+    @Deprecated
     public void setBroadcast(boolean broadcast) {
         this.broadcast = broadcast;
     }
 
+    @Deprecated
     public boolean getBridging() {
         return this.bridging;
     }
 
+    @Deprecated
     public void setBridging(boolean bridging) {
         this.bridging = bridging;
     }
@@ -142,10 +165,12 @@ public class NetworkConfig {
         this.routeViaZeroTier = routeViaZeroTier;
     }
 
+    @Deprecated
     public boolean getUseCustomDNS() {
         return this.useCustomDNS;
     }
 
+    @Deprecated
     public void setUseCustomDNS(boolean useCustomDNS) {
         this.useCustomDNS = useCustomDNS;
     }
@@ -170,8 +195,7 @@ public class NetworkConfig {
                 throw new DaoException("Entity is detached from DAO context");
             }
             AssignedAddressDao targetDao = daoSession.getAssignedAddressDao();
-            List<AssignedAddress> assignedAddressesNew = targetDao
-                    ._queryNetworkConfig_AssignedAddresses(id);
+            List<AssignedAddress> assignedAddressesNew = targetDao._queryNetworkConfig_AssignedAddresses(id);
             synchronized (this) {
                 if (assignedAddresses == null) {
                     assignedAddresses = assignedAddressesNew;
@@ -181,9 +205,7 @@ public class NetworkConfig {
         return assignedAddresses;
     }
 
-    /**
-     * Resets a to-many relationship, making the next get call to query for a fresh result.
-     */
+    /** Resets a to-many relationship, making the next get call to query for a fresh result. */
     @Generated(hash = 1705851723)
     public synchronized void resetAssignedAddresses() {
         assignedAddresses = null;

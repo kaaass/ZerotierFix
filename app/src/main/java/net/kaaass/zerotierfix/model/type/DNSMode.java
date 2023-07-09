@@ -1,5 +1,7 @@
 package net.kaaass.zerotierfix.model.type;
 
+import net.kaaass.zerotierfix.R;
+
 public enum DNSMode {
     NO_DNS(0),
     NETWORK_DNS(1),
@@ -26,5 +28,18 @@ public enum DNSMode {
 
     public int toInt() {
         return this.id;
+    }
+
+    public int toStringId() {
+        switch (this) {
+            case NO_DNS:
+                return R.string.network_dns_mode_no_dns;
+            case NETWORK_DNS:
+                return R.string.network_dns_mode_network_dns;
+            case CUSTOM_DNS:
+                return R.string.network_dns_mode_custom_dns;
+            default:
+                throw new RuntimeException("Unhandled value: " + this);
+        }
     }
 }
