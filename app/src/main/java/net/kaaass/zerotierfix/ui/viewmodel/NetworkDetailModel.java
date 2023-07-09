@@ -7,13 +7,13 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
-import androidx.lifecycle.ViewModel;
 
 import com.zerotier.sdk.VirtualNetworkConfig;
 
 import net.kaaass.zerotierfix.ZerotierFixApplication;
 import net.kaaass.zerotierfix.events.DefaultRouteChangedEvent;
-import net.kaaass.zerotierfix.events.NetworkInfoReplyEvent;
+import net.kaaass.zerotierfix.events.NetworkConfigChangedByUserEvent;
+import net.kaaass.zerotierfix.events.VirtualNetworkConfigChangedEvent;
 import net.kaaass.zerotierfix.events.VirtualNetworkConfigReplyEvent;
 import net.kaaass.zerotierfix.events.VirtualNetworkConfigRequestEvent;
 import net.kaaass.zerotierfix.model.Network;
@@ -23,9 +23,6 @@ import net.kaaass.zerotierfix.model.NetworkDao;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
-import org.greenrobot.greendao.query.WhereCondition;
-
-import java.util.List;
 
 /**
  * 网络详情的 ViewModel
@@ -92,22 +89,6 @@ public class NetworkDetailModel extends AndroidViewModel {
     }
 
     /**
-     * 处理网络配置回复事件
-     */
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onVirtualNetworkConfigReply(VirtualNetworkConfigReplyEvent event) {
-        var virtualNetworkConfig = event.getVirtualNetworkConfig();
-        if (virtualNetworkConfig == null) {
-            Log.e(TAG, "Virtual network config not found!");
-            return;
-        }
-        if (virtualNetworkConfig.getNwid() != this.networkId) {
-            return;
-        }
-        this.virtualNetworkConfig.setValue(virtualNetworkConfig);
-    }
-
-    /**
      * 更新是否通过 ZeroTier 进行路由的网络设置
      */
     public void doUpdateRouteViaZeroTier(boolean routeViaZeroTier) {
@@ -123,6 +104,40 @@ public class NetworkDetailModel extends AndroidViewModel {
 
         // 触发事件
         this.eventBus.post(new DefaultRouteChangedEvent(this.networkId, routeViaZeroTier));
+    }
+
+    /**
+     * 处理网络配置回复事件
+     */
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onVirtualNetworkConfigReply(VirtualNetworkConfigReplyEvent event) {
+        var config = event.getVirtualNetworkConfig();
+        if (config == null) {
+            Log.e(TAG, "Virtual network config not found!");
+            return;
+        }
+        if (config.getNwid() != this.networkId) {
+            return;
+        }
+        // 更新 LiveData
+        this.virtualNetworkConfig.setValue(config);
+    }
+
+    /**
+     * 处理网络配置更新事件
+     */
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onVirtualNetworkConfigChanged(VirtualNetworkConfigChangedEvent event) {
+        // 和 VirtualNetworkConfigReplyEvent 一样处理
+        this.onVirtualNetworkConfigReply(new VirtualNetworkConfigReplyEvent(event.getVirtualNetworkConfig()));
+    }
+
+    /**
+     * 处理本地网络设置更新事件
+     */
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onNetworkConfigChangedByUser(NetworkConfigChangedByUserEvent event) {
+        this.networkConfig.setValue(event.getNetwork().getNetworkConfig());
     }
 
     public LiveData<Network> getNetwork() {
