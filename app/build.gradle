@@ -9,12 +9,12 @@ greendao {
 }
 
 android {
-    compileSdkVersion 32
+    compileSdkVersion 33
 
     defaultConfig {
         applicationId "net.kaaass.zerotierfix"
         minSdkVersion 19
-        targetSdkVersion 32
+        targetSdkVersion 33
         versionCode 11
         versionName "1.0.7_011006_alpha"
         multiDexEnabled true
