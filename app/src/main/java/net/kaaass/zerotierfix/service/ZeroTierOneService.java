@@ -35,7 +35,6 @@ import net.kaaass.zerotierfix.events.IsServiceRunningReplyEvent;
 import net.kaaass.zerotierfix.events.IsServiceRunningRequestEvent;
 import net.kaaass.zerotierfix.events.ManualDisconnectEvent;
 import net.kaaass.zerotierfix.events.NetworkConfigChangedByUserEvent;
-import net.kaaass.zerotierfix.events.NetworkInfoReplyEvent;
 import net.kaaass.zerotierfix.events.NetworkListReplyEvent;
 import net.kaaass.zerotierfix.events.NetworkReconfigureEvent;
 import net.kaaass.zerotierfix.events.NodeDestroyedEvent;
@@ -43,7 +42,6 @@ import net.kaaass.zerotierfix.events.NodeIDEvent;
 import net.kaaass.zerotierfix.events.NodeStatusEvent;
 import net.kaaass.zerotierfix.events.OrbitMoonEvent;
 import net.kaaass.zerotierfix.events.PeerInfoReplyEvent;
-import net.kaaass.zerotierfix.events.NetworkInfoRequestEvent;
 import net.kaaass.zerotierfix.events.NetworkListRequestEvent;
 import net.kaaass.zerotierfix.events.NodeStatusRequestEvent;
 import net.kaaass.zerotierfix.events.PeerInfoRequestEvent;
@@ -659,15 +657,6 @@ public class ZeroTierOneService extends VpnService implements Runnable, EventLis
             this.vpnSocket = null;
         }
         stopSelf(this.mStartID);
-    }
-
-    @Subscribe(threadMode = ThreadMode.BACKGROUND)
-    public void onNetworkInfoRequest(NetworkInfoRequestEvent networkInfoRequestEvent) {
-        VirtualNetworkConfig networkConfig;
-        Node node2 = this.node;
-        if (node2 != null && (networkConfig = node2.networkConfig(networkInfoRequestEvent.getNetworkId())) != null) {
-            this.eventBus.post(new NetworkInfoReplyEvent(networkConfig));
-        }
     }
 
     @Subscribe(threadMode = ThreadMode.BACKGROUND)

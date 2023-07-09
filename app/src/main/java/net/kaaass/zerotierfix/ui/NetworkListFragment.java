@@ -36,14 +36,12 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.zerotier.sdk.NodeStatus;
 import com.zerotier.sdk.Version;
 import com.zerotier.sdk.VirtualNetworkConfig;
-import com.zerotier.sdk.VirtualNetworkType;
 
 import net.kaaass.zerotierfix.R;
 import net.kaaass.zerotierfix.ZerotierFixApplication;
 import net.kaaass.zerotierfix.events.AfterJoinNetworkEvent;
 import net.kaaass.zerotierfix.events.IsServiceRunningReplyEvent;
 import net.kaaass.zerotierfix.events.IsServiceRunningRequestEvent;
-import net.kaaass.zerotierfix.events.NetworkInfoReplyEvent;
 import net.kaaass.zerotierfix.events.NetworkListCheckedChangeEvent;
 import net.kaaass.zerotierfix.events.NetworkListReplyEvent;
 import net.kaaass.zerotierfix.events.NodeDestroyedEvent;
@@ -65,7 +63,6 @@ import net.kaaass.zerotierfix.model.NetworkConfig;
 import net.kaaass.zerotierfix.model.NetworkConfigDao;
 import net.kaaass.zerotierfix.model.NetworkDao;
 import net.kaaass.zerotierfix.model.type.NetworkStatus;
-import net.kaaass.zerotierfix.model.type.NetworkType;
 import net.kaaass.zerotierfix.service.ZeroTierOneService;
 import net.kaaass.zerotierfix.ui.view.NetworkDetailActivity;
 import net.kaaass.zerotierfix.util.Constants;
@@ -74,12 +71,7 @@ import net.kaaass.zerotierfix.util.StringUtils;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
-import org.greenrobot.greendao.query.WhereCondition;
 
-import java.net.Inet4Address;
-import java.net.Inet6Address;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -357,120 +349,6 @@ public class NetworkListFragment extends Fragment {
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onNetworkInfoReply(NetworkInfoReplyEvent networkInfoReplyEvent) {
-        NetworkStatus networkStatus;
-        Log.d(TAG, "Got Network Info");
-        // TODO 转移写数据库到 Service 中
-        VirtualNetworkConfig networkInfo = networkInfoReplyEvent.getNetworkInfo();
-        for (Network network : getNetworkList()) {
-            if (network.getNetworkId() == networkInfo.getNwid()) {
-                network.setConnected(true);
-                if (!networkInfo.getName().isEmpty()) {
-                    network.setNetworkName(networkInfo.getName());
-                }
-                NetworkDao networkDao = ((ZerotierFixApplication) requireActivity().getApplication()).getDaoSession().getNetworkDao();
-                NetworkConfigDao networkConfigDao = ((ZerotierFixApplication) requireActivity().getApplication()).getDaoSession().getNetworkConfigDao();
-                NetworkConfig networkConfig = network.getNetworkConfig();
-                if (networkConfig == null) {
-                    networkConfig = new NetworkConfig();
-                    networkConfig.setId(network.getNetworkId());
-                    networkConfigDao.insert(networkConfig);
-                }
-                network.setNetworkConfig(networkConfig);
-                network.setNetworkConfigId(network.getNetworkId());
-                networkDao.save(network);
-                networkConfig.setBridging(networkInfo.isBridge());
-                if (networkInfo.getType() == VirtualNetworkType.NETWORK_TYPE_PRIVATE) {
-                    networkConfig.setType(NetworkType.PRIVATE);
-                } else if (networkInfo.getType() == VirtualNetworkType.NETWORK_TYPE_PUBLIC) {
-                    networkConfig.setType(NetworkType.PUBLIC);
-                }
-                switch (networkInfo.getStatus()) {
-                    case NETWORK_STATUS_OK:
-                        networkStatus = NetworkStatus.OK;
-                        break;
-                    case NETWORK_STATUS_ACCESS_DENIED:
-                        networkStatus = NetworkStatus.ACCESS_DENIED;
-                        break;
-                    case NETWORK_STATUS_NOT_FOUND:
-                        networkStatus = NetworkStatus.NOT_FOUND;
-                        break;
-                    case NETWORK_STATUS_PORT_ERROR:
-                        networkStatus = NetworkStatus.PORT_ERROR;
-                        break;
-                    case NETWORK_STATUS_CLIENT_TOO_OLD:
-                        networkStatus = NetworkStatus.CLIENT_TOO_OLD;
-                        break;
-                    case NETWORK_STATUS_AUTHENTICATION_REQUIRED:
-                        networkStatus = NetworkStatus.AUTHENTICATION_REQUIRED;
-                        break;
-                    default:
-                    case NETWORK_STATUS_REQUESTING_CONFIGURATION:
-                        networkStatus = NetworkStatus.REQUESTING_CONFIGURATION;
-                        break;
-                }
-                networkConfig.setStatus(networkStatus);
-                StringBuilder macAddress = new StringBuilder(Long.toHexString(networkInfo.getMac()));
-                while (macAddress.length() < 12) {
-                    macAddress.insert(0, "0");
-                }
-                String sb = String.valueOf(macAddress.charAt(0)) +
-                        macAddress.charAt(1) +
-                        ':' +
-                        macAddress.charAt(2) +
-                        macAddress.charAt(3) +
-                        ':' +
-                        macAddress.charAt(4) +
-                        macAddress.charAt(5) +
-                        ':' +
-                        macAddress.charAt(6) +
-                        macAddress.charAt(7) +
-                        ':' +
-                        macAddress.charAt(8) +
-                        macAddress.charAt(9) +
-                        ':' +
-                        macAddress.charAt(10) +
-                        macAddress.charAt(11);
-                networkConfig.setMac(sb);
-                networkConfig.setMtu(Integer.toString(networkInfo.getMtu()));
-                networkConfig.setBroadcast(networkInfo.isBroadcastEnabled());
-                network.setNetworkConfigId(networkInfo.getNwid());
-                network.setNetworkConfig(networkConfig);
-                networkDao.save(network);
-                networkConfigDao.save(networkConfig);
-                ((ZerotierFixApplication) requireActivity().getApplication()).getDaoSession().getAssignedAddressDao().queryBuilder().where(AssignedAddressDao.Properties.NetworkId.eq(networkInfo.getNwid()), new WhereCondition[0]).buildDelete().forCurrentThread().forCurrentThread().executeDeleteWithoutDetachingEntities();
-                ((ZerotierFixApplication) requireActivity().getApplication()).getDaoSession().clear();
-                AssignedAddressDao assignedAddressDao = ((ZerotierFixApplication) requireActivity().getApplication()).getDaoSession().getAssignedAddressDao();
-                InetSocketAddress[] assignedAddresses = networkInfo.getAssignedAddresses();
-                for (InetSocketAddress inetSocketAddress : assignedAddresses) {
-                    InetAddress address = inetSocketAddress.getAddress();
-                    short port = (short) inetSocketAddress.getPort();
-                    AssignedAddress assignedAddress = new AssignedAddress();
-                    String inetAddress = address.toString();
-                    if (inetAddress.startsWith("/")) {
-                        inetAddress = inetAddress.substring(1);
-                    }
-                    if (address instanceof Inet6Address) {
-                        assignedAddress.setType(AssignedAddress.AddressType.IPV6);
-                    } else if (address instanceof Inet4Address) {
-                        assignedAddress.setType(AssignedAddress.AddressType.IPV4);
-                    }
-                    assignedAddress.setAddressBytes(address.getAddress());
-                    assignedAddress.setAddressString(inetAddress);
-                    assignedAddress.setPrefix(port);
-                    assignedAddress.setNetworkId(networkConfig.getId());
-                    assignedAddressDao.save(assignedAddress);
-                }
-            } else {
-                network.setConnected(false);
-                network.update();
-            }
-        }
-        ((ZerotierFixApplication) requireActivity().getApplication()).getDaoSession().clear();
-        updateNetworkListAndNotify();
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
     public void onVirtualNetworkConfigChanged(VirtualNetworkConfigChangedEvent event) {
         Log.d(TAG, "Got Network Info");
         var config = event.getVirtualNetworkConfig();
@@ -505,9 +383,6 @@ public class NetworkListFragment extends Fragment {
         if (message != null) {
             Toast.makeText(requireActivity(), message, Toast.LENGTH_SHORT).show();
         }
-
-        // 触发网络信息更新
-        this.onNetworkInfoReply(new NetworkInfoReplyEvent(config));
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
