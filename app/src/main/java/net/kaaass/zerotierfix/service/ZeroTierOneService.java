@@ -770,8 +770,7 @@ public class ZeroTierOneService extends VpnService implements Runnable, EventLis
             switch (op) {
                 case VIRTUAL_NETWORK_CONFIG_OPERATION_UP:
                     Log.d(TAG, "Network Type: " + config.getType() + " Network Status: " + config.getStatus() + " Network Name: " + config.getName() + " ");
-                    setVirtualNetworkConfigAndUpdateDatabase(network, config);
-                    this.eventBus.post(new VirtualNetworkConfigChangedEvent(config));
+                    // 将网络配置的更新交给第一次 Update
                     break;
                 case VIRTUAL_NETWORK_CONFIG_OPERATION_CONFIG_UPDATE:
                     Log.i(TAG, "Network Config Update!");
