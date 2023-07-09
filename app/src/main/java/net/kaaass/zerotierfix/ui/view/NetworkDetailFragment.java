@@ -132,8 +132,8 @@ public class NetworkDetailFragment extends Fragment {
         var dnsMode = DNSMode.fromInt(networkConfig.getDnsMode());
         this.dnsModeView.setText(dnsMode.toStringId());
 
-        // 仅当 DNS 模式为自定义时显示服务器地址
-        this.dnsView.setVisibility(dnsMode == DNSMode.CUSTOM_DNS ? View.VISIBLE : View.INVISIBLE);
+        // 仅当 DNS 模式为网络时显示服务器地址
+        this.dnsView.setVisibility(dnsMode == DNSMode.NETWORK_DNS ? View.VISIBLE : View.INVISIBLE);
 
         // 通过 ZT 路由
         this.routeViaZtView.setChecked(networkConfig.getRouteViaZeroTier());
