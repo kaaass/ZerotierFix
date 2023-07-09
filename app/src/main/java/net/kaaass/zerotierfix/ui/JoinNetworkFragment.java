@@ -161,8 +161,6 @@ public class JoinNetworkFragment extends Fragment implements CustomDNSListener {
                     Network network = new Network();
                     network.setNetworkId(Long.valueOf(hexStringToLong));
                     network.setNetworkIdStr(obj);
-                    network.setUseDefaultRoute(isChecked);
-                    network.setConnected(false);
                     NetworkConfig networkConfig = new NetworkConfig();
                     networkConfig.setId(Long.valueOf(hexStringToLong));
                     networkConfig.setRouteViaZeroTier(isChecked);

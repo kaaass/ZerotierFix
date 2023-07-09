@@ -28,7 +28,6 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.SwitchCompat;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -65,7 +64,9 @@ import net.kaaass.zerotierfix.model.NetworkDao;
 import net.kaaass.zerotierfix.model.type.NetworkStatus;
 import net.kaaass.zerotierfix.service.ZeroTierOneService;
 import net.kaaass.zerotierfix.ui.view.NetworkDetailActivity;
+import net.kaaass.zerotierfix.ui.viewmodel.NetworkListModel;
 import net.kaaass.zerotierfix.util.Constants;
+import net.kaaass.zerotierfix.util.DatabaseUtils;
 import net.kaaass.zerotierfix.util.StringUtils;
 
 import org.greenrobot.eventbus.EventBus;
@@ -75,8 +76,6 @@ import org.greenrobot.eventbus.ThreadMode;
 import java.util.ArrayList;
 import java.util.List;
 
-import lombok.Getter;
-import lombok.Setter;
 import lombok.ToString;
 
 // TODO: clear up
@@ -101,17 +100,11 @@ public class NetworkListFragment extends Fragment {
             NetworkListFragment.this.setIsBound(false);
         }
     };
-    private VirtualNetworkConfig[] mVNC;
     private TextView nodeIdView;
     private TextView nodeStatusView;
     private TextView nodeClientVersionView;
 
     private View emptyView = null;
-
-    private ActivityResultLauncher<Intent> vpnAuthLauncher;
-
-    private ViewModelState state;
-
     final private RecyclerView.AdapterDataObserver checkIfEmptyObserver = new RecyclerView.AdapterDataObserver() {
         @Override
         public void onChanged() {
@@ -139,6 +132,8 @@ public class NetworkListFragment extends Fragment {
             }
         }
     };
+    private ActivityResultLauncher<Intent> vpnAuthLauncher;
+    private NetworkListModel viewModel;
 
     public NetworkListFragment() {
         Log.d(TAG, "Network List Fragment created");
@@ -188,7 +183,7 @@ public class NetworkListFragment extends Fragment {
             Log.d(TAG, "Returned from AUTH_VPN");
             if (result == -1) {
                 // 得到授权，连接网络
-                startService(this.state.getNetworkId());
+                startService(this.viewModel.getNetworkId());
             } else if (result == 0) {
                 // 未授权
                 updateNetworkListAndNotify();
@@ -248,6 +243,10 @@ public class NetworkListFragment extends Fragment {
             startActivity(new Intent(getActivity(), JoinNetworkActivity.class));
         });
 
+        // 当前连接网络变更时更新列表
+        this.viewModel.getConnectNetworkId().observe(getViewLifecycleOwner(), networkId ->
+                this.recyclerViewAdapter.notifyDataSetChanged());
+
         return view;
     }
 
@@ -257,10 +256,10 @@ public class NetworkListFragment extends Fragment {
      * @param networkId 网络号
      */
     private void sendStartServiceIntent(long networkId) {
-        var prepare = VpnService.prepare(getActivity());
+        var prepare = VpnService.prepare(requireActivity());
         if (prepare != null) {
             // 等待 VPN 授权后连接网络
-            this.state.setNetworkId(networkId);
+            this.viewModel.setNetworkId(networkId);
             vpnAuthLauncher.launch(prepare);
             return;
         }
@@ -269,12 +268,14 @@ public class NetworkListFragment extends Fragment {
     }
 
     @Override
-    public void onCreate(Bundle bundle) {
+    public void onCreate(Bundle savedInstanceState) {
         Log.d(TAG, "NetworkListFragment.onCreate");
-        super.onCreate(bundle);
+        super.onCreate(savedInstanceState);
         PreferenceManager.setDefaultValues(getActivity(), R.xml.preferences, false);
         setHasOptionsMenu(true);
-        this.state = new ViewModelProvider(requireActivity()).get(ViewModelState.class);
+
+        // 获取 ViewModel
+        this.viewModel = new ViewModelProvider(requireActivity()).get(NetworkListModel.class);
     }
 
     @Override
@@ -342,9 +343,14 @@ public class NetworkListFragment extends Fragment {
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onNetworkListReply(NetworkListReplyEvent networkListReplyEvent) {
-        Log.d(TAG, "Got network list");
-        this.mVNC = networkListReplyEvent.getNetworkList();
+    public void onNetworkListReply(NetworkListReplyEvent event) {
+        Log.d(TAG, "Got connecting network list");
+        // 更新当前连接的网络
+        var networks = event.getNetworkList();
+        for (var network : networks) {
+            this.viewModel.doChangeConnectNetwork(network.getNwid());
+        }
+        // 更新网络列表
         updateNetworkListAndNotify();
     }
 
@@ -383,6 +389,9 @@ public class NetworkListFragment extends Fragment {
         if (message != null) {
             Toast.makeText(requireActivity(), message, Toast.LENGTH_SHORT).show();
         }
+
+        // 更新网络列表
+        updateNetworkListAndNotify();
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -440,21 +449,6 @@ public class NetworkListFragment extends Fragment {
     private void updateNetworkList() {
         List<Network> networkList = getNetworkList();
         if (networkList != null) {
-            // 设置连接状态
-            for (Network oldNetwork : this.mNetworks) {
-                for (Network network : networkList) {
-                    if (oldNetwork.getNetworkId().equals(network.getNetworkId())) {
-                        network.setConnected(oldNetwork.getConnected());
-                    }
-                }
-            }
-            if (this.mVNC != null) {
-                for (Network network : networkList) {
-                    for (VirtualNetworkConfig virtualNetworkConfig : this.mVNC) {
-                        network.setConnected(network.getNetworkId() == virtualNetworkConfig.getNwid());
-                    }
-                }
-            }
             // 更新列表
             this.mNetworks.clear();
             this.mNetworks.addAll(networkList);
@@ -479,7 +473,7 @@ public class NetworkListFragment extends Fragment {
      * @param networkId 网络号
      */
     private void startService(long networkId) {
-        var intent = new Intent(getActivity(), ZeroTierOneService.class);
+        var intent = new Intent(requireActivity(), ZeroTierOneService.class);
         intent.putExtra(ZeroTierOneService.ZT1_NETWORK_ID, networkId);
         doBindService();
         requireActivity().startService(intent);
@@ -498,7 +492,6 @@ public class NetworkListFragment extends Fragment {
             Log.e(TAG, "stopService() returned false");
         }
         doUnbindService();
-        this.mVNC = null;
     }
 
     /**
@@ -527,9 +520,14 @@ public class NetworkListFragment extends Fragment {
         var switchHandle = event.getSwitchHandle();
         var checked = event.isChecked();
         var selectedNetwork = event.getSelectedNetwork();
-        var networkDao = ((ZerotierFixApplication) requireActivity().getApplication())
-                .getDaoSession().getNetworkDao();
         if (checked) {
+            // 退出已连接的网络
+            Long connectedNetworkId = this.viewModel.getConnectNetworkId().getValue();
+            if (connectedNetworkId != null) {
+                this.mBoundService.leaveNetwork(connectedNetworkId);
+            }
+            stopService();
+            this.viewModel.doChangeConnectNetwork(null);
             // 启动网络
             var context = requireContext();
             boolean useCellularData = PreferenceManager
@@ -546,25 +544,26 @@ public class NetworkListFragment extends Fragment {
                 });
             } else if (useCellularData || !(activeNetworkInfo.getType() == 0)) {
                 // 可以连接至网络
-                // 先关闭所有现有网络连接
-                for (var network : this.mNetworks) {
-                    if (network.getConnected()) {
-                        network.setConnected(false);
+                // 更新 DB 中的网络状态
+                DatabaseUtils.writeLock.lock();
+                try {
+                    for (var network : this.mNetworks) {
+                        network.setLastActivated(false);
+                        network.update();
                     }
-                    network.setLastActivated(false);
-                    network.update();
+                    selectedNetwork.setLastActivated(true);
+                    selectedNetwork.update();
+                } finally {
+                    DatabaseUtils.writeLock.unlock();
                 }
-                this.stopService();
                 // 连接目标网络
                 if (!this.isBound()) {
                     this.sendStartServiceIntent(selectedNetwork.getNetworkId());
                 } else {
                     this.mBoundService.joinNetwork(selectedNetwork.getNetworkId());
                 }
+                this.viewModel.doChangeConnectNetwork(selectedNetwork.getNetworkId());
                 Log.d(TAG, "Joining Network: " + selectedNetwork.getNetworkIdStr());
-                selectedNetwork.setConnected(true);
-                selectedNetwork.setLastActivated(true);
-                networkDao.save(selectedNetwork);
             } else {
                 // 移动数据且未确认
                 requireActivity().runOnUiThread(() -> {
@@ -580,9 +579,7 @@ public class NetworkListFragment extends Fragment {
                 this.doUnbindService();
             }
             this.stopService();
-            selectedNetwork.setConnected(false);
-            networkDao.save(selectedNetwork);
-            this.mVNC = null;
+            this.viewModel.doChangeConnectNetwork(null);
         }
     }
 
@@ -622,9 +619,14 @@ public class NetworkListFragment extends Fragment {
             holder.mView.setOnClickListener(holder::onClick);
             // 设置长按事件
             holder.mView.setOnLongClickListener(holder::onLongClick);
+            // 判断连接状态
+            Long connectedNetworkId = NetworkListFragment.this.viewModel
+                    .getConnectNetworkId().getValue();
+            boolean connected = connectedNetworkId != null &&
+                    connectedNetworkId.equals(network.getNetworkId());
             // 设置开关
             holder.mSwitch.setOnCheckedChangeListener(null);
-            holder.mSwitch.setChecked(network.getConnected());
+            holder.mSwitch.setChecked(connected);
             holder.mSwitch.setOnCheckedChangeListener(holder::onSwitchCheckedChanged);
         }
 
@@ -663,21 +665,25 @@ public class NetworkListFragment extends Fragment {
              * 长按列表项创建弹出菜单
              */
             public boolean onLongClick(View view) {
+                var that = NetworkListFragment.this;
                 Log.d(NetworkListFragment.TAG, "ConvertView OnLongClickListener");
-                PopupMenu popupMenu = new PopupMenu(NetworkListFragment.this.getActivity(), view);
+                PopupMenu popupMenu = new PopupMenu(that.getActivity(), view);
                 popupMenu.getMenuInflater().inflate(R.menu.popup_menu_network_item, popupMenu.getMenu());
                 popupMenu.show();
                 popupMenu.setOnMenuItemClickListener(menuItem -> {
                     if (menuItem.getItemId() == R.id.menu_item_delete_network) {
                         // 删除对应网络
-                        DaoSession daoSession = ((ZerotierFixApplication) NetworkListFragment.this.requireActivity().getApplication()).getDaoSession();
+                        DaoSession daoSession = ((ZerotierFixApplication) that.requireActivity().getApplication()).getDaoSession();
                         AssignedAddressDao assignedAddressDao = daoSession.getAssignedAddressDao();
                         NetworkConfigDao networkConfigDao = daoSession.getNetworkConfigDao();
                         NetworkDao networkDao = daoSession.getNetworkDao();
                         if (this.mItem != null) {
-                            if (this.mItem.getConnected()) {
-                                NetworkListFragment.this.stopService();
+                            // 如果删除的是当前连接的网络，则停止服务
+                            var connectedNetworkId = that.viewModel.getConnectNetworkId().getValue();
+                            if (this.mItem.getNetworkId().equals(connectedNetworkId)) {
+                                that.stopService();
                             }
+                            // 从 DB 中删除网络
                             NetworkConfig networkConfig = this.mItem.getNetworkConfig();
                             if (networkConfig != null) {
                                 List<AssignedAddress> assignedAddresses = networkConfig.getAssignedAddresses();
@@ -692,7 +698,7 @@ public class NetworkListFragment extends Fragment {
                         }
                         daoSession.clear();
                         // 更新数据
-                        NetworkListFragment.this.updateNetworkListAndNotify();
+                        that.updateNetworkListAndNotify();
                         return true;
                     } else if (menuItem.getItemId() == R.id.menu_item_copy_network_id) {
                         // 复制网络 ID
@@ -720,12 +726,4 @@ public class NetworkListFragment extends Fragment {
         }
     }
 
-    /**
-     * 维护当前 ViewModel 的状态
-     */
-    @Getter
-    @Setter
-    public static class ViewModelState extends ViewModel {
-        private long networkId;
-    }
 }
