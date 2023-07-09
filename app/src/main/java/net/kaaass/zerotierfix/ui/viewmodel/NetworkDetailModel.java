@@ -121,6 +121,9 @@ public class NetworkDetailModel extends AndroidViewModel {
         }
         // 更新 LiveData
         this.virtualNetworkConfig.setValue(config);
+        // 因为网络名称可能会变化，但 Network DAO 获取的对象会自动更新，所以需要主动触发一次更新
+        var network = this.network.getValue();
+        this.network.setValue(network);
     }
 
     /**
