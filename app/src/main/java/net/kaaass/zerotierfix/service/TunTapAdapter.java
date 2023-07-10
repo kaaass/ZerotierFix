@@ -318,11 +318,15 @@ public class TunTapAdapter implements VirtualNetworkFrameListener {
                 destMac = 0L;
             }
             sendNSPacket = true;
-        } else if (this.ndpTable.hasMacForAddress(destIP)) {
-            // 目标地址 MAC 已知
-            destMac = this.ndpTable.getMacForAddress(destIP);
         } else {
-            destMac = 0L;
+            // 收到普通数据包，根据 NDP 表记录确定是否发送 NS 请求
+            if (this.ndpTable.hasMacForAddress(destIP)) {
+                // 目标地址 MAC 已知
+                destMac = this.ndpTable.getMacForAddress(destIP);
+            } else {
+                destMac = 0L;
+                sendNSPacket = true;
+            }
         }
         // 发送数据包
         if (destMac != 0L) {
