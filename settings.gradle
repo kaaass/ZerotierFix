@@ -1,2 +1,2 @@
-include ':app'
+include ':app', ':core'
 rootProject.name = "ZerotierFix"

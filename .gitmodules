@@ -1,0 +1,3 @@
+[submodule "externals/core"]
+	path = externals/core
+	url = https://github.com/zerotier/ZeroTierOne.git
