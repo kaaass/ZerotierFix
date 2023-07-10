@@ -9,12 +9,12 @@ greendao {
 }
 
 android {
-    compileSdkVersion 33
+    compileSdkVersion rootProject.ext.compileSdkVersion
 
     defaultConfig {
         applicationId "net.kaaass.zerotierfix"
-        minSdkVersion 19
-        targetSdkVersion 33
+        minSdkVersion rootProject.ext.minSdkVersion
+        targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 12
         versionName "1.0.8_011006_alpha"
         multiDexEnabled true
@@ -43,6 +43,7 @@ android {
 }
 
 dependencies {
+    implementation project(':core')
 
     implementation 'androidx.appcompat:appcompat:1.5.1'
     implementation 'com.google.android.material:material:1.6.1'
