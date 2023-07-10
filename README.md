@@ -11,6 +11,12 @@
   <img src="screenshots/moons.png" alt="moons" width="150"/>
 </p>
 
+<p align="center">
+    <a href="https://github.com/kaaass/ZerotierFix/actions/workflows/build-app.yml">
+        <img src="https://github.com/kaaass/ZerotierFix/actions/workflows/build-app.yml/badge.svg" alt="Build APP"/>
+    </a>
+</p>
+
 ## Features
 
 - Self-hosted Moon Support
