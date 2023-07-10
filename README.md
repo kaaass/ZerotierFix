@@ -27,9 +27,8 @@ Check [Releases page](https://github.com/kaaass/ZerotierFix/releases) for newest
 The code for this repository is based on the reverse engineering of the official Android client. The
 original author is Grant Limberg (glimberg@gmail.com). See [AUTHORS.md](https://github.com/zerotier/ZeroTierOne/blob/master/AUTHORS.md#primary-authors) for more details.
 
-- Zerotier JNI Sdk is located in `com.zerotier.sdk`
+- Zerotier JNI Sdk is located in git submodule `externals/core`
 - Original Android client code is located in `net.kaaass.zerotierfix` (renamed from `com.zerotier.one`)
-- Pre-built JNI library binary is located in `app/src/main/jniLibs`. This will be replaced by source code in the future
 - App logo is a trademark of `ZeroTier, Inc.` and made by myself. 
 
 
@@ -38,6 +37,6 @@ original author is Grant Limberg (glimberg@gmail.com). See [AUTHORS.md](https://
 - [X] Add moon config persistent & file config
 - [x] Add peer list view
 - [x] Support planet config
+- [x] Replace pre-built JNI library
 - [ ] *WIP* Rewrite & update UI to fit Material Design
-- [ ] Replace pre-built JNI library
 - [ ] *WIP* Clear up code (remove decompiler tag and refine)
