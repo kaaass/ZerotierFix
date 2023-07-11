@@ -85,7 +85,7 @@
     <string name="moon_orbit_exist">Moon Orbit information exists!</string>
     <string name="moon_orbit_add_success">Moon orbit added successfully.</string>
     <string name="moon_orbit_delete_success">Moon orbit deleted successfully. Disconnect &amp; reconnect for this setting to take effect.</string>
-    <string name="unknown_version" translatable="false">-</string>
+    <string name="unknown_version" translatable="false">-.-.-</string>
     <string name="network_connected">Connected</string>
     <string name="connected_to_network">Connected to %s</string>
     <string name="network_detail">Network Detail</string>
@@ -148,4 +148,5 @@
     <string name="toast_network_status_authentication_required">Cannot connect to network %1$s: Authorization required</string>
     <string name="toast_vpn_error">A VPN service error has occurred! %1$s</string>
     <string name="empty_network_name">Unknown</string>
+    <string name="app_version_format">(APP: %s)</string>
 </resources>

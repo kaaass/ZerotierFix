@@ -36,6 +36,7 @@ import com.zerotier.sdk.NodeStatus;
 import com.zerotier.sdk.Version;
 import com.zerotier.sdk.VirtualNetworkConfig;
 
+import net.kaaass.zerotierfix.BuildConfig;
 import net.kaaass.zerotierfix.R;
 import net.kaaass.zerotierfix.ZerotierFixApplication;
 import net.kaaass.zerotierfix.events.AfterJoinNetworkEvent;
@@ -232,6 +233,9 @@ public class NetworkListFragment extends Fragment {
         this.nodeStatusView = view.findViewById(R.id.node_status);
         this.nodeClientVersionView = view.findViewById(R.id.client_version);
         setNodeIdText();
+        TextView appVersionView = view.findViewById(R.id.app_version);
+        appVersionView.setText(String.format(getString(R.string.app_version_format),
+                BuildConfig.VERSION_NAME));
 
         // 加载网络数据
         updateNetworkListAndNotify();

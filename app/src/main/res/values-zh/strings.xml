@@ -146,4 +146,5 @@
     <string name="toast_network_status_authentication_required">无法连接至网络 %1$s: 需要授权</string>
     <string name="toast_vpn_error">VPN 服务发生错误！%1$s</string>
     <string name="empty_network_name">未知</string>
+    <string name="app_version_format">(APP: %s)</string>
 </resources>
