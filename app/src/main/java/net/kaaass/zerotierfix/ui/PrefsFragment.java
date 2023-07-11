@@ -1,11 +1,14 @@
 package net.kaaass.zerotierfix.ui;
 
+import android.Manifest;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -15,6 +18,8 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.SwitchPreference;
@@ -47,6 +52,7 @@ public class PrefsFragment extends PreferenceFragmentCompat implements SharedPre
     public static final int PLANET_DOWNLOAD_CONN_TIMEOUT = 5 * 1000;
     public static final int PLANET_DOWNLOAD_TIMEOUT = 10 * 1000;
     private static final int REQUEST_PLANET_FILE = 42;
+    private static final int PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE = 1;
     private static final String TAG = "PreferencesFragment";
     /**
      * Plant 文件固定头
@@ -81,14 +87,14 @@ public class PrefsFragment extends PreferenceFragmentCompat implements SharedPre
             }
             // 设置为真时，如果还没有设置文件则提示设置文件
             if (customPlanetFileNotExit()) {
-                showPlanetFileDialog();
+                showPlanetDialog();
             }
             return true;
         });
 
         // 打开 Plant 文件设置
         Objects.requireNonNull(this.prefSetPlanetFile).setOnPreferenceClickListener(preference -> {
-            showPlanetFileDialog();
+            showPlanetDialog();
             return true;
         });
         updatePlanetSetting();
@@ -97,21 +103,16 @@ public class PrefsFragment extends PreferenceFragmentCompat implements SharedPre
     /**
      * 显示选择 Planet 文件来源对话框
      */
-    private void showPlanetFileDialog() {
+    private void showPlanetDialog() {
         View view = LayoutInflater.from(getContext()).inflate(R.layout.dialog_custom_planet_select, null);
 
         // 选择文件
         View viewFile = view.findViewById(R.id.from_file);
-        viewFile.setOnClickListener(v -> {
-            Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-            intent.setType("*/*");
-            intent.addCategory(Intent.CATEGORY_OPENABLE);
-            startActivityForResult(intent, REQUEST_PLANET_FILE);
-        });
+        viewFile.setOnClickListener(v -> this.showPlanetFromFileDialog());
 
         // 选择 URL
         View viewUrl = view.findViewById(R.id.from_url);
-        viewUrl.setOnClickListener(v -> this.showPlanetUrlDialog());
+        viewUrl.setOnClickListener(v -> this.showPlanetFromUrlDialog());
 
         // 窗口
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext())
@@ -126,9 +127,20 @@ public class PrefsFragment extends PreferenceFragmentCompat implements SharedPre
     }
 
     /**
+     * 显示选择 Planet 文件的文件选择器
+     */
+    private void showPlanetFromFileDialog() {
+        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+        intent.setType("*/*");
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        startActivityForResult(intent, REQUEST_PLANET_FILE);
+    }
+
+    /**
      * 显示输入 Planet 文件 URL 对话框
      */
-    private void showPlanetUrlDialog() {
+    private void showPlanetFromUrlDialog() {
         View view = LayoutInflater.from(getContext()).inflate(R.layout.dialog_planet_url, null);
 
         final EditText editText = view.findViewById(R.id.planet_url);
