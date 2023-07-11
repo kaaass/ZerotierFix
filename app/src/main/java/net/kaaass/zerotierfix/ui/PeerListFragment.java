@@ -160,7 +160,7 @@ public class PeerListFragment extends Fragment {
     public void onPeerInfoReplyEvent(PeerInfoReplyEvent event) {
         Peer[] peers = event.getPeers();
         if (peers == null) {
-            Snackbar.make(getView(), R.string.fail_retrieve_peer_list, BaseTransientBottomBar.LENGTH_LONG).show();
+            Snackbar.make(requireView(), R.string.fail_retrieve_peer_list, BaseTransientBottomBar.LENGTH_LONG).show();
             return;
         }
         // 更新数据列表
@@ -215,7 +215,7 @@ public class PeerListFragment extends Fragment {
             }
             String strPreferred = getString(R.string.peer_relay);
             if (preferred != null) {
-                strPreferred = preferred.getAddress().toString();
+                strPreferred = StringUtils.toString(preferred.getAddress());
             }
             holder.mPath.setText(strPreferred);
         }

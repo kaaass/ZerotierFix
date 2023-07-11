@@ -1,8 +1,13 @@
 package net.kaaass.zerotierfix.util;
 
+import androidx.annotation.NonNull;
+
 import com.zerotier.sdk.Peer;
 import com.zerotier.sdk.Version;
 
+import java.net.Inet6Address;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.util.Locale;
 
 /**
@@ -54,5 +59,21 @@ public class StringUtils {
             result[i / 2] = (byte) ((highDigit << 4) + lowDigit);
         }
         return result;
+    }
+
+    /**
+     * 将 InetSocketAddress 转为 IP:Port (IPv6 则是 [IP]:Port) 格式的字符串
+     */
+    public static String toString(InetSocketAddress address) {
+        InetAddress inetAddress = address.getAddress();
+        int port = address.getPort();
+
+        // 将 IP 地址转为字符串
+        String ipString = inetAddress.getHostAddress();
+        if (inetAddress instanceof Inet6Address) {
+            ipString = "[" + ipString + "]";
+        }
+
+        return ipString + ":" + port;
     }
 }
