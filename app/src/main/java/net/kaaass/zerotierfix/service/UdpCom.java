@@ -6,6 +6,8 @@ import com.zerotier.sdk.Node;
 import com.zerotier.sdk.PacketSender;
 import com.zerotier.sdk.ResultCode;
 
+import net.kaaass.zerotierfix.util.DebugLog;
+
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
@@ -36,7 +38,7 @@ public class UdpCom implements PacketSender, Runnable {
         }
         try {
             DatagramPacket datagramPacket = new DatagramPacket(bArr, bArr.length, inetSocketAddress);
-            Log.d(TAG, "onSendPacketRequested: Sent " + datagramPacket.getLength() + " bytes to " + inetSocketAddress.toString());
+            DebugLog.d(TAG, "onSendPacketRequested: Sent " + datagramPacket.getLength() + " bytes to " + inetSocketAddress.toString());
             this.svrSocket.send(datagramPacket);
             return 0;
         } catch (Exception unused) {
@@ -57,7 +59,7 @@ public class UdpCom implements PacketSender, Runnable {
                     if (datagramPacket.getLength() > 0) {
                         byte[] bArr2 = new byte[datagramPacket.getLength()];
                         System.arraycopy(datagramPacket.getData(), 0, bArr2, 0, datagramPacket.getLength());
-                        Log.d(TAG, "Got " + datagramPacket.getLength() + " Bytes From: " + datagramPacket.getAddress().toString() + ":" + datagramPacket.getPort());
+                        DebugLog.d(TAG, "Got " + datagramPacket.getLength() + " Bytes From: " + datagramPacket.getAddress().toString() + ":" + datagramPacket.getPort());
                         ResultCode processWirePacket = this.node.processWirePacket(System.currentTimeMillis(), -1, new InetSocketAddress(datagramPacket.getAddress(), datagramPacket.getPort()), bArr2, jArr);
                         if (processWirePacket != ResultCode.RESULT_OK) {
                             Log.e(TAG, "processWirePacket returned: " + processWirePacket.toString());
