@@ -16,6 +16,8 @@ import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -57,20 +59,12 @@ import lombok.ToString;
 public class MoonOrbitFragment extends Fragment {
 
     public static final String TAG = "MoonOrbitFragment";
-
-    private static final int REQUEST_MOON_FILE = 1;
     private static final byte[] MOON_FILE_HEADER = new byte[]{0x7f};
-
     private final List<MoonOrbit> moonOrbitList = new ArrayList<>();
-
     private final EventBus eventBus;
-
     private RecyclerViewAdapter recyclerViewAdapter = null;
-
     private RecyclerView recyclerView = null;
-
     private View emptyView = null;
-
     final private RecyclerView.AdapterDataObserver checkIfEmptyObserver = new RecyclerView.AdapterDataObserver() {
         @Override
         public void onChanged() {
@@ -98,8 +92,8 @@ public class MoonOrbitFragment extends Fragment {
             }
         }
     };
-
     private AlertDialog providerDialog = null;
+    private ActivityResultLauncher<Intent> moonFileSelectLauncher = null;
 
     public MoonOrbitFragment() {
         this.eventBus = EventBus.getDefault();
@@ -137,6 +131,47 @@ public class MoonOrbitFragment extends Fragment {
         return view;
     }
 
+    @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+        // 初始化 Moon 文件选择结果回调
+        this.moonFileSelectLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), (activityResult) -> {
+            var result = activityResult.getResultCode();
+            var data = activityResult.getData();
+            if (result == -1 && data != null) {
+                long moonWorldId;
+                // Moon 文件设置
+                Uri uriData = data.getData();
+                if (uriData == null) {
+                    Log.e(TAG, "Invalid moon URI");
+                    return;
+                }
+                // 复制文件到临时文件
+                try (InputStream in = requireContext().getContentResolver().openInputStream(uriData)) {
+                    FileUtils.copyInputStreamToFile(in, FileUtil.tempFile(requireContext()));
+                    // 校验
+                    moonWorldId = checkTempMoonFile();
+                    if (moonWorldId < 0) {
+                        Toast.makeText(getContext(), R.string.moon_wrong_file_format, Toast.LENGTH_LONG).show();
+                        FileUtil.clearTempFile(requireContext());
+                        return;
+                    }
+                } catch (IOException e) {
+                    Log.e(TAG, "Cannot copy planet file", e);
+                    // 设置失败
+                    Toast.makeText(getContext(), R.string.cannot_open_moon, Toast.LENGTH_LONG).show();
+                    FileUtil.clearTempFile(requireContext());
+                    return;
+                }
+                Log.i(TAG, "Copy planet file successfully");
+                // 加入 Moon
+                onAddMoonOrbitEvent(new AddMoonOrbitEvent(moonWorldId, moonWorldId, true));
+            } else {
+                Toast.makeText(getContext(), R.string.cannot_open_moon, Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
     /**
      * 更新数据列表
      */
@@ -150,7 +185,7 @@ public class MoonOrbitFragment extends Fragment {
      * 获得 Moon 入轨配置列表
      */
     private List<MoonOrbit> getMoonOrbitList() {
-        DaoSession daoSession = ((ZerotierFixApplication) getActivity().getApplication()).getDaoSession();
+        DaoSession daoSession = ((ZerotierFixApplication) requireActivity().getApplication()).getDaoSession();
         return daoSession.getMoonOrbitDao().loadAll();
     }
 
@@ -163,10 +198,11 @@ public class MoonOrbitFragment extends Fragment {
         // 选择文件
         View viewFile = view.findViewById(R.id.from_file);
         viewFile.setOnClickListener(v -> {
-            Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+            Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
             intent.setType("*/*");
             intent.addCategory(Intent.CATEGORY_OPENABLE);
-            startActivityForResult(intent, REQUEST_MOON_FILE);
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            this.moonFileSelectLauncher.launch(intent);
         });
 
         // 选择入轨
@@ -202,7 +238,7 @@ public class MoonOrbitFragment extends Fragment {
                         if (!(0 <= moonWorldId && moonWorldId <= 0xffffffffffL))
                             throw new NumberFormatException();
                     } catch (NumberFormatException ignored) {
-                        Snackbar.make(getView(), R.string.moon_world_id_wrong_format, BaseTransientBottomBar.LENGTH_SHORT).show();
+                        Snackbar.make(requireView(), R.string.moon_world_id_wrong_format, BaseTransientBottomBar.LENGTH_SHORT).show();
                         return;
                     }
                     // 解析 Seed
@@ -211,7 +247,7 @@ public class MoonOrbitFragment extends Fragment {
                         if (!(0 <= moonSeed && moonSeed <= 0xffffffffffL))
                             throw new NumberFormatException();
                     } catch (NumberFormatException ignored) {
-                        Snackbar.make(getView(), R.string.moon_seed_wrong_format, BaseTransientBottomBar.LENGTH_SHORT).show();
+                        Snackbar.make(requireView(), R.string.moon_seed_wrong_format, BaseTransientBottomBar.LENGTH_SHORT).show();
                         return;
                     }
                     // 触发事件
@@ -258,40 +294,6 @@ public class MoonOrbitFragment extends Fragment {
         return -1;
     }
 
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == REQUEST_MOON_FILE && resultCode == -1 && data != null) {
-            long moonWorldId;
-            // Moon 文件设置
-            Uri uriData = data.getData();
-            if (uriData == null) {
-                Log.e(TAG, "Invalid moon URI");
-                return;
-            }
-            // 复制文件到临时文件
-            Context context = requireContext();
-            try (InputStream in = context.getContentResolver().openInputStream(uriData)) {
-                FileUtils.copyInputStreamToFile(in, FileUtil.tempFile(requireContext()));
-                // 校验
-                moonWorldId = checkTempMoonFile();
-                if (moonWorldId < 0) {
-                    Toast.makeText(getContext(), R.string.moon_wrong_file_format, Toast.LENGTH_LONG).show();
-                    FileUtil.clearTempFile(requireContext());
-                    return;
-                }
-            } catch (IOException e) {
-                Log.e(TAG, "Cannot copy planet file", e);
-                // 设置失败
-                Toast.makeText(getContext(), R.string.cannot_copy_planet, Toast.LENGTH_LONG).show();
-                FileUtil.clearTempFile(requireContext());
-                return;
-            }
-            Log.i(TAG, "Copy planet file successfully");
-            // 加入 Moon
-            onAddMoonOrbitEvent(new AddMoonOrbitEvent(moonWorldId, moonWorldId, true));
-        }
-    }
-
     /**
      * 增加 Moon 入轨信息事件回调
      *
@@ -304,7 +306,7 @@ public class MoonOrbitFragment extends Fragment {
         boolean fromFile = event.isFromFile();
         Log.i(TAG, "add orbit info " + Long.toHexString(moonWorldId));
         // 数据库修改
-        DaoSession daoSession = ((ZerotierFixApplication) getActivity().getApplication()).getDaoSession();
+        DaoSession daoSession = ((ZerotierFixApplication) requireActivity().getApplication()).getDaoSession();
         long existCount = daoSession.getMoonOrbitDao().queryBuilder()
                 .where(MoonOrbitDao.Properties.MoonWorldId.eq(moonWorldId))
                 .buildCount()
@@ -318,7 +320,9 @@ public class MoonOrbitFragment extends Fragment {
         if (fromFile) {
             File dest = new File(requireActivity().getFilesDir(),
                     String.format(MoonOrbit.MOON_FILE_PATH, moonWorldId));
-            FileUtil.tempFile(requireContext()).renameTo(dest);
+            if (!FileUtil.tempFile(requireContext()).renameTo(dest)) {
+                Toast.makeText(getContext(), R.string.cannot_open_moon, Toast.LENGTH_LONG).show();
+            }
             FileUtil.clearTempFile(requireContext());
         }
         MoonOrbit moonOrbit = new MoonOrbit(moonWorldId, moonSeed, fromFile);
@@ -328,9 +332,9 @@ public class MoonOrbitFragment extends Fragment {
             this.providerDialog.dismiss();
             this.providerDialog = null;
         }
-        Snackbar.make(getView(), R.string.moon_orbit_add_success, BaseTransientBottomBar.LENGTH_SHORT).show();
+        Snackbar.make(requireView(), R.string.moon_orbit_add_success, BaseTransientBottomBar.LENGTH_SHORT).show();
         // 触发事件入轨
-        this.eventBus.post(new OrbitMoonEvent(new ArrayList<MoonOrbit>() {{
+        this.eventBus.post(new OrbitMoonEvent(new ArrayList<>() {{
             add(moonOrbit);
         }}));
         // 更新界面
@@ -339,6 +343,7 @@ public class MoonOrbitFragment extends Fragment {
 
     /**
      * 删除 Moon 入轨信息事件回调
+     *
      * @param event 事件
      */
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -347,17 +352,17 @@ public class MoonOrbitFragment extends Fragment {
         long moonSeed = event.getMoonSeed();
         Log.i(TAG, "remove orbit info " + Long.toHexString(moonWorldId));
         // 查询待删除项目
-        DaoSession daoSession = ((ZerotierFixApplication) getActivity().getApplication()).getDaoSession();
+        DaoSession daoSession = ((ZerotierFixApplication) requireActivity().getApplication()).getDaoSession();
         MoonOrbit moonOrbit = daoSession.getMoonOrbitDao().queryBuilder()
                 .where(MoonOrbitDao.Properties.MoonWorldId.eq(moonWorldId),
                         MoonOrbitDao.Properties.MoonSeed.eq(moonSeed))
                 .build()
                 .unique();
         // 删除缓存文件
-        moonOrbit.deleteCacheFile(getContext());
+        moonOrbit.deleteCacheFile(requireContext());
         // 删除记录
         daoSession.delete(moonOrbit);
-        Snackbar.make(getView(), R.string.moon_orbit_delete_success, BaseTransientBottomBar.LENGTH_SHORT).show();
+        Snackbar.make(requireView(), R.string.moon_orbit_delete_success, BaseTransientBottomBar.LENGTH_SHORT).show();
         // 更新界面
         updateOrbitList();
     }
@@ -384,7 +389,7 @@ public class MoonOrbitFragment extends Fragment {
         @Override
         public void onBindViewHolder(final ViewHolder holder, int position) {
             MoonOrbit moonOrbit = mValues.get(position);
-            moonOrbit.checkCacheFile(getContext());
+            moonOrbit.checkCacheFile(requireContext());
             holder.mItem = moonOrbit;
             // 设置文本
             holder.mMoonWorldId.setText(Long.toHexString(moonOrbit.getMoonWorldId()));
@@ -442,16 +447,16 @@ public class MoonOrbitFragment extends Fragment {
                         return true;
                     } else if (menuItem.getItemId() == R.id.menu_item_copy_moon_world_id) {
                         // 复制 Moon 地址
-                        ClipboardManager clipboard = (ClipboardManager) getContext().getSystemService(Context.CLIPBOARD_SERVICE);
+                        ClipboardManager clipboard = (ClipboardManager) requireContext().getSystemService(Context.CLIPBOARD_SERVICE);
                         ClipData clip = ClipData.newPlainText(getString(R.string.network_id), Long.toHexString(this.mItem.getMoonWorldId()));
                         clipboard.setPrimaryClip(clip);
                         Toast.makeText(getContext(), R.string.text_copied, Toast.LENGTH_SHORT).show();
                         return true;
                     } else if (menuItem.getItemId() == R.id.menu_item_delete_moon_orbit_cache) {
                         // 删除缓存文件
-                        this.mItem.deleteCacheFile(getContext());
+                        this.mItem.deleteCacheFile(requireContext());
                         this.mMoonConfig.setText(R.string.wait_to_fetch);
-                        Snackbar.make(getView(), R.string.cached_moon_file_delete, BaseTransientBottomBar.LENGTH_SHORT).show();
+                        Snackbar.make(requireView(), R.string.cached_moon_file_delete, BaseTransientBottomBar.LENGTH_SHORT).show();
                         return true;
                     }
                     return false;

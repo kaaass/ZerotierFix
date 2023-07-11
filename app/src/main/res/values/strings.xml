@@ -115,7 +115,8 @@
     <string name="import_via_file">Import via file</string>
     <string name="url">URL</string>
     <string name="import_via_url">Import via URL</string>
-    <string name="cannot_copy_planet">Cannot copy planet file.</string>
+    <string name="cannot_open_planet">Cannot open planet file.</string>
+    <string name="cannot_open_moon">Cannot open moon file.</string>
     <string name="set_planet_file">Set planet file</string>
     <string name="wrong_url_format">Wrong url format</string>
     <string name="cannot_download_planet_file">Cannot download planet file</string>
