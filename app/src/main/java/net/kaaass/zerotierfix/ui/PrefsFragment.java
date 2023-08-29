@@ -54,7 +54,7 @@ public class PrefsFragment extends PreferenceFragmentCompat implements SharedPre
      * Plant 文件固定头
      */
     private static final byte[] PLANET_FILE_HEADER = new byte[]{
-            0x01, 0x00, 0x00, 0x00, 0x00, 0x08, (byte) 0xea, (byte) 0xc9, 0x0a
+            0x01,  // World type, 0x01 = planet
     };
     private SwitchPreference prefPlanetUseCustom;
     private Preference prefSetPlanetFile;
