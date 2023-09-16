@@ -983,12 +983,16 @@ public class ZeroTierOneService extends VpnService implements Runnable, EventLis
             channel.setDescription(description);
             this.notificationManager.createNotificationChannel(channel);
         }
+        int pendingIntentFlag = PendingIntent.FLAG_UPDATE_CURRENT;
+        if (Build.VERSION.SDK_INT >= 23) {
+            pendingIntentFlag |= PendingIntent.FLAG_ONE_SHOT;
+        }
+        if (Build.VERSION.SDK_INT >= 31) {
+            pendingIntentFlag |= PendingIntent.FLAG_IMMUTABLE;
+        }
         var pendingIntent =
                 PendingIntent.getActivity(this, 0,
-                        new Intent(this, NetworkListActivity.class),
-                        Build.VERSION.SDK_INT >= 23
-                                ? PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_UPDATE_CURRENT
-                                : PendingIntent.FLAG_UPDATE_CURRENT);
+                        new Intent(this, NetworkListActivity.class), pendingIntentFlag);
         var notification = new NotificationCompat.Builder(this, Constants.CHANNEL_ID)
                 .setPriority(1)
                 .setOngoing(true)
