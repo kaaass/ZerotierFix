@@ -1,5 +1,6 @@
 package net.kaaass.zerotierfix.ui;
 
+import android.app.AlertDialog;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.ComponentName;
@@ -27,6 +28,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.SwitchCompat;
+import androidx.core.app.NotificationManagerCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.RecyclerView;
@@ -34,7 +36,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.zerotier.sdk.NodeStatus;
 import com.zerotier.sdk.Version;
-import com.zerotier.sdk.VirtualNetworkConfig;
 
 import net.kaaass.zerotierfix.BuildConfig;
 import net.kaaass.zerotierfix.R;
@@ -44,12 +45,12 @@ import net.kaaass.zerotierfix.events.IsServiceRunningReplyEvent;
 import net.kaaass.zerotierfix.events.IsServiceRunningRequestEvent;
 import net.kaaass.zerotierfix.events.NetworkListCheckedChangeEvent;
 import net.kaaass.zerotierfix.events.NetworkListReplyEvent;
+import net.kaaass.zerotierfix.events.NetworkListRequestEvent;
 import net.kaaass.zerotierfix.events.NodeDestroyedEvent;
 import net.kaaass.zerotierfix.events.NodeIDEvent;
 import net.kaaass.zerotierfix.events.NodeStatusEvent;
 import net.kaaass.zerotierfix.events.NodeStatusRequestEvent;
 import net.kaaass.zerotierfix.events.OrbitMoonEvent;
-import net.kaaass.zerotierfix.events.NetworkListRequestEvent;
 import net.kaaass.zerotierfix.events.StopEvent;
 import net.kaaass.zerotierfix.events.VPNErrorEvent;
 import net.kaaass.zerotierfix.events.VirtualNetworkConfigChangedEvent;
@@ -196,9 +197,17 @@ public class NetworkListFragment extends Fragment {
     public void onStart() {
         super.onStart();
         this.eventBus.post(new NetworkListRequestEvent());
+
         // 初始化节点及服务状态
         this.eventBus.post(new NodeStatusRequestEvent());
         this.eventBus.post(new IsServiceRunningRequestEvent());
+
+        // 检查通知权限
+        var notificationManager = NotificationManagerCompat.from(requireContext());
+        if (!notificationManager.areNotificationsEnabled()) {
+            // 无通知权限
+            showNoNotificationAlertDialog();
+        }
     }
 
     @Override
@@ -585,6 +594,45 @@ public class NetworkListFragment extends Fragment {
             this.stopService();
             this.viewModel.doChangeConnectNetwork(null);
         }
+    }
+
+    /**
+     * 显示无通知权限的提示框。若用户选择过 “不再提示”，则此方法将不进行任何操作
+     */
+    private void showNoNotificationAlertDialog() {
+        // 检查是否选择过 “不再提示”，若是则不显示
+        var sharedPreferences = PreferenceManager.getDefaultSharedPreferences(requireContext());
+
+        if (sharedPreferences.getBoolean(Constants.PREF_DISABLE_NO_NOTIFICATION_ALERT, false)) {
+            return;
+        }
+
+        // 显示提示框
+        View view = LayoutInflater.from(getContext()).inflate(R.layout.dialog_no_notification_alert, null);
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext())
+                .setView(view)
+                .setTitle(R.string.dialog_no_notification_alert_title)
+                .setPositiveButton(R.string.open_notification_settings, (dialog, which) -> {
+                    // 打开 APP 的通知设置
+                    var intent = new Intent();
+
+                    intent.setAction("android.settings.APP_NOTIFICATION_SETTINGS");
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    intent.putExtra("app_package", requireContext().getPackageName());
+                    intent.putExtra("app_uid", requireContext().getApplicationInfo().uid);
+                    intent.putExtra("android.provider.extra.APP_PACKAGE", requireContext().getPackageName());
+                    startActivity(intent);
+                })
+                .setNegativeButton(R.string.dont_show_again, (dialog, which) -> {
+                    // 设置不再提示此对话框
+                    sharedPreferences.edit()
+                            .putBoolean(Constants.PREF_DISABLE_NO_NOTIFICATION_ALERT, true)
+                            .apply();
+                })
+                .setCancelable(true);
+
+        builder.create().show();
     }
 
     /**

@@ -147,4 +147,8 @@
     <string name="toast_vpn_error">VPN 服务发生错误！%1$s</string>
     <string name="empty_network_name">未知</string>
     <string name="app_version_format">(APP: %s)</string>
+    <string name="dialog_no_notification_alert_text">Zerotier Fix 未获得通知权限！您可能会遗漏用于提示连接状态的通知气泡与状态栏消息。Zerotier Fix 推荐您打开应用通知权限以获取连接状态信息。如果您不希望看到状态栏的常驻通知，您仍可以在打开通知权限后关闭对应通知类别的消息。</string>
+    <string name="dialog_no_notification_alert_title">未开启通知权限</string>
+    <string name="open_notification_settings">打开通知设置</string>
+    <string name="dont_show_again">不再提示</string>
 </resources>

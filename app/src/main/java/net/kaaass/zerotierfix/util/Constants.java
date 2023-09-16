@@ -17,6 +17,8 @@ public class Constants {
 
     public static final String PREF_GENERAL_START_ZEROTIER_ON_BOOT = "general_start_zerotier_on_boot";
 
+    public static final String PREF_DISABLE_NO_NOTIFICATION_ALERT = "disable_no_notification_alert";
+
     public static final String FILE_CUSTOM_PLANET = "planet.custom";
 
     public static final String FILE_TEMP = "temp";

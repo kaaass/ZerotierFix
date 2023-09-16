@@ -149,4 +149,8 @@
     <string name="toast_vpn_error">A VPN service error has occurred! %1$s</string>
     <string name="empty_network_name">Unknown</string>
     <string name="app_version_format">(APP: %s)</string>
+    <string name="dialog_no_notification_alert_text">Zerotier Fix does not have notification permissions! You might miss notification pop-ups and status bar messages that indicate connection status. Zerotier Fix recommends you enable notification permissions for the app to receive connection status information. If you don\'t want to see persistent notifications in the status bar, you can still turn off messages for that notification category after enabling the permissions.</string>
+    <string name="dialog_no_notification_alert_title">Notification Permission Not Granted</string>
+    <string name="open_notification_settings">Goto notification settings</string>
+    <string name="dont_show_again">Don\'t show again</string>
 </resources>
