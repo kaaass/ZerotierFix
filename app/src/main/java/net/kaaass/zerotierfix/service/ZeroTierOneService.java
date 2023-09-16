@@ -20,15 +20,14 @@ import androidx.core.content.ContextCompat;
 import com.zerotier.sdk.Event;
 import com.zerotier.sdk.EventListener;
 import com.zerotier.sdk.Node;
-import com.zerotier.sdk.NodeException;
 import com.zerotier.sdk.ResultCode;
 import com.zerotier.sdk.VirtualNetworkConfig;
 import com.zerotier.sdk.VirtualNetworkConfigListener;
 import com.zerotier.sdk.VirtualNetworkConfigOperation;
 import com.zerotier.sdk.VirtualNetworkStatus;
 
-import net.kaaass.zerotierfix.ZerotierFixApplication;
 import net.kaaass.zerotierfix.R;
+import net.kaaass.zerotierfix.ZerotierFixApplication;
 import net.kaaass.zerotierfix.events.AfterJoinNetworkEvent;
 import net.kaaass.zerotierfix.events.ErrorEvent;
 import net.kaaass.zerotierfix.events.IsServiceRunningReplyEvent;
@@ -36,14 +35,14 @@ import net.kaaass.zerotierfix.events.IsServiceRunningRequestEvent;
 import net.kaaass.zerotierfix.events.ManualDisconnectEvent;
 import net.kaaass.zerotierfix.events.NetworkConfigChangedByUserEvent;
 import net.kaaass.zerotierfix.events.NetworkListReplyEvent;
+import net.kaaass.zerotierfix.events.NetworkListRequestEvent;
 import net.kaaass.zerotierfix.events.NetworkReconfigureEvent;
 import net.kaaass.zerotierfix.events.NodeDestroyedEvent;
 import net.kaaass.zerotierfix.events.NodeIDEvent;
 import net.kaaass.zerotierfix.events.NodeStatusEvent;
+import net.kaaass.zerotierfix.events.NodeStatusRequestEvent;
 import net.kaaass.zerotierfix.events.OrbitMoonEvent;
 import net.kaaass.zerotierfix.events.PeerInfoReplyEvent;
-import net.kaaass.zerotierfix.events.NetworkListRequestEvent;
-import net.kaaass.zerotierfix.events.NodeStatusRequestEvent;
 import net.kaaass.zerotierfix.events.PeerInfoRequestEvent;
 import net.kaaass.zerotierfix.events.StopEvent;
 import net.kaaass.zerotierfix.events.VPNErrorEvent;
@@ -392,51 +391,53 @@ public class ZeroTierOneService extends VpnService implements Runnable, EventLis
 
                 // 创建本地节点
                 if (this.node == null) {
-                    try {
-                        this.udpCom = new UdpCom(this, this.svrSocket);
-                        this.tunTapAdapter = new TunTapAdapter(this, networkId);
+                    this.udpCom = new UdpCom(this, this.svrSocket);
+                    this.tunTapAdapter = new TunTapAdapter(this, networkId);
 
-                        // 创建节点对象并初始化
-                        var dataStore = this.dataStore;
-                        this.node = new Node(System.currentTimeMillis());
-                        this.node.init(dataStore, dataStore, this.udpCom, this, this.tunTapAdapter, this, null);
-                        this.onNodeStatusRequest(null);
+                    // 创建节点对象并初始化
+                    var dataStore = this.dataStore;
+                    this.node = new Node(System.currentTimeMillis());
+                    var result = this.node.init(dataStore, dataStore, this.udpCom, this, this.tunTapAdapter, this, null);
 
-                        // 持久化当前节点信息
-                        long address = this.node.address();
-                        DatabaseUtils.writeLock.lock();
-                        try {
-                            var appNodeDao = ((ZerotierFixApplication) getApplication())
-                                    .getDaoSession().getAppNodeDao();
-                            var nodesList = appNodeDao.queryBuilder().build()
-                                    .forCurrentThread().list();
-                            if (nodesList.isEmpty()) {
-                                var appNode = new AppNode();
-                                appNode.setNodeId(address);
-                                appNode.setNodeIdStr(String.format("%10x", address));
-                                appNodeDao.insert(appNode);
-                            } else {
-                                var appNode = nodesList.get(0);
-                                appNode.setNodeId(address);
-                                appNode.setNodeIdStr(String.format("%10x", address));
-                                appNodeDao.save(appNode);
-                            }
-                        } finally {
-                            DatabaseUtils.writeLock.unlock();
-                        }
-
-                        this.eventBus.post(new NodeIDEvent(address));
-                        this.udpCom.setNode(this.node);
-                        this.tunTapAdapter.setNode(this.node);
-
-                        // 启动 UDP 消息处理线程
-                        var thread = new Thread(this.udpCom, "UDP Communication Thread");
-                        this.udpThread = thread;
-                        thread.start();
-                    } catch (NodeException e) {
-                        Log.e(TAG, "Error starting ZT1 Node: " + e.getMessage(), e);
+                    if (result == ResultCode.RESULT_OK) {
+                        Log.d(TAG, "ZeroTierOne Node Initialized");
+                    } else {
+                        Log.e(TAG, "Error starting ZT1 Node: " + result);
                         return START_NOT_STICKY;
                     }
+                    this.onNodeStatusRequest(null);
+
+                    // 持久化当前节点信息
+                    long address = this.node.address();
+                    DatabaseUtils.writeLock.lock();
+                    try {
+                        var appNodeDao = ((ZerotierFixApplication) getApplication())
+                                .getDaoSession().getAppNodeDao();
+                        var nodesList = appNodeDao.queryBuilder().build()
+                                .forCurrentThread().list();
+                        if (nodesList.isEmpty()) {
+                            var appNode = new AppNode();
+                            appNode.setNodeId(address);
+                            appNode.setNodeIdStr(String.format("%10x", address));
+                            appNodeDao.insert(appNode);
+                        } else {
+                            var appNode = nodesList.get(0);
+                            appNode.setNodeId(address);
+                            appNode.setNodeIdStr(String.format("%10x", address));
+                            appNodeDao.save(appNode);
+                        }
+                    } finally {
+                        DatabaseUtils.writeLock.unlock();
+                    }
+
+                    this.eventBus.post(new NodeIDEvent(address));
+                    this.udpCom.setNode(this.node);
+                    this.tunTapAdapter.setNode(this.node);
+
+                    // 启动 UDP 消息处理线程
+                    var thread = new Thread(this.udpCom, "UDP Communication Thread");
+                    this.udpThread = thread;
+                    thread.start();
                 }
 
                 // 创建并启动 VPN 服务线程
