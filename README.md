@@ -26,7 +26,10 @@
 
 ## Download
 
-Check [Releases page](https://github.com/kaaass/ZerotierFix/releases) for newest apk built.
+Check [Releases page](https://github.com/kaaass/ZerotierFix/releases) for latest version.
+
+If you want to try the nightly build, you can download it from [GitHub Actions](https://github.com/kaaass/ZerotierFix/actions/workflows/build-app.yml?query=branch%3Amaster).
+But please note that the nightly build may be **BUGGY** and **UNSTABLE**.
 
 ## Copyright
 
@@ -44,5 +47,5 @@ original author is Grant Limberg (glimberg@gmail.com). See [AUTHORS.md](https://
 - [x] Add peer list view
 - [x] Support planet config
 - [x] Replace pre-built JNI library
-- [ ] *WIP* Rewrite & update UI to fit Material Design
-- [ ] *WIP* Clear up code (remove decompiler tag and refine)
+- [x] Rewrite & update UI to fit Material Design
+- [ ] *WIP* Rewrite whole APP in v2
