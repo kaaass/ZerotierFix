@@ -65,12 +65,8 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
-import java.io.BufferedReader;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.IOException;
 import java.net.DatagramSocket;
 import java.net.Inet4Address;
 import java.net.Inet6Address;
@@ -79,6 +75,7 @@ import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -111,39 +108,17 @@ public class ZeroTierOneService extends VpnService implements Runnable, EventLis
     private Thread udpThread;
     private Thread v4MulticastScanner = new Thread() {
         /* class com.zerotier.one.service.ZeroTierOneService.AnonymousClass1 */
-        ArrayList<String> subscriptions = new ArrayList<>();
+        List<String> subscriptions = new ArrayList<>();
 
         @Override
         public void run() {
             Log.d(ZeroTierOneService.TAG, "IPv4 Multicast Scanner Thread Started.");
             while (!isInterrupted()) {
                 try {
-                    ArrayList<String> arrayList = new ArrayList<>();
-                    try {
-                        BufferedReader bufferedReader = new BufferedReader(new FileReader("/proc/net/igmp"));
-                        while (true) {
-                            boolean z = false;
-                            while (true) {
-                                String readLine = bufferedReader.readLine();
-                                if (readLine == null) {
-                                    break;
-                                }
-                                String[] split = readLine.split("\\s+", -1);
-                                if (!z && split[1].equals("tun0")) {
-                                    z = true;
-                                } else if (z && split[0].equals("")) {
-                                    arrayList.add(split[1]);
-                                }
-                            }
-                        }
-                    } catch (FileNotFoundException e) {
-                        Log.e(ZeroTierOneService.TAG, "File Not Found: /proc/net/igmp", e);
-                    } catch (IOException e) {
-                        Log.e(ZeroTierOneService.TAG, "Error parsing /proc/net/igmp", e);
-                    }
+                    List<String> groups = NetworkInfoUtils.listMulticastGroupOnInterface("tun0", false);
 
                     ArrayList<String> arrayList2 = new ArrayList<>(this.subscriptions);
-                    ArrayList<String> arrayList3 = new ArrayList<>(arrayList);
+                    ArrayList<String> arrayList3 = new ArrayList<>(groups);
                     arrayList3.removeAll(arrayList2);
                     for (String str : arrayList3) {
                         try {
@@ -161,7 +136,7 @@ public class ZeroTierOneService extends VpnService implements Runnable, EventLis
                             Log.e(ZeroTierOneService.TAG, e.toString(), e);
                         }
                     }
-                    arrayList2.removeAll(new ArrayList<>(arrayList));
+                    arrayList2.removeAll(new ArrayList<>(groups));
                     for (String str2 : arrayList2) {
                         try {
                             byte[] hexStringToByteArray2 = StringUtils.hexStringToBytes(str2);
@@ -178,10 +153,11 @@ public class ZeroTierOneService extends VpnService implements Runnable, EventLis
                             Log.e(ZeroTierOneService.TAG, e.toString(), e);
                         }
                     }
-                    this.subscriptions = arrayList;
+                    this.subscriptions = groups;
                     Thread.sleep(1000);
                 } catch (InterruptedException e) {
                     Log.d(ZeroTierOneService.TAG, "V4 Multicast Scanner Thread Interrupted", e);
+                    break;
                 }
             }
             Log.d(ZeroTierOneService.TAG, "IPv4 Multicast Scanner Thread Ended.");
@@ -189,33 +165,17 @@ public class ZeroTierOneService extends VpnService implements Runnable, EventLis
     };
     private Thread v6MulticastScanner = new Thread() {
         /* class com.zerotier.one.service.ZeroTierOneService.AnonymousClass2 */
-        ArrayList<String> subscriptions = new ArrayList<>();
+        List<String> subscriptions = new ArrayList<>();
 
         @Override
         public void run() {
             Log.d(ZeroTierOneService.TAG, "IPv6 Multicast Scanner Thread Started.");
             while (!isInterrupted()) {
                 try {
-                    ArrayList<String> arrayList = new ArrayList<>();
-                    try {
-                        BufferedReader bufferedReader = new BufferedReader(new FileReader("/proc/net/igmp6"));
-                        while (true) {
-                            String readLine = bufferedReader.readLine();
-                            if (readLine == null) {
-                                break;
-                            }
-                            String[] split = readLine.split("\\s+", -1);
-                            if (split[1].equals("tun0")) {
-                                arrayList.add(split[2]);
-                            }
-                        }
-                    } catch (FileNotFoundException e) {
-                        Log.e(ZeroTierOneService.TAG, "File not found: /proc/net/igmp6", e);
-                    } catch (IOException e) {
-                        Log.e(ZeroTierOneService.TAG, "Error parsing /proc/net/igmp6", e);
-                    }
+                    List<String> groups = NetworkInfoUtils.listMulticastGroupOnInterface("tun0", true);
+
                     ArrayList<String> arrayList2 = new ArrayList<>(this.subscriptions);
-                    ArrayList<String> arrayList3 = new ArrayList<>(arrayList);
+                    ArrayList<String> arrayList3 = new ArrayList<>(groups);
                     arrayList3.removeAll(arrayList2);
                     for (String str : arrayList3) {
                         try {
@@ -227,7 +187,7 @@ public class ZeroTierOneService extends VpnService implements Runnable, EventLis
                             Log.e(ZeroTierOneService.TAG, e.toString(), e);
                         }
                     }
-                    arrayList2.removeAll(new ArrayList<>(arrayList));
+                    arrayList2.removeAll(new ArrayList<>(groups));
                     for (String str2 : arrayList2) {
                         try {
                             ResultCode multicastUnsubscribe = ZeroTierOneService.this.node.multicastUnsubscribe(ZeroTierOneService.this.networkId, TunTapAdapter.multicastAddressToMAC(InetAddress.getByAddress(StringUtils.hexStringToBytes(str2))));
@@ -238,10 +198,11 @@ public class ZeroTierOneService extends VpnService implements Runnable, EventLis
                             Log.e(ZeroTierOneService.TAG, e.toString(), e);
                         }
                     }
-                    this.subscriptions = arrayList;
+                    this.subscriptions = groups;
                     Thread.sleep(1000);
                 } catch (InterruptedException e) {
                     Log.d(ZeroTierOneService.TAG, "V6 Multicast Scanner Thread Interrupted", e);
+                    break;
                 }
             }
             Log.d(ZeroTierOneService.TAG, "IPv6 Multicast Scanner Thread Ended.");
