@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: 'recursive'
       - uses: sparkfabrik/android-build-action@v1.5.0
@@ -20,13 +20,14 @@ jobs:
           project-path: .
           output-path: app-debug.apk
           fastlane-env: "debug"
+          ruby-version: "3.3.0"
       - uses: actions/upload-artifact@v3
         if: github.event_name == 'pull_request'
         name: Upload app APK
         with:
           name: App bundle
           path: app-debug.apk
-      - uses: r0adkll/sign-android-release@v1
+      - uses: r0adkll/sign-android-release@v5.1
         if: github.event_name != 'pull_request'
         name: Sign app APK
         id: sign_app
@@ -35,7 +36,7 @@ jobs:
           signingKeyBase64: ${{ secrets.SIGNING_KEY }}
           alias: ${{ secrets.ALIAS }}
           keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         if: github.event_name != 'pull_request'
         name: Upload signed app APK
         with:
