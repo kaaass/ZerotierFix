@@ -27,7 +27,7 @@ jobs:
         with:
           name: App bundle
           path: app-debug.apk
-      - uses: r0adkll/sign-android-release@v5.1
+      - uses: r0adkll/sign-android-release@v1
         if: github.event_name != 'pull_request'
         name: Sign app APK
         id: sign_app
